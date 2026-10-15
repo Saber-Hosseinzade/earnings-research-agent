@@ -1,0 +1,4 @@
+-r agent/requirements.txt
+-r infra/requirements.txt
+bedrock-agentcore-starter-toolkit
+pytest

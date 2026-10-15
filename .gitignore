@@ -1,0 +1,26 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Secrets and local config — never commit
+.env
+.env.*
+*.pem
+
+# AgentCore starter toolkit — generated, holds account ID and ARNs
+.bedrock_agentcore.yaml
+.bedrock_agentcore/
+
+# CDK
+cdk.out/
+cdk.context.json
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# direnv — per-machine AWS profile, never commit
+.envrc
