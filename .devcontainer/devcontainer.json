@@ -4,24 +4,28 @@
 
   "features": {
     "ghcr.io/devcontainers/features/aws-cli:1": {},
-    "ghcr.io/devcontainers/features/node:1": { "version": "22" }
+    "ghcr.io/devcontainers/features/node:1": { "version": "22" },
+    // Claude Code CLI + the VS Code extension (the feature adds both)
+    "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {}
   },
 
-  // SSO config and the login token cache live on the host, so `aws sso login`
-  // on the host also logs the container in. Read-write: the CLI refreshes tokens.
   "mounts": [
-    "source=${localEnv:HOME}/.aws,target=/home/vscode/.aws,type=bind"
+    // A dedicated AWS config folder on the host, not ~/.aws.
+    // Only these credentials are visible inside the container.
+    "source=${localEnv:HOME}/.aws-sandbox,target=/home/vscode/.aws,type=bind",
+    // Claude Code login, settings and history survive container rebuilds
+    "source=claude-code-config-${devcontainerId},target=/home/vscode/.claude,type=volume"
   ],
 
-  // The default profile inside this container.
   "containerEnv": {
     "AWS_PROFILE": "sandbox",
     "AWS_REGION": "eu-central-1",
-    "AWS_DEFAULT_REGION": "eu-central-1"
+    "AWS_DEFAULT_REGION": "eu-central-1",
+    "CLAUDE_CONFIG_DIR": "/home/vscode/.claude"
   },
 
   // Virtualenv outside the bind-mounted workspace, so a host .venv can't collide with it.
-  "postCreateCommand": "python -m venv /home/vscode/.venv && /home/vscode/.venv/bin/pip install -q --upgrade pip && /home/vscode/.venv/bin/pip install -q -r requirements-dev.txt",
+  "postCreateCommand": "sudo chown -R vscode:vscode /home/vscode/.claude && python -m venv /home/vscode/.venv && /home/vscode/.venv/bin/pip install -q --upgrade pip && /home/vscode/.venv/bin/pip install -q -r requirements-dev.txt",
   "remoteEnv": {
     "PATH": "/home/vscode/.venv/bin:${containerEnv:PATH}",
     "VIRTUAL_ENV": "/home/vscode/.venv"
@@ -29,7 +33,7 @@
 
   "customizations": {
     "vscode": {
-      "extensions": ["ms-python.python", "ms-python.vscode-pylance"],
+      "extensions": ["ms-python.python", "ms-python.vscode-pylance", "anthropic.claude-code"],
       "settings": {
         "python.defaultInterpreterPath": "/home/vscode/.venv/bin/python",
         "python.testing.pytestEnabled": true,
