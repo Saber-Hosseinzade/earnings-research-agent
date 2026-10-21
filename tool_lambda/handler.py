@@ -81,9 +81,13 @@ def get_api_key() -> str:
 def map_upstream(body: dict[str, Any], ticker: str, quarter: str) -> dict[str, Any]:
     """Turn an Alpha Vantage response into a tool result or a typed error."""
     # Alpha Vantage signals problems with HTTP 200 plus one of these keys.
+    # The free tier has a burst limit (worth a retry) and a daily cap of 25
+    # requests (not worth one until tomorrow); only the message tells them apart.
     for key in ("Note", "Information"):
         if key in body:
-            return error("rate_limited", str(body[key])[:300], retryable=True)
+            message = str(body[key])
+            daily_cap = "per day" in message.lower()
+            return error("rate_limited", message[:300], retryable=not daily_cap)
     if "Error Message" in body:
         return error("upstream_error", str(body["Error Message"])[:300])
 

@@ -12,6 +12,11 @@ Two levels, on purpose:
   with: it does not depend on the model obeying a message.
 
 Counts reset at the start of each invocation, so the budget is per request.
+
+With ``structured_output_model`` the model hands back its answer by calling a
+hidden tool. That call is the answer, not data gathering, so it is neither
+counted nor cancelled — otherwise the soft stop would block the very answer it
+asks for.
 """
 
 from __future__ import annotations
@@ -20,12 +25,15 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from strands.hooks import (
+    AfterInvocationEvent,
     BeforeInvocationEvent,
     BeforeModelCallEvent,
     BeforeToolCallEvent,
     HookProvider,
     HookRegistry,
 )
+# Not re-exported by the package; path verified against Strands 1.61.0.
+from strands.tools.structured_output.structured_output_tool import StructuredOutputTool
 
 
 @dataclass
@@ -45,6 +53,7 @@ class RunBudget(HookProvider):
         registry.add_callback(BeforeInvocationEvent, self._reset)
         registry.add_callback(BeforeModelCallEvent, self._before_model)
         registry.add_callback(BeforeToolCallEvent, self._before_tool)
+        registry.add_callback(AfterInvocationEvent, self._after_invocation)
 
     # accumulated_usage spans every request this Agent has served, so the
     # per-request figure is measured against a snapshot taken at the start.
@@ -73,7 +82,13 @@ class RunBudget(HookProvider):
             return
         self.model_calls += 1
 
+    # The last model call has no "before" after it, so its tokens are added here.
+    def _after_invocation(self, event: AfterInvocationEvent) -> None:
+        self.tokens_used = self._total_tokens(event.agent) - self._tokens_at_start
+
     def _before_tool(self, event: BeforeToolCallEvent) -> None:
+        if isinstance(event.selected_tool, StructuredOutputTool):
+            return
         self.tool_calls += 1
         if self.tool_calls > self.max_tool_calls:
             self.tools_cancelled += 1

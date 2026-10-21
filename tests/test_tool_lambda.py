@@ -46,9 +46,18 @@ def _respond(monkeypatch, body):
 
 
 def test_rate_limit_note_is_an_error_not_data(monkeypatch):
-    _respond(monkeypatch, {"Information": "Thank you for using Alpha Vantage! Our standard API rate limit is..."})
+    _respond(monkeypatch, {"Information": "Thank you for using Alpha Vantage! Please consider spreading out "
+                                          "your free API requests more sparingly (1 request per second)."})
     out = handler.lambda_handler({"ticker": "IBM", "quarter": "2024Q4"}, Ctx(15_000))
     assert out["error"] == {"type": "rate_limited", "message": out["error"]["message"], "retryable": True}
+
+
+def test_daily_cap_is_not_retryable(monkeypatch):
+    _respond(monkeypatch, {"Information": "We have detected your API key as ... and our standard API rate limit "
+                                          "is 25 requests per day. Please subscribe to any of the premium plans..."})
+    out = handler.lambda_handler({"ticker": "IBM", "quarter": "2024Q4"}, Ctx(15_000))
+    assert out["error"]["type"] == "rate_limited"
+    assert out["error"]["retryable"] is False
 
 
 def test_empty_transcript_is_not_found(monkeypatch):

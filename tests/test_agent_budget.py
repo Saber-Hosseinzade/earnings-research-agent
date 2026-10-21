@@ -38,6 +38,17 @@ def test_happy_path_returns_a_valid_brief(fake_lambda):
     assert out["brief"]["ticker"] == "IBM"
     assert out["run"]["stopped_reason"] is None
     assert len(fake_lambda) == 1
+    assert out["run"]["tool_calls"] == 1          # the structured answer is not a tool call
+    assert out["run"]["tokens_used"] == 2 * 550   # both model calls, including the last one
+
+
+def test_answer_after_using_the_whole_tool_budget_is_not_cancelled(fake_lambda):
+    budget = RunBudget(max_tool_calls=3)
+    out = main.run({"ticker": "IBM", "quarter": "2024Q4"}, model=FakeModel("good", fetches=3), budget=budget)
+
+    assert out["status"] == "ok"
+    assert out["run"]["tool_calls"] == 3
+    assert out["run"]["tools_cancelled"] == 0
 
 
 def test_runaway_agent_is_stopped_by_model_call_limit(fake_lambda):

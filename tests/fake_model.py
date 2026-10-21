@@ -36,13 +36,14 @@ def _tool_call(name: str, args: dict[str, Any], tokens: int) -> list[dict[str, A
 
 
 class FakeModel(Model):
-    """mode="good": one tool call, then a valid structured answer.
+    """mode="good": ``fetches`` data tool calls (default one), then a valid structured answer.
     mode="loop": calls the data tool forever and never answers.
     """
 
-    def __init__(self, mode: str = "good", tokens_per_call: int = 500) -> None:
+    def __init__(self, mode: str = "good", tokens_per_call: int = 500, fetches: int = 1) -> None:
         self.mode = mode
         self.tokens_per_call = tokens_per_call
+        self.fetches = fetches
         self.calls = 0
 
     def update_config(self, **model_config: Any) -> None:
@@ -60,7 +61,7 @@ class FakeModel(Model):
         names = [s["name"] for s in (tool_specs or [])]
         output_tool = next((n for n in names if n != TOOL), None)
 
-        if self.mode == "loop" or self.calls == 1:
+        if self.mode == "loop" or self.calls <= self.fetches:
             events = _tool_call(TOOL, {"ticker": "IBM", "quarter": "2024Q4"}, self.tokens_per_call)
         else:
             events = _tool_call(output_tool, VALID_BRIEF, self.tokens_per_call)
