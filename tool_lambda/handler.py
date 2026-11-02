@@ -34,7 +34,7 @@ QUARTER_RE = re.compile(r"^\d{4}Q[1-4]$")
 SAFETY_MARGIN_S = float(os.environ.get("SAFETY_MARGIN_S", "2.0"))
 MAX_HTTP_TIMEOUT_S = float(os.environ.get("MAX_HTTP_TIMEOUT_S", "10.0"))
 MIN_HTTP_TIMEOUT_S = 0.5
-MAX_TRANSCRIPT_CHARS = int(os.environ.get("MAX_TRANSCRIPT_CHARS", "12000"))
+MAX_TRANSCRIPT_CHARS = int(os.environ.get("MAX_TRANSCRIPT_CHARS", "100000"))
 
 _api_key_cache: str | None = None
 

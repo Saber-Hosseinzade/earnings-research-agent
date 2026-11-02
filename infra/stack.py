@@ -48,7 +48,7 @@ class EarningsToolStack(Stack):
             memory_size=256,
             environment={
                 "SECRET_ARN": secret.secret_arn,
-                "MAX_TRANSCRIPT_CHARS": "12000",
+                "MAX_TRANSCRIPT_CHARS": "100000",
                 "MAX_HTTP_TIMEOUT_S": "10",
                 "SAFETY_MARGIN_S": "2",
             },
