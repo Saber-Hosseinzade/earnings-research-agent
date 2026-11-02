@@ -9,9 +9,13 @@ __pycache__/
 .env.*
 *.pem
 
-# AgentCore starter toolkit — generated, holds account ID and ARNs
-.bedrock_agentcore.yaml
-.bedrock_agentcore/
+# AgentCore CLI — generated, holds account ID and ARNs
+agentcore/aws-targets.json
+agentcore/.cli/
+agentcore/.cache/
+agentcore/cdk/cdk.out/
+agentcore/cdk/dist/
+node_modules/
 
 # CDK
 cdk.out/
