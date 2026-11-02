@@ -6,6 +6,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT / "agent"), str(ROOT / "tool_lambda")]
 
 # Clients are created at import time; give them a region and no real creds.
+# boto3 looks up a named profile even with keys set, and fails if it is missing.
+os.environ.pop("AWS_PROFILE", None)
 os.environ.setdefault("AWS_DEFAULT_REGION", "us-east-1")
 os.environ.setdefault("AWS_ACCESS_KEY_ID", "testing")
 os.environ.setdefault("AWS_SECRET_ACCESS_KEY", "testing")
