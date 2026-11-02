@@ -12,8 +12,9 @@ set -euo pipefail
 # on the host can't collide with it. PATH points here (see devcontainer.json).
 VENV=/home/vscode/.venv
 
-# Docker creates the volume holding Claude Code's config as root.
-sudo chown -R vscode:vscode /home/vscode/.claude
+# Docker creates the config volumes as root, and ~/.config with them.
+sudo chown -R vscode:vscode /home/vscode/.claude /home/vscode/.config/gh
+sudo chown vscode:vscode /home/vscode/.config
 
 # Python tooling: agent and CDK dependencies, pytest, and uv.
 python -m venv "$VENV"
