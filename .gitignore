@@ -9,13 +9,8 @@ __pycache__/
 .env.*
 *.pem
 
-# AgentCore CLI — generated, holds account ID and ARNs
-agentcore/aws-targets.json
-agentcore/.cli/
-agentcore/.cache/
-agentcore/cdk/cdk.out/
-agentcore/cdk/dist/
-node_modules/
+# Agent bundle produced by scripts/build_agent.sh
+build/
 
 # CDK
 cdk.out/
