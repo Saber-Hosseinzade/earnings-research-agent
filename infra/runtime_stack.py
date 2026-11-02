@@ -59,4 +59,15 @@ class EarningsRuntimeStack(Stack):
             )
         )
 
+        # AgentCore uses this to let X-Ray deliver spans to the runtime's log group.
+        runtime.add_to_role_policy(
+            iam.PolicyStatement(
+                actions=["logs:PutResourcePolicy"],
+                resources=[
+                    f"arn:{self.partition}:logs:{self.region}:{self.account}"
+                    ":log-group:/aws/bedrock-agentcore/runtimes/earnings_research_agent-*"
+                ],
+            )
+        )
+
         CfnOutput(self, "RuntimeArn", value=runtime.agent_runtime_arn)
