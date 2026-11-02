@@ -15,7 +15,9 @@
     // Only these credentials are visible inside the container.
     "source=${localEnv:HOME}/.aws-sandbox,target=/home/vscode/.aws,type=bind",
     // Claude Code login, settings and history survive container rebuilds
-    "source=claude-code-config-${devcontainerId},target=/home/vscode/.claude,type=volume"
+    "source=claude-code-config-${devcontainerId},target=/home/vscode/.claude,type=volume",
+    // GitHub CLI login survives container rebuilds too
+    "source=gh-config-${devcontainerId},target=/home/vscode/.config/gh,type=volume"
   ],
 
   "containerEnv": {
