@@ -4,6 +4,7 @@
 
   "features": {
     "ghcr.io/devcontainers/features/aws-cli:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {},
     "ghcr.io/devcontainers/features/node:1": { "version": "22" },
     // Claude Code CLI + the VS Code extension (the feature adds both)
     "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {}
@@ -25,7 +26,7 @@
   },
 
   // Virtualenv outside the bind-mounted workspace, so a host .venv can't collide with it.
-  "postCreateCommand": "sudo chown -R vscode:vscode /home/vscode/.claude && python -m venv /home/vscode/.venv && /home/vscode/.venv/bin/pip install -q --upgrade pip && /home/vscode/.venv/bin/pip install -q -r requirements-dev.txt",
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
   "remoteEnv": {
     "PATH": "/home/vscode/.venv/bin:${containerEnv:PATH}",
     "VIRTUAL_ENV": "/home/vscode/.venv"

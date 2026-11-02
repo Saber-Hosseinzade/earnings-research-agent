@@ -9,9 +9,8 @@ __pycache__/
 .env.*
 *.pem
 
-# AgentCore starter toolkit — generated, holds account ID and ARNs
-.bedrock_agentcore.yaml
-.bedrock_agentcore/
+# Agent bundle produced by scripts/build_agent.sh
+build/
 
 # CDK
 cdk.out/

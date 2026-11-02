@@ -1,15 +1,12 @@
-"""The tool side of the system: the Lambda, its secret, and the policy the agent needs to call it.
+"""The tool side of the system: the Lambda and its secret.
 
-AgentCore Runtime itself is deployed with the starter toolkit, not here; the
-toolkit creates the runtime's execution role. Attach ``InvokeToolPolicy`` (an
-output of this stack) to that role so the agent may invoke the tool — and
-nothing else.
+These outlive the agent runtime (see ``runtime_stack.py``), which is granted
+permission to invoke this one function and nothing else.
 """
 
 from pathlib import Path
 
 from aws_cdk import CfnOutput, Duration, RemovalPolicy, Stack
-from aws_cdk import aws_iam as iam
 from aws_cdk import aws_lambda as lambda_
 from aws_cdk import aws_logs as logs
 from aws_cdk import aws_secretsmanager as secretsmanager
@@ -35,7 +32,7 @@ class EarningsToolStack(Stack):
             self, "ToolLogs", retention=logs.RetentionDays.ONE_WEEK, removal_policy=RemovalPolicy.DESTROY
         )
 
-        fn = lambda_.Function(
+        self.function = lambda_.Function(
             self,
             "EarningsTranscriptTool",
             runtime=lambda_.Runtime.PYTHON_3_13,
@@ -48,21 +45,13 @@ class EarningsToolStack(Stack):
             memory_size=256,
             environment={
                 "SECRET_ARN": secret.secret_arn,
-                "MAX_TRANSCRIPT_CHARS": "12000",
+                "MAX_TRANSCRIPT_CHARS": "100000",
                 "MAX_HTTP_TIMEOUT_S": "10",
                 "SAFETY_MARGIN_S": "2",
             },
             log_group=log_group,
         )
-        secret.grant_read(fn)
+        secret.grant_read(self.function)
 
-        invoke_policy = iam.ManagedPolicy(
-            self,
-            "InvokeToolPolicy",
-            description="Lets the agent runtime invoke the earnings transcript tool, and nothing else",
-            statements=[iam.PolicyStatement(actions=["lambda:InvokeFunction"], resources=[fn.function_arn])],
-        )
-
-        CfnOutput(self, "ToolFunctionName", value=fn.function_name)
+        CfnOutput(self, "ToolFunctionName", value=self.function.function_name)
         CfnOutput(self, "SecretArn", value=secret.secret_arn)
-        CfnOutput(self, "InvokeToolPolicyArn", value=invoke_policy.managed_policy_arn)
