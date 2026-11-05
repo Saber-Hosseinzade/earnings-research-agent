@@ -65,3 +65,24 @@ def test_aggregate_separates_the_dimensions():
     assert s["grounding"] == {"supported": 1, "unsupported": 1, "no_claim": 1}
     assert s["false_abstentions"] == 1
     assert s["abstention_correct"] == 1 and s["answered_anyway"] == 1
+
+
+def test_quote_in_call_ignores_case_spacing_and_trailing_punctuation():
+    if not ev.CORPUS_RAW.exists():
+        pytest.skip("raw corpus not present")
+    row = ev.load_golden()[0]
+    quote = row["passage"]["quote"]
+    assert ev.quote_in_call("  " + quote.upper() + ".", row)
+    assert not ev.quote_in_call("Management announced a special dividend of five dollars.", row)
+
+
+def test_aggregate_adds_v11_fields_only_when_present():
+    base = [_r(True, True, "correct", "supported")]
+    assert "quotes_given" not in ev.aggregate(base)
+    rows = [dict(_r(True, True), quote_in_call=True, abstained=False),
+            dict(_r(False, False), quote_in_call=None, abstained=True)]
+    s = ev.aggregate(rows)
+    assert s["quotes_given"] == 1 and s["quotes_found_in_call"] == 1
+    # v1.1 declines by its own flag, not by the judge's has_claim
+    assert s["abstention_correct"] == 1 and s["answered_anyway"] == 0 and s["false_abstentions"] == 0
+    assert ev.aggregate([dict(_r(False, False), abstained=False)])["answered_anyway"] == 1
