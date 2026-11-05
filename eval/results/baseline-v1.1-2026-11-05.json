@@ -1,0 +1,1402 @@
+{
+  "label": "baseline-v1.1",
+  "date": "2026-11-05",
+  "run_at": "2026-11-05T23:45:16+00:00",
+  "agent_model_id": "eu.amazon.nova-2-lite-v1:0",
+  "judge_model_id": "eu.amazon.nova-pro-v1:0",
+  "git_head": "9ae5798",
+  "git_tag_v1.0": "c1a7eac",
+  "agent_source_sha256": "3251c880f0b7411fc03a1b40df606788b18c4b9b84fbc236ad08add16a429874",
+  "corpus_manifest": "corpus/manifest_equibles.json",
+  "target": "v1.1",
+  "scored_as": "v1.1 CallAnswer, one run per question",
+  "summary": {
+    "answerable": 30,
+    "unanswerable": 4,
+    "retrieval_right_call": 30,
+    "task": {
+      "correct": 24,
+      "partial": 6,
+      "missing": 0
+    },
+    "grounding": {
+      "supported": 29,
+      "unsupported": 1,
+      "no_claim": 0
+    },
+    "false_abstentions": 0,
+    "abstention_correct": 2,
+    "answered_anyway": 2,
+    "unanswerable_answers_unsupported": 3,
+    "judge_errors": 0,
+    "quotes_given": 33,
+    "quotes_found_in_call": 30
+  },
+  "agent_runs": {
+    "AMD-01": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 14421,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 3594,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "AMD-02": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 14393,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 2725,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "AMD-03": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 14390,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 2712,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "AMD-04": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 13989,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 2781,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "AMD-05": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 13996,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 2438,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "RIVN-01": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 14838,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 2543,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "RIVN-02": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 14877,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 2612,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "RIVN-03": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 14973,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 3849,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "RIVN-04": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 14910,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 2913,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "RIVN-05": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 14575,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 2842,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "ROOT-01": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 10060,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 2518,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "ROOT-02": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 10110,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 2386,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "ROOT-03": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 10085,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 2320,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "ROOT-04": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 11139,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 2284,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "ROOT-05": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 11119,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 2263,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "META-01": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 14982,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 2619,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "META-02": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 15007,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 2932,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "META-03": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 14944,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 2522,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "META-04": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 14769,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 2841,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "META-05": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 14771,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 3027,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "CRDO-01": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 11915,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 2498,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "CRDO-02": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 11984,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 2714,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "CRDO-03": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 11975,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 2731,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "CRDO-04": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 12837,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 2627,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "CRDO-05": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 12781,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 2423,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "NBIS-01": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 11533,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 2112,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "NBIS-02": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 11571,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 2244,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "NBIS-03": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 11593,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 2420,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "NBIS-04": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 11576,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 2255,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "NBIS-05": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 11578,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 2114,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "NA-01": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 15313,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 3346,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "NA-02": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 11321,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 2216,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "NA-03": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 13138,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 2626,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "NA-04": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 14894,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 4170,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    }
+  },
+  "questions": [
+    {
+      "id": "AMD-01",
+      "ticker": "AMD",
+      "quarter": "2026Q2",
+      "answerable": true,
+      "kind": "fact",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "partial",
+        "grounding": "supported",
+        "note": "The output correctly mentions the revenue amount and year-over-year growth but does not include the sequential growth."
+      },
+      "abstained": false,
+      "quote_in_call": true
+    },
+    {
+      "id": "AMD-02",
+      "ticker": "AMD",
+      "quarter": "2026Q2",
+      "answerable": true,
+      "kind": "reason",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly includes all key facts and is supported by the gold evidence."
+      },
+      "abstained": false,
+      "quote_in_call": true
+    },
+    {
+      "id": "AMD-03",
+      "ticker": "AMD",
+      "quarter": "2026Q2",
+      "answerable": true,
+      "kind": "guidance",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "partial",
+        "grounding": "supported",
+        "note": "The output correctly identifies the gross margin but incorrectly states that specific revenue guidance was not provided, despite it being mentioned in the transcript."
+      },
+      "abstained": false,
+      "quote_in_call": true
+    },
+    {
+      "id": "AMD-04",
+      "ticker": "AMD",
+      "quarter": "2025Q4",
+      "answerable": true,
+      "kind": "fact",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly states the amount, its exclusion from guidance, and is supported by the gold transcript evidence."
+      },
+      "abstained": false,
+      "quote_in_call": true
+    },
+    {
+      "id": "AMD-05",
+      "ticker": "AMD",
+      "quarter": "2025Q4",
+      "answerable": true,
+      "kind": "reason",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "partial",
+        "grounding": "supported",
+        "note": "The output correctly identifies the adjusted gross margin and one of the one-off items, but misstates the amount of the inventory reserve release ($360 million instead of $306 million)."
+      },
+      "abstained": false,
+      "quote_in_call": true
+    },
+    {
+      "id": "RIVN-01",
+      "ticker": "RIVN",
+      "quarter": "2026Q3",
+      "answerable": true,
+      "kind": "fact",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly states the expected answer with all key facts and is supported by the gold transcript evidence."
+      },
+      "abstained": false,
+      "quote_in_call": true
+    },
+    {
+      "id": "RIVN-02",
+      "ticker": "RIVN",
+      "quarter": "2026Q3",
+      "answerable": true,
+      "kind": "guidance",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly states the change in delivery guidance and is supported by the gold transcript evidence."
+      },
+      "abstained": false,
+      "quote_in_call": true
+    },
+    {
+      "id": "RIVN-03",
+      "ticker": "RIVN",
+      "quarter": "2026Q3",
+      "answerable": true,
+      "kind": "reason",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly identifies the reason for the decline in average selling prices and is supported by the gold transcript evidence."
+      },
+      "abstained": false,
+      "quote_in_call": true
+    },
+    {
+      "id": "RIVN-04",
+      "ticker": "RIVN",
+      "quarter": "2026Q3",
+      "answerable": true,
+      "kind": "guidance",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "All key facts are accurately represented and supported by the gold transcript evidence."
+      },
+      "abstained": false,
+      "quote_in_call": true
+    },
+    {
+      "id": "RIVN-05",
+      "ticker": "RIVN",
+      "quarter": "2026Q1",
+      "answerable": true,
+      "kind": "reason",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly includes all key facts and is supported by the gold transcript evidence."
+      },
+      "abstained": false,
+      "quote_in_call": false
+    },
+    {
+      "id": "ROOT-01",
+      "ticker": "ROOT",
+      "quarter": "2026Q2",
+      "answerable": true,
+      "kind": "fact",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly states the number of policies in force and the year-over-year increase, both of which are supported by the gold transcript evidence."
+      },
+      "abstained": false,
+      "quote_in_call": true
+    },
+    {
+      "id": "ROOT-02",
+      "ticker": "ROOT",
+      "quarter": "2026Q2",
+      "answerable": true,
+      "kind": "reason",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly includes all key facts and is supported by the gold transcript evidence."
+      },
+      "abstained": false,
+      "quote_in_call": true
+    },
+    {
+      "id": "ROOT-03",
+      "ticker": "ROOT",
+      "quarter": "2026Q2",
+      "answerable": true,
+      "kind": "fact",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly states the expected answer and key facts, and it is supported by the gold transcript evidence."
+      },
+      "abstained": false,
+      "quote_in_call": true
+    },
+    {
+      "id": "ROOT-04",
+      "ticker": "ROOT",
+      "quarter": "2025Q4",
+      "answerable": true,
+      "kind": "reason",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly includes all key facts and is supported by the gold transcript evidence."
+      },
+      "abstained": false,
+      "quote_in_call": true
+    },
+    {
+      "id": "ROOT-05",
+      "ticker": "ROOT",
+      "quarter": "2025Q4",
+      "answerable": true,
+      "kind": "assumption",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly states Root's expectation for a more favorable Q1 2026 loss ratio due to fewer miles driven in winter, supported by the provided gold transcript evidence."
+      },
+      "abstained": false,
+      "quote_in_call": true
+    },
+    {
+      "id": "META-01",
+      "ticker": "META",
+      "quarter": "2026Q3",
+      "answerable": true,
+      "kind": "fact",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly states the total revenue of $64.6 billion and the 26% increase, both of which are supported by the gold transcript evidence."
+      },
+      "abstained": false,
+      "quote_in_call": false
+    },
+    {
+      "id": "META-02",
+      "ticker": "META",
+      "quarter": "2026Q3",
+      "answerable": true,
+      "kind": "reason",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "All key facts are present and supported by the gold transcript evidence."
+      },
+      "abstained": false,
+      "quote_in_call": true
+    },
+    {
+      "id": "META-03",
+      "ticker": "META",
+      "quarter": "2026Q3",
+      "answerable": true,
+      "kind": "reason",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly states the reason for the higher tax rate and includes all key facts (24%, nondeductible, legal) supported by the gold transcript evidence."
+      },
+      "abstained": false,
+      "quote_in_call": true
+    },
+    {
+      "id": "META-04",
+      "ticker": "META",
+      "quarter": "2026Q1",
+      "answerable": true,
+      "kind": "reason",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "partial",
+        "grounding": "supported",
+        "note": "The output correctly identifies the decline and mentions Iran and Russia, but does not specify the number 3.5 billion or mention WhatsApp explicitly as required."
+      },
+      "abstained": false,
+      "quote_in_call": true
+    },
+    {
+      "id": "META-05",
+      "ticker": "META",
+      "quarter": "2026Q1",
+      "answerable": true,
+      "kind": "reason",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly includes all key facts and is supported by the gold transcript evidence."
+      },
+      "abstained": false,
+      "quote_in_call": true
+    },
+    {
+      "id": "CRDO-01",
+      "ticker": "CRDO",
+      "quarter": "2026Q4",
+      "answerable": true,
+      "kind": "fact",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly includes all key facts and is supported by the gold transcript evidence."
+      },
+      "abstained": false,
+      "quote_in_call": true
+    },
+    {
+      "id": "CRDO-02",
+      "ticker": "CRDO",
+      "quarter": "2026Q4",
+      "answerable": true,
+      "kind": "guidance",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "partial",
+        "grounding": "supported",
+        "note": "The output correctly identifies the revenue, non-GAAP gross margin, and non-GAAP operating expenses, but it omits the key fact about the guidance being based on the current tariff regime."
+      },
+      "abstained": false,
+      "quote_in_call": true
+    },
+    {
+      "id": "CRDO-03",
+      "ticker": "CRDO",
+      "quarter": "2026Q4",
+      "answerable": true,
+      "kind": "assumption",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output accurately reflects the expected answer and key facts, and is fully supported by the gold transcript evidence."
+      },
+      "abstained": false,
+      "quote_in_call": true
+    },
+    {
+      "id": "CRDO-04",
+      "ticker": "CRDO",
+      "quarter": "2026Q2",
+      "answerable": true,
+      "kind": "reason",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly states the reason for the fall in free cash flow, includes all key facts, and is supported by the gold transcript evidence."
+      },
+      "abstained": false,
+      "quote_in_call": true
+    },
+    {
+      "id": "CRDO-05",
+      "ticker": "CRDO",
+      "quarter": "2026Q2",
+      "answerable": true,
+      "kind": "reason",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly includes all key facts and is supported by the gold transcript evidence."
+      },
+      "abstained": false,
+      "quote_in_call": true
+    },
+    {
+      "id": "NBIS-01",
+      "ticker": "NBIS",
+      "quarter": "2026Q2",
+      "answerable": true,
+      "kind": "fact",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly states the expected answer and all key facts, and is supported by the gold transcript evidence."
+      },
+      "abstained": false,
+      "quote_in_call": true
+    },
+    {
+      "id": "NBIS-02",
+      "ticker": "NBIS",
+      "quarter": "2026Q2",
+      "answerable": true,
+      "kind": "fact",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly states the annualized run-rate revenue at the end of June 2026 as $3 billion, up from $1.9 billion at the end of March, and this is supported by the gold transcript evidence."
+      },
+      "abstained": false,
+      "quote_in_call": true
+    },
+    {
+      "id": "NBIS-03",
+      "ticker": "NBIS",
+      "quarter": "2026Q2",
+      "answerable": true,
+      "kind": "reason",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly states the reason for the margin difference and includes all key facts supported by the gold transcript evidence."
+      },
+      "abstained": false,
+      "quote_in_call": true
+    },
+    {
+      "id": "NBIS-04",
+      "ticker": "NBIS",
+      "quarter": "2026Q2",
+      "answerable": true,
+      "kind": "fact",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly states the expected answer and all key facts, and is supported by the gold transcript evidence."
+      },
+      "abstained": false,
+      "quote_in_call": true
+    },
+    {
+      "id": "NBIS-05",
+      "ticker": "NBIS",
+      "quarter": "2025Q4",
+      "answerable": true,
+      "kind": "guidance",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "partial",
+        "grounding": "unsupported",
+        "note": "The output mentions the annualized run-rate revenue of $7 to $9 billion by 2026 but omits the full-year revenue guidance of $3.0–3.4 billion and does not accurately quote the provided transcript evidence."
+      },
+      "abstained": false,
+      "quote_in_call": true
+    },
+    {
+      "id": "NA-01",
+      "ticker": "RIVN",
+      "quarter": "2026Q2",
+      "answerable": false,
+      "kind": "not_discussed",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly states that the call did not discuss the dividend announcement and provides appropriate context without unsupported claims."
+      },
+      "abstained": true,
+      "quote_in_call": null
+    },
+    {
+      "id": "NA-02",
+      "ticker": "NBIS",
+      "quarter": "2026Q1",
+      "answerable": false,
+      "kind": "not_discussed",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "missing",
+        "grounding": "unsupported",
+        "note": "The output incorrectly states a share buyback was announced, which is not supported by the gold evidence."
+      },
+      "abstained": false,
+      "quote_in_call": true
+    },
+    {
+      "id": "NA-03",
+      "ticker": "CRDO",
+      "quarter": "2026Q3",
+      "answerable": false,
+      "kind": "not_discussed",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "missing",
+        "grounding": "unsupported",
+        "note": "The output makes a claim about stock repurchase that is not supported by the gold evidence, which states the information was not discussed on the call."
+      },
+      "abstained": false,
+      "quote_in_call": true
+    },
+    {
+      "id": "NA-04",
+      "ticker": "AMD",
+      "quarter": "2026Q1",
+      "answerable": false,
+      "kind": "not_discussed",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "unsupported",
+        "note": "The output correctly states that no dividend was declared but provides an unsupported quote and lacks proper citation."
+      },
+      "abstained": true,
+      "quote_in_call": false
+    }
+  ],
+  "outputs": {
+    "AMD-01": {
+      "covered_in_call": true,
+      "answer": "AMD reported Q2 2026 revenue of $11.5 billion, representing a 50% year-over-year increase. The growth was driven by significantly higher sales of Epic, Instinct, Ryzen, and embedded processors, with data center revenue more than doubling year over year to account for 58% of total revenue.",
+      "quote": "Revenue increased 50% year-over-year to $11.5 billion, driven by significantly higher sales of Epic, Instinct, Ryzen, and embedded processors.",
+      "speaker": "Lisa Su (CEO)"
+    },
+    "AMD-02": {
+      "covered_in_call": true,
+      "answer": "AMD's gross margin expanded due to a favorable product mix and the growing contribution from its data center business, which had a significant sequential and year-over-year increase.",
+      "quote": "Growth margin for the quarter expanded to 56 percent, up over 200 basis points year-over-year and 80 basis points sequentially, reflecting a favorable product mix and a growing contribution from our data center business.",
+      "speaker": "Jean Hu (CFO)"
+    },
+    "AMD-03": {
+      "covered_in_call": true,
+      "answer": "AMD guided to Q3 2026 gross margin of approximately 56%. They did not provide a specific revenue guidance for Q3 2026 in the call transcript, only stating that they expect revenue to be approximately $13 billion plus or minus $300 million.",
+      "quote": "We expect the third quarter non-GAAP gross margin to be approximately 56%.",
+      "speaker": "Jean Hu (CFO)"
+    },
+    "AMD-04": {
+      "covered_in_call": true,
+      "answer": "MI308 sales to China contributed $390 million in Q4 2025, and this amount was not included in AMD's guidance for that quarter. Additionally, AMD expects about $100 million in MI308 sales to China in Q1 2026, which is also excluded from their guidance.",
+      "quote": "including approximately $390 million in revenue from MI308 sales to China, which was not included in our fourth quarter guidance",
+      "speaker": "Jean Hu (CFO)"
+    },
+    "AMD-05": {
+      "covered_in_call": true,
+      "answer": "Without one-off items, AMD's Q4 2025 gross margin would have been approximately 55%, up 80 basis points year-over-year. The one-off items were a $360 million inventory reserve release and about $390 million in revenue from MI308 sales to China.",
+      "quote": "Excluding the inventory reserve release and the MI 308 revenue from China, growth margin would have been approximately 55 percent, up 80 basis points year-over-year driven by favorable product mix.",
+      "speaker": "Jean Hu (CFO)"
+    },
+    "RIVN-01": {
+      "covered_in_call": true,
+      "answer": "Rivian produced 19,751 vehicles and delivered 19,248 vehicles in Q3 2026.",
+      "quote": "In the third quarter, we produced 19,751 vehicles at our plant in Normal, Illinois, and delivered 19,248 vehicles.",
+      "speaker": "Claire McDonough (CFO)"
+    },
+    "RIVN-02": {
+      "covered_in_call": true,
+      "answer": "Rivian raised its 2026 delivery guidance from a previous range of 65,000 to 70,000 units to a new range of 67,000 to 70,000 units, reflecting strong demand especially for the R2 model.",
+      "quote": "We are improving our full-year delivery guidance from 65,000 to 70,000 units to 67,000 to 70,000 units.",
+      "speaker": "Derek Mulvey (CFO)"
+    },
+    "RIVN-03": {
+      "covered_in_call": true,
+      "answer": "The decline in average selling prices in Q3 2026 was primarily due to a higher mix of R2 and commercial van deliveries, which have lower price points compared to the R1 model. While R1 average selling prices actually increased, the overall mix shift towards more R2 and commercial vans led to the overall decline in average selling prices.",
+      "quote": "\"In the third quarter, we produced 19,751 vehicles at our plant in Normal, Illinois, and delivered 19,248 vehicles. Production and delivery results for the quarter were in line with our expectations, with R2 Our 1.55 billion dollars of automotive revenue, a 36 percent increase over the same quarter last year, were primarily driven by a 46 percent increase in vehicle deliveries and 81 million dollars of regulatory credits, partially offset by a decline in average selling prices from a higher mix of R2 and commercial van deliveries, while R1 average selling prices increased.\"",
+      "speaker": "Claire McDonough (CFO)"
+    },
+    "RIVN-04": {
+      "covered_in_call": true,
+      "answer": "Rivian now expects an adjusted EBITDA loss of $1.85 to $1.75 billion for 2026, which is $100 million better than previous guidance. The improvement is driven by higher regulatory credit revenue, an IEPA tariff receivable, and increased delivery volume.",
+      "quote": "For full year 2026, we now expect our adjusted EBITDA losses to be between $1.85 and $1.75 billion. At the midpoint, this represents a $100 million improvement driven by favorable regulatory credit revenue, an IEPA tariff receivable, and our expected increased delivery volume.",
+      "speaker": "Derek Mulvey (CFO)"
+    },
+    "RIVN-05": {
+      "covered_in_call": true,
+      "answer": "Rivian swung to an automotive gross loss in Q1 2026 due to a $100 million decrease in sales of automotive regulatory credits and lower production volumes, which caused a $45 million increase in depreciation and stock-based compensation expense combined.",
+      "quote": "Auto gross profit loss was $62 million compared to $92 million of gross profit for the same quarter last year, primarily driven by the $100 million decrease in sales of automotive regulatory credits and lower production volumes, which resulted in a $45 million increase in depreciation and stock-based compensation expense combined.",
+      "speaker": "Claire McDonough (CFO)"
+    },
+    "ROOT-01": {
+      "covered_in_call": true,
+      "answer": "At the end of Q2 2026, Root had 484,000 policies in force, representing a 6% year-over-year increase.",
+      "quote": "Policies in force increased 6% year-over-year to $484,000.",
+      "speaker": "Megan Binkley (CFO)"
+    },
+    "ROOT-02": {
+      "covered_in_call": true,
+      "answer": "Root's net combined ratio improved three percentage points year-over-year to a 92% net combined ratio, driven primarily by continued expense discipline, with the net expense ratio improving to 26%, while the net loss and LAE ratio remained broadly consistent with the prior year at 66%.",
+      "quote": "The improvement was driven primarily by continued expense discipline, with our net expense ratio improving to 26%, while our net loss and LAE ratio remained broadly consistent with the prior year at 66%.",
+      "speaker": "Megan Binkley (CFO)"
+    },
+    "ROOT-03": {
+      "covered_in_call": true,
+      "answer": "In Q2 2026, partnership and independent agent channels accounted for about 51% of Root's new writings, up from around 44% in the same quarter of the prior year.",
+      "quote": "Partnership and independent agent channels represented approximately 51% of new writings during the quarter compared to approximately 44% a year ago.",
+      "speaker": "Megan Binkley (CFO)"
+    },
+    "ROOT-04": {
+      "covered_in_call": true,
+      "answer": "Root's net income and operating income fell year over year in Q4 2025 due to deliberate investments in partnership acquisition and direct R&D marketing, as well as a modest increase in loss ratio from elevated seasonality.",
+      "quote": "In the fourth quarter, we also delivered operating income of $11 million and adjusted EBITDA of $29 million, a $24 million and $14 million decrease year-over-year, respectively. The year-over-year decreases reflect deliberate investments in partnership acquisition and direct R&D marketing, as well as a modest increase in loss ratio due to elevated seasonality.",
+      "speaker": "Megan Binkley (CFO)"
+    },
+    "ROOT-05": {
+      "covered_in_call": true,
+      "answer": "Root expected its Q1 2026 loss ratio to benefit from typically lower loss ratios in the first quarter due to reduced driving mileage during winter months. Management noted that the loss ratio tends to be lowest in Q1, increases modestly in Q2 and Q3 as driving activity returns, and elevates in Q4 due to animal collisions.",
+      "quote": "Typically, our loss ratio tends to be the lowest in the first quarter as less miles are driven in the winter months.",
+      "speaker": "Megan Binkley (CFO)"
+    },
+    "META-01": {
+      "covered_in_call": true,
+      "answer": "Meta reported total revenue of $64.6 billion for Q3 2026, representing a 26% increase year-over-year.",
+      "quote": "Q3 total Family of Apps revenue was $64.2 billion, up 26%. Q3 Family of Apps ad revenue was $63.1 billion, up 26% on both a reported and constant currency basis. Q3 total revenue was $64.6 billion, up 26% on both a reported and constant currency basis.",
+      "speaker": "Susan Li (CFO)"
+    },
+    "META-02": {
+      "covered_in_call": true,
+      "answer": "Meta's total expenses were up 68% year-over-year in Q3 2026, primarily due to a $9.9 billion charge related to the August 2026 Multistate Attorneys general agreement, along with increases in infrastructure costs (higher third-party cloud spend, depreciation, and data center operating costs) and third-party AI token costs.",
+      "quote": "Year-over-year growth was primarily driven by legal-related costs, infrastructure costs, and third-party AI token costs. The growth in infrastructure costs was driven by higher third-party cloud spend, depreciation, and data center operating costs.",
+      "speaker": "Susan Li (CFO)"
+    },
+    "META-03": {
+      "covered_in_call": true,
+      "answer": "Meta's Q3 2026 tax rate was above its outlook primarily due to the non-deductible portion of legal expenses.",
+      "quote": "Our tax rate for the quarter was 24%, above our outlook range, primarily driven by the non-deductible portion of legal expenses.",
+      "speaker": "Susan Li (CFO)"
+    },
+    "META-04": {
+      "covered_in_call": true,
+      "answer": "Meta's family daily active people declined from December to March 2026 primarily due to internet outages in Iran and restrictions on access to WhatsApp in Russia. Excluding these external factors, the company reported that trends across its apps remained strong with growth in daily and monthly active users on Instagram and Facebook, driven by video content, and strong momentum on WhatsApp and Threads.",
+      "quote": "We saw a small decrease in total family dailies due to internet outages in Iran and blocks in Russia, but otherwise, trends across our apps are strong.",
+      "speaker": "Mark Zuckerberg (CEO)"
+    },
+    "META-05": {
+      "covered_in_call": true,
+      "answer": "Meta's average price per ad rose 12% year-over-year in Q1 2026 due to ad performance improvements, better macro conditions compared to Q1 2025, and currency tailwinds in international regions, partially offset by strong impression growth from lower monetizing regions.",
+      "quote": "The global average price per ad increased 12% year-over-year in Q1, with broad-based growth as we benefited from ad performance improvements, better macro conditions versus Q1 of last year, and currency tailwinds in international regions.",
+      "speaker": "Susan Li (CFO)"
+    },
+    "CRDO-01": {
+      "covered_in_call": true,
+      "answer": "Credo reported $437 million in revenue for fiscal Q4 2026, representing a 7% sequential increase and a 157% year-over-year growth. This amount even exceeded the company's total revenue for the entire prior fiscal year.",
+      "quote": "In Q4, we reported revenue of $437 million, up 7% sequentially and above the high end of our guidance range. Year over year, revenue grew 157%, And notably, Q4 alone exceeded our total fiscal year 25 revenue.",
+      "speaker": "Dan Fleming (CFO)"
+    },
+    "CRDO-02": {
+      "covered_in_call": true,
+      "answer": "Credo guided for fiscal Q1 2027 revenue between $465 million and $475 million, with non-GAAP gross margin expected to be between 67% and 69%, and non-GAAP operating expenses projected to be between $86 million and $90 million. The guidance was based on expected mid-single-digit sequential growth in the first half of fiscal 27, with an inflection beginning in the second half driven by more than $600 million in optical revenue.",
+      "quote": "We expect Q1 non-GAAP gross margin to be within a range of 67% to 69%. We expect Q1 non-GAAP operating expenses to be between $86 million and $90 million. And we expect Q1 diluted weighted average share count to be approximately 199 million shares.",
+      "speaker": "Dan Fleming (CFO)"
+    },
+    "CRDO-03": {
+      "covered_in_call": true,
+      "answer": "Credo expects revenue to grow mid-single-digits sequentially in the first half of fiscal 2027, with a significant acceleration in the second half. The company anticipates that optical products—zero-flap optics, silicon photonics PICs, and optical DSPs—will each contribute over $100 million in revenue, totaling more than $600 million and driving over 80% year-over-year growth for the full year.",
+      "quote": "We expect mid-single-digit sequential growth in the first half, with an inflection beginning in the second half. That inflection is bolstered by more than $600 million in optical revenue, with zero-flap optics, silicon photonics picks, and optical DSPs each contributing more than $100 million, driving more than 80% year-over-year total revenue growth for the full year.",
+      "speaker": "Dan Fleming (CFO)"
+    },
+    "CRDO-04": {
+      "covered_in_call": true,
+      "answer": "Credo's free cash flow fell in fiscal Q2 2026 because capital expenditures (CapEx) increased to $23.2 million, primarily due to purchases of production MACsec, which raised cash outflows and reduced free cash flow to $38.5 million from $51.3 million in the prior quarter.",
+      "quote": "Cash flow from operations in the second quarter was $61.7 million, up $7.5 million sequentially. CapEx was $23.2 million in the quarter, driven largely by purchases of production MACsec. And free cash flow was $38.5 million, down from $51.3 million from the first quarter due to higher CapEx investments.",
+      "speaker": "Daniel Fleming (CFO)"
+    },
+    "CRDO-05": {
+      "covered_in_call": true,
+      "answer": "Credo's operating margin rose in fiscal Q2 2026 due to achieving more than 20% sequential revenue growth while operating expenses grew only in the mid-single digits, providing leverage to the margin.",
+      "quote": "Our non-GAAP operating margin was 46.3% in the quarter compared to a non-GAAP operating margin of 43.1% in the prior quarter, a sequential increase of 319 basis points.",
+      "speaker": "Daniel Fleming (CFO)"
+    },
+    "NBIS-01": {
+      "covered_in_call": true,
+      "answer": "Nebius reported group revenue of $582 million for Q2 2026, representing a 454% year-over-year increase and a 46% sequential increase.",
+      "quote": "In Q2, we grew group revenue by 454% to $582 million, up 46% from last quarter.",
+      "speaker": "Dado (CFO)"
+    },
+    "NBIS-02": {
+      "covered_in_call": true,
+      "answer": "Nebius's annualized run-rate revenue at the end of June 2026 was $3 billion, representing a 598% increase from the prior year and a 56% increase from $1.9 billion at the end of March.",
+      "quote": "Annualized run rate revenue raised $3 billion at the end of June, up 598%, and increased 56% from $1.9 billion at the end of March.",
+      "speaker": "Dado (CFO)"
+    },
+    "NBIS-03": {
+      "covered_in_call": true,
+      "answer": "Nebius's group adjusted EBITDA margin was lower than its Nebius AI business margin in Q2 2026 due to investments in early-stage companies AVRide and Triple 10, which are not yet contributing margins comparable to the core AI business.",
+      "quote": "The delta between Group and the Nebius AI business margin reflects our investments in AVRide and Triple 10. Both are still early-stage companies, and we expect the Nebius AI business to continue to represent the significant majority of Group-adjusted EBITDA.",
+      "speaker": "Dado (CFO)"
+    },
+    "NBIS-04": {
+      "covered_in_call": true,
+      "answer": "Nebius raised approximately $2.8 billion through its at-the-market equity program in Q2 2026 by issuing 12.7 million Class A shares at a weighted average price of $224 per share.",
+      "quote": "In Q2, we also tapped our at-the-market equity program. We issued 12.7 million Class A shares at a weighted average price of $224 per share, generating gross proceeds of approximately $2.8 billion.",
+      "speaker": "Dado (CFO)"
+    },
+    "NBIS-05": {
+      "covered_in_call": true,
+      "answer": "Nebius guided for annualized run-rate revenue of $7 to $9 billion by 2026, based on strong demand, capacity expansion, and successful execution.",
+      "quote": "We remain confident in our plans for the year ahead: our annualized run-rate revenue of $7 to $9 billion by 2026.",
+      "speaker": "Arkady Volozh (CEO)"
+    },
+    "NA-01": {
+      "covered_in_call": false,
+      "answer": "The call did not discuss whether Rivian announced a dividend. The transcript focuses on R2 vehicle deliveries, production ramp, financial results, and autonomy progress, but there is no mention of dividend announcements.",
+      "quote": "",
+      "speaker": ""
+    },
+    "NA-02": {
+      "covered_in_call": true,
+      "answer": "Nebius announced a share buyback of $2 billion from an equity investment by NVIDIA during Q1 2026.",
+      "quote": "We raised significant capital this year, more than $6 billion. More than $4 billion of that came from converts and $2 billion from NVIDIA equity investment.",
+      "speaker": "Arkady Volozh (CEO)"
+    },
+    "NA-03": {
+      "covered_in_call": true,
+      "answer": "Credo's CFO Dan Fleming stated that the company did not repurchase any stock in Q3 2026. He mentioned that cash and equivalents increased to $1.3 billion, up $487.9 million from Q2, driven by proceeds from an ATM offering and strong free cash flow.",
+      "quote": "We ended the quarter with cash and equivalents of $1.3 billion, an increase of $487.9 million from the second quarter, driven by the proceeds of our ATM offering, which began and in October, and ended in December, and our strong free cash flow.",
+      "speaker": "Dan Fleming (CFO)"
+    },
+    "NA-04": {
+      "covered_in_call": false,
+      "answer": "AMD did not declare a dividend on its Q1 2026 call. The discussion focused on revenue growth, product demand, and supply chain management, but there was no mention of a dividend declaration.",
+      "quote": "I think we are very deep partnerships with the memory providers. And we have secured enough supply to, you know, certainly meet and exceed our targets.",
+      "speaker": ""
+    }
+  },
+  "summary_note": "Recomputed from the saved verdicts after the abstention rule changed to use the agent's covered_in_call flag; no model calls repeated."
+}

@@ -81,10 +81,13 @@ def render_transcript(turns: list[dict[str, Any]]) -> tuple[str, bool]:
 # ---------------------------------------------------------------- agent side
 
 
-def run_brief(ticker: str, quarter: str) -> dict[str, Any]:
-    """Run the unmodified v1 agent with a local transcript tool in place of the Lambda."""
+def run_agent(target: str, payload: dict[str, Any]) -> dict[str, Any]:
+    """Run an unmodified agent module (v1.0 main, v1.1 ask) with a local transcript tool in place of the Lambda."""
     sys.path.insert(0, str(ROOT / "agent"))
-    import main as v1  # noqa: PLC0415 - needs MODEL_ID etc. at call time
+    import importlib  # noqa: PLC0415
+
+    v1 = importlib.import_module({"v1.0": "main", "v1.1": "ask"}[target])  # needs MODEL_ID etc. at call time
+    ticker, quarter = payload["ticker"], payload["quarter"]
     from strands import tool  # noqa: PLC0415
 
     fetched: list[tuple[str, str]] = []
@@ -113,8 +116,9 @@ def run_brief(ticker: str, quarter: str) -> dict[str, Any]:
                            "truncated": truncated, "transcript": text})
 
     v1.get_earnings_call_transcript = get_earnings_call_transcript  # build_agent reads this name
-    result = v1.run({"ticker": ticker, "quarter": quarter})
+    result = v1.run(payload)
     result["fetched"] = fetched
+    result["output"] = result.get("brief", result.get("answer"))
     return result
 
 
@@ -133,7 +137,7 @@ KEY FACTS THAT SHOULD APPEAR: {key_facts}
 GOLD TRANSCRIPT EVIDENCE (the turn that answers the question; may be empty if the call never covers it):
 {evidence}
 
-ASSISTANT OUTPUT (a brief of the whole call):
+ASSISTANT OUTPUT (a brief of the whole call, or a direct answer to the question):
 {brief}
 
 Return ONLY a JSON object with these keys:
@@ -178,6 +182,22 @@ def judge_row(row: dict[str, Any], brief: dict[str, Any] | None, ask: Callable[[
     return {"has_claim": False, "task": "missing", "grounding": "no_claim", "note": f"judge failed: {last}", "judge_error": True}
 
 
+def quote_in_call(quote: str, row: dict[str, Any]) -> bool:
+    """Citation check in code: is the quoted sentence really in the call (ignoring case, spacing, dashes)?"""
+    def norm(t: str) -> str:
+        return re.sub(r"\s+", " ", t.lower().replace("\u2019", "'").replace("\u2014", "-")).strip(" .\"")
+
+    text = norm(" ".join(t["text"] for t in load_call(row["ticker"], row["quarter"])))
+    return norm(quote) in text
+
+
+def declined(r: dict[str, Any]) -> bool:
+    """Did the system decline to answer? v1.1 says so itself (covered_in_call=false). A v1 brief has no way to
+    say it, so there it means the brief makes no claim about the question. The judge's has_claim is not used
+    for v1.1: it counts 'the call did not discuss this' as a claim."""
+    return r["abstained"] if "abstained" in r else not r["verdict"]["has_claim"]
+
+
 def aggregate(rows: list[dict[str, Any]]) -> dict[str, Any]:
     ans = [r for r in rows if r["answerable"]]
     una = [r for r in rows if not r["answerable"]]
@@ -190,10 +210,22 @@ def aggregate(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "retrieval_right_call": sum(r["retrieval"] for r in ans),
         "task": {k: task.get(k, 0) for k in ("correct", "partial", "missing")},
         "grounding": {k: ground.get(k, 0) for k in ("supported", "unsupported", "no_claim")},
-        "false_abstentions": sum(not r["verdict"]["has_claim"] for r in ans),
-        "abstention_correct": sum(not r["verdict"]["has_claim"] for r in una),
-        "answered_anyway": sum(r["verdict"]["has_claim"] for r in una),
+        "false_abstentions": sum(declined(r) for r in ans),
+        "abstention_correct": sum(declined(r) for r in una),
+        "answered_anyway": sum(not declined(r) for r in una),
+        "unanswerable_answers_unsupported": sum(r["verdict"]["grounding"] == "unsupported" for r in una),
         "judge_errors": sum(bool(r["verdict"].get("judge_error")) for r in rows),
+        **_v11_extras(rows),
+    }
+
+
+def _v11_extras(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    quoted = [r for r in rows if r.get("quote_in_call") is not None]
+    if not quoted and not any("abstained" in r for r in rows):
+        return {}
+    return {
+        "quotes_given": len(quoted),
+        "quotes_found_in_call": sum(r["quote_in_call"] for r in quoted),
     }
 
 
@@ -227,14 +259,18 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--dry-run", action="store_true", help="show the plan; no model calls")
     ap.add_argument("--limit", type=int, help="score only the first N questions")
-    ap.add_argument("--label", default="baseline-v1.0", help="result file prefix")
+    ap.add_argument("--target", choices=["v1.0", "v1.1"], default="v1.0",
+                    help="v1.0: brief, one run per call. v1.1: question in, answer out, one run per question")
+    ap.add_argument("--label", help="result file prefix (default baseline-<target>)")
     args = ap.parse_args(argv)
 
     golden = load_golden()[: args.limit]
+    args.label = args.label or f"baseline-{args.target}"
+    per_question = args.target == "v1.1"
     calls = sorted({(r["ticker"], r["quarter"]) for r in golden})
     judge_id = os.environ.get("JUDGE_MODEL_ID", DEFAULT_JUDGE)
     if args.dry_run:
-        print(f"{len(golden)} questions, {len(calls)} agent runs, {len(golden)} judge calls (cap {MAX_JUDGE_CALLS})")
+        print(f"{len(golden)} questions, {len(golden) if per_question else len(calls)} agent runs, {len(golden)} judge calls (cap {MAX_JUDGE_CALLS})")
         print(f"agent MODEL_ID={os.environ.get('MODEL_ID', '(unset)')}  judge={judge_id}")
         return 0
     if "MODEL_ID" not in os.environ:
@@ -244,25 +280,36 @@ def main(argv: list[str] | None = None) -> int:
         print(f"{len(golden)} questions exceeds the judge cap of {MAX_JUDGE_CALLS}", file=sys.stderr)
         return 2
 
-    briefs: dict[tuple[str, str], dict[str, Any]] = {}
-    for t, q in calls:
-        print(f"run   {t} {q} ...", flush=True)
-        briefs[(t, q)] = run_brief(t, q)
-        r = briefs[(t, q)]
-        print(f"      status={r['status']} tokens={r['run'].get('tokens_used', '?')}")
+    results: dict[str, dict[str, Any]] = {}  # key: call (v1.0) or question id (v1.1)
+
+    def get_result(row: dict[str, Any]) -> dict[str, Any]:
+        key = row["id"] if per_question else f"{row['ticker']}_{row['quarter']}"
+        if key not in results:
+            print(f"run   {key} ...", flush=True)
+            payload = {"ticker": row["ticker"], "quarter": row["quarter"]}
+            if per_question:
+                payload["question"] = row["question"]
+            results[key] = run_agent(args.target, payload)
+            print(f"      status={results[key]['status']} tokens={results[key]['run'].get('tokens_used', '?')}")
+        return results[key]
 
     ask = bedrock_judge(judge_id)
     scored = []
     for row in golden:
-        res = briefs[(row["ticker"], row["quarter"])]
-        verdict = judge_row(row, res["brief"], ask)
-        scored.append({"id": row["id"], "ticker": row["ticker"], "quarter": row["quarter"],
-                       "answerable": row["answerable"], "kind": row["kind"], "status": res["status"],
-                       "retrieval": score_retrieval(row, res["fetched"]), "verdict": verdict})
+        res = get_result(row)
+        verdict = judge_row(row, res["output"], ask)
+        entry = {"id": row["id"], "ticker": row["ticker"], "quarter": row["quarter"],
+                 "answerable": row["answerable"], "kind": row["kind"], "status": res["status"],
+                 "retrieval": score_retrieval(row, res["fetched"]), "verdict": verdict}
+        if per_question and res["output"]:
+            out_ = res["output"]
+            entry["abstained"] = not out_["covered_in_call"]
+            entry["quote_in_call"] = quote_in_call(out_["quote"], row) if out_["quote"] else None
+        scored.append(entry)
         print(f"judge {row['id']:8} task={verdict['task']:8} grounding={verdict['grounding']:10} claim={verdict['has_claim']}")
 
     summary = aggregate(scored)
-    prompt_src = (ROOT / "agent" / "main.py").read_text()
+    prompt_src = (ROOT / "agent" / ("ask.py" if per_question else "main.py")).read_text()
     out = {
         "label": args.label,
         "date": date.today().isoformat(),
@@ -271,13 +318,15 @@ def main(argv: list[str] | None = None) -> int:
         "judge_model_id": judge_id,
         "git_head": git("rev-parse", "--short", "HEAD"),
         "git_tag_v1.0": git("rev-parse", "--short", "v1.0"),
-        "agent_main_sha256": hashlib.sha256(prompt_src.encode()).hexdigest(),
+        "agent_source_sha256": hashlib.sha256(prompt_src.encode()).hexdigest(),
         "corpus_manifest": "corpus/manifest_equibles.json",
-        "scored_as": "v1 EarningsBrief, one brief per call, every question for that call judged against it",
+        "target": args.target,
+        "scored_as": ("v1 EarningsBrief, one brief per call, every question for that call judged against it"
+                      if not per_question else "v1.1 CallAnswer, one run per question"),
         "summary": summary,
-        "agent_runs": {f"{t}_{q}": {"status": r["status"], "run": r["run"]} for (t, q), r in briefs.items()},
+        "agent_runs": {k: {"status": r["status"], "run": r["run"]} for k, r in results.items()},
         "questions": scored,
-        "briefs": {f"{t}_{q}": r["brief"] for (t, q), r in briefs.items()},
+        "outputs": {k: r["output"] for k, r in results.items()},
     }
     RESULTS.mkdir(exist_ok=True)
     path = RESULTS / f"{args.label}-{out['date']}{'-partial' if args.limit else ''}.json"
