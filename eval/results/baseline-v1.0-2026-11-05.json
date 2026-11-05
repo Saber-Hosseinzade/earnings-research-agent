@@ -1,0 +1,1379 @@
+{
+  "label": "baseline-v1.0",
+  "date": "2026-11-05",
+  "run_at": "2026-11-05T23:33:01+00:00",
+  "agent_model_id": "eu.amazon.nova-2-lite-v1:0",
+  "judge_model_id": "eu.amazon.nova-pro-v1:0",
+  "git_head": "e050967",
+  "git_tag_v1.0": "c1a7eac",
+  "agent_main_sha256": "6af6150c56561ceb68fc54ba7486338b0700d064d149502da42171cef046627f",
+  "corpus_manifest": "corpus/manifest_equibles.json",
+  "scored_as": "v1 EarningsBrief, one brief per call, every question for that call judged against it",
+  "summary": {
+    "answerable": 30,
+    "unanswerable": 4,
+    "retrieval_right_call": 30,
+    "task": {
+      "correct": 5,
+      "partial": 13,
+      "missing": 12
+    },
+    "grounding": {
+      "supported": 17,
+      "unsupported": 1,
+      "no_claim": 12
+    },
+    "false_abstentions": 12,
+    "abstention_correct": 4,
+    "answered_anyway": 0,
+    "judge_errors": 0
+  },
+  "agent_runs": {
+    "AMD_2025Q4": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 14462,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 5109,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "AMD_2026Q1": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 15233,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 4050,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "AMD_2026Q2": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 14780,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 3929,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "CRDO_2026Q2": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 13105,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 3877,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "CRDO_2026Q3": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 13396,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 3640,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "CRDO_2026Q4": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 12352,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 3869,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "META_2026Q1": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 15054,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 4606,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "META_2026Q3": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 15492,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 5298,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "NBIS_2025Q4": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 11885,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 3599,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "NBIS_2026Q1": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 11706,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 4139,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "NBIS_2026Q2": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 11878,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 3778,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "RIVN_2026Q1": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 14916,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 4079,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "RIVN_2026Q2": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 15856,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 5536,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "RIVN_2026Q3": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 15220,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 4153,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "ROOT_2025Q4": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 11499,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 5488,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    },
+    "ROOT_2026Q2": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 10407,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "latency_ms": 3325,
+        "model_id": "eu.amazon.nova-2-lite-v1:0"
+      }
+    }
+  },
+  "questions": [
+    {
+      "id": "AMD-01",
+      "ticker": "AMD",
+      "quarter": "2026Q2",
+      "answerable": true,
+      "kind": "fact",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly states the revenue amount, year-over-year growth, and sequential growth as per the expected answer and gold transcript evidence."
+      }
+    },
+    {
+      "id": "AMD-02",
+      "ticker": "AMD",
+      "quarter": "2026Q2",
+      "answerable": true,
+      "kind": "reason",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "partial",
+        "grounding": "supported",
+        "note": "The output mentions the expansion of gross margin but lacks specific key facts such as the exact percentage, favorable product mix, and data center contribution."
+      }
+    },
+    {
+      "id": "AMD-03",
+      "ticker": "AMD",
+      "quarter": "2026Q2",
+      "answerable": true,
+      "kind": "guidance",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "partial",
+        "grounding": "supported",
+        "note": "The output correctly states the revenue guidance but misses the specific year-over-year growth percentage and does not explicitly mention the non-GAAP gross margin of about 56%."
+      }
+    },
+    {
+      "id": "AMD-04",
+      "ticker": "AMD",
+      "quarter": "2025Q4",
+      "answerable": true,
+      "kind": "fact",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": false,
+        "task": "missing",
+        "grounding": "no_claim",
+        "note": "The assistant output does not mention the specific revenue contribution of $390 million from MI308 sales to China in Q4 2025 or its exclusion from AMD's guidance."
+      }
+    },
+    {
+      "id": "AMD-05",
+      "ticker": "AMD",
+      "quarter": "2025Q4",
+      "answerable": true,
+      "kind": "reason",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": false,
+        "task": "missing",
+        "grounding": "no_claim",
+        "note": "The assistant output does not mention the adjusted gross margin or the one-off items."
+      }
+    },
+    {
+      "id": "RIVN-01",
+      "ticker": "RIVN",
+      "quarter": "2026Q3",
+      "answerable": true,
+      "kind": "fact",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly states the number of vehicles produced and delivered, matching the expected answer and key facts, and is supported by the gold transcript evidence."
+      }
+    },
+    {
+      "id": "RIVN-02",
+      "ticker": "RIVN",
+      "quarter": "2026Q3",
+      "answerable": true,
+      "kind": "guidance",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": false,
+        "task": "missing",
+        "grounding": "no_claim",
+        "note": "The assistant output does not mention the change in delivery guidance."
+      }
+    },
+    {
+      "id": "RIVN-03",
+      "ticker": "RIVN",
+      "quarter": "2026Q3",
+      "answerable": true,
+      "kind": "reason",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "partial",
+        "grounding": "supported",
+        "note": "The output mentions R2 and commercial van deliveries but does not explicitly state the mix as the reason for the decline in average selling prices."
+      }
+    },
+    {
+      "id": "RIVN-04",
+      "ticker": "RIVN",
+      "quarter": "2026Q3",
+      "answerable": true,
+      "kind": "guidance",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "partial",
+        "grounding": "supported",
+        "note": "The output mentions the adjusted EBITDA loss range and the $100 million improvement, but does not explicitly mention 'regulatory credit' and 'tariff' as key drivers."
+      }
+    },
+    {
+      "id": "RIVN-05",
+      "ticker": "RIVN",
+      "quarter": "2026Q1",
+      "answerable": true,
+      "kind": "reason",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "partial",
+        "grounding": "supported",
+        "note": "The output mentions the automotive gross loss but does not include all key facts such as the specific amounts and reasons ($62 million loss, $100 million drop in regulatory credit sales, lower production volumes)."
+      }
+    },
+    {
+      "id": "ROOT-01",
+      "ticker": "ROOT",
+      "quarter": "2026Q2",
+      "answerable": true,
+      "kind": "fact",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly states that policies in force increased 6% year-over-year to 484,000, which is supported by the gold transcript evidence."
+      }
+    },
+    {
+      "id": "ROOT-02",
+      "ticker": "ROOT",
+      "quarter": "2026Q2",
+      "answerable": true,
+      "kind": "reason",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": false,
+        "task": "missing",
+        "grounding": "no_claim",
+        "note": "The assistant output does not mention the improvement in Root's net combined ratio in Q2 2026 or its key drivers."
+      }
+    },
+    {
+      "id": "ROOT-03",
+      "ticker": "ROOT",
+      "quarter": "2026Q2",
+      "answerable": true,
+      "kind": "fact",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": false,
+        "task": "missing",
+        "grounding": "no_claim",
+        "note": "The assistant output does not mention the share of Root's new writings from partnership and independent agent channels in Q2 2026."
+      }
+    },
+    {
+      "id": "ROOT-04",
+      "ticker": "ROOT",
+      "quarter": "2025Q4",
+      "answerable": true,
+      "kind": "reason",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": false,
+        "task": "missing",
+        "grounding": "no_claim",
+        "note": "The assistant output does not directly address the question about the reasons for the fall in net income and operating income in Q4 2025."
+      }
+    },
+    {
+      "id": "ROOT-05",
+      "ticker": "ROOT",
+      "quarter": "2025Q4",
+      "answerable": true,
+      "kind": "assumption",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "partial",
+        "grounding": "supported",
+        "note": "The output mentions a more favorable gross accident period loss ratio in Q1 2026 due to lower driving activity in winter, but it does not explicitly use the key facts 'more favorable', 'first quarter', 'fewer miles', and 'winter' in a single coherent statement as expected."
+      }
+    },
+    {
+      "id": "META-01",
+      "ticker": "META",
+      "quarter": "2026Q3",
+      "answerable": true,
+      "kind": "fact",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "partial",
+        "grounding": "unsupported",
+        "note": "The output mentions 'Family of Apps revenue grew 26% to $64.2 billion', which is incorrect according to the gold transcript evidence."
+      }
+    },
+    {
+      "id": "META-02",
+      "ticker": "META",
+      "quarter": "2026Q3",
+      "answerable": true,
+      "kind": "reason",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "partial",
+        "grounding": "supported",
+        "note": "The output mentions the increase in total expenses and the $9.9 billion charge but does not fully detail the key facts such as legal costs, infrastructure costs, and third-party AI token costs."
+      }
+    },
+    {
+      "id": "META-03",
+      "ticker": "META",
+      "quarter": "2026Q3",
+      "answerable": true,
+      "kind": "reason",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": false,
+        "task": "missing",
+        "grounding": "no_claim",
+        "note": "The assistant output does not mention the tax rate, nondeductible expenses, or legal reasons."
+      }
+    },
+    {
+      "id": "META-04",
+      "ticker": "META",
+      "quarter": "2026Q1",
+      "answerable": true,
+      "kind": "reason",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": false,
+        "task": "missing",
+        "grounding": "no_claim",
+        "note": "The assistant output does not directly address the question about the decline in Meta's family daily active people from December to March 2026."
+      }
+    },
+    {
+      "id": "META-05",
+      "ticker": "META",
+      "quarter": "2026Q1",
+      "answerable": true,
+      "kind": "reason",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "partial",
+        "grounding": "supported",
+        "note": "The output mentions ad revenue growth but lacks specific details on ad performance, macro conditions, and currency tailwinds."
+      }
+    },
+    {
+      "id": "CRDO-01",
+      "ticker": "CRDO",
+      "quarter": "2026Q4",
+      "answerable": true,
+      "kind": "fact",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "partial",
+        "grounding": "supported",
+        "note": "The output correctly states the Q4 revenue of $437 million and mentions the sequential growth of 7%, but it omits the year-over-year growth of 157% and the guidance detail."
+      }
+    },
+    {
+      "id": "CRDO-02",
+      "ticker": "CRDO",
+      "quarter": "2026Q4",
+      "answerable": true,
+      "kind": "guidance",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": false,
+        "task": "missing",
+        "grounding": "no_claim",
+        "note": "The assistant output does not directly state the guidance for fiscal Q1 2027 or the basis for that guidance."
+      }
+    },
+    {
+      "id": "CRDO-03",
+      "ticker": "CRDO",
+      "quarter": "2026Q4",
+      "answerable": true,
+      "kind": "assumption",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "partial",
+        "grounding": "supported",
+        "note": "The output mentions the optical portfolio's contribution of over $600 million in fiscal 27 but lacks specific details on mid-single-digit growth, second half inflection, and 80% full-year growth."
+      }
+    },
+    {
+      "id": "CRDO-04",
+      "ticker": "CRDO",
+      "quarter": "2026Q2",
+      "answerable": true,
+      "kind": "reason",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": false,
+        "task": "missing",
+        "grounding": "no_claim",
+        "note": "The output does not mention the reason for the fall in Credo's free cash flow in fiscal Q2 2026."
+      }
+    },
+    {
+      "id": "CRDO-05",
+      "ticker": "CRDO",
+      "quarter": "2026Q2",
+      "answerable": true,
+      "kind": "reason",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": false,
+        "task": "missing",
+        "grounding": "no_claim",
+        "note": "The output does not directly address why Credo's operating margin rose in fiscal Q2 2026 with the specific details required."
+      }
+    },
+    {
+      "id": "NBIS-01",
+      "ticker": "NBIS",
+      "quarter": "2026Q2",
+      "answerable": true,
+      "kind": "fact",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "partial",
+        "grounding": "supported",
+        "note": "The output correctly states the group revenue of $582 million and the 454% year-over-year growth, but misses the 46% increase from Q1."
+      }
+    },
+    {
+      "id": "NBIS-02",
+      "ticker": "NBIS",
+      "quarter": "2026Q2",
+      "answerable": true,
+      "kind": "fact",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": false,
+        "task": "missing",
+        "grounding": "no_claim",
+        "note": "The output does not state the annualized run-rate revenue at the end of June 2026."
+      }
+    },
+    {
+      "id": "NBIS-03",
+      "ticker": "NBIS",
+      "quarter": "2026Q2",
+      "answerable": true,
+      "kind": "reason",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "partial",
+        "grounding": "supported",
+        "note": "The output mentions the adjusted EBITDA margin and the investments in Avride and TripleTen, but does not explicitly state the specific margins (41% and 50%) or clearly differentiate between the group and Nebius AI business margins."
+      }
+    },
+    {
+      "id": "NBIS-04",
+      "ticker": "NBIS",
+      "quarter": "2026Q2",
+      "answerable": true,
+      "kind": "fact",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly states the amount raised, number of shares, and weighted average price, all supported by the gold transcript evidence."
+      }
+    },
+    {
+      "id": "NBIS-05",
+      "ticker": "NBIS",
+      "quarter": "2025Q4",
+      "answerable": true,
+      "kind": "guidance",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly states the 2026 guidance with all key facts supported by the gold transcript evidence."
+      }
+    },
+    {
+      "id": "NA-01",
+      "ticker": "RIVN",
+      "quarter": "2026Q2",
+      "answerable": false,
+      "kind": "not_discussed",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": false,
+        "task": "missing",
+        "grounding": "no_claim",
+        "note": "The output does not mention the dividend announcement as it was not discussed on the call."
+      }
+    },
+    {
+      "id": "NA-02",
+      "ticker": "NBIS",
+      "quarter": "2026Q1",
+      "answerable": false,
+      "kind": "not_discussed",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": false,
+        "task": "missing",
+        "grounding": "no_claim",
+        "note": "The output does not mention share buybacks, aligning with the expected answer."
+      }
+    },
+    {
+      "id": "NA-03",
+      "ticker": "CRDO",
+      "quarter": "2026Q3",
+      "answerable": false,
+      "kind": "not_discussed",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": false,
+        "task": "missing",
+        "grounding": "no_claim",
+        "note": "The output does not mention anything about stock repurchases, aligning with the expected answer."
+      }
+    },
+    {
+      "id": "NA-04",
+      "ticker": "AMD",
+      "quarter": "2026Q1",
+      "answerable": false,
+      "kind": "not_discussed",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": false,
+        "task": "missing",
+        "grounding": "no_claim",
+        "note": "The output does not mention the dividend, aligning with the expected answer."
+      }
+    }
+  ],
+  "briefs": {
+    "AMD_2025Q4": {
+      "ticker": "AMD",
+      "quarter": "2025Q4",
+      "key_points": [
+        "Q4 revenue grew 34% year-over-year to $10.3 billion, led by record Epic, Ryzen, and Instinct processor sales",
+        "Net income increased 42% to a record $2.5 billion, and free cash flow nearly doubled year-over-year to a record $2.1 billion",
+        "Data center segment revenue increased 39% year-over-year to a record $5.4 billion, led by accelerating Instinct MI350 series GPU deployments",
+        "Client and gaming segment revenue increased 37% year-over-year to $3.9 billion, driven by strong demand for AMD Ryzen processors",
+        "Embedded segment revenue increased 3% year-over-year to $950 million, led by strength with test measurements and aerospace customers",
+        "AMD expects significant top-line and bottom-line growth in 2026, led by increased adoption of Epic and Instinct, continued client share gains, and a return to growth in embedded segment",
+        "AMD sees a clear path to achieve ambitious targets including growing revenue at greater than 35% CAGR over the next three to five years",
+        "AMD is well-positioned to capture multi-year demand super cycle for high performance and AI computing with highly differentiated products and proven execution engine"
+      ],
+      "reasons": [
+        "Record revenue, net income, and free cash flow driven by broad-based demand for high-performance computing and AI products",
+        "Strong demand across data center, PC, gaming, and embedded markets",
+        "Launch of the broadest set of leadership products in AMD's history",
+        "Gained significant server and PC processor share",
+        "Rapid scaling of data center AI business with Instinct and Rockham adoption",
+        "Increased demand for Ryzen processors and Radeon GPUs"
+      ],
+      "assumptions": [
+        "Continued strong demand for AI and high-performance computing",
+        "Successful ramp of MI450 series and Helios platform",
+        "Expansion of Epic CPU adoption in cloud and enterprise",
+        "Growth in PC and gaming markets",
+        "Stable supply chain and component availability",
+        "Effective execution of strategic partnerships and go-to-market initiatives"
+      ],
+      "speakers_cited": [
+        "Lisa Su (CEO)",
+        "Jean Hu (CFO)",
+        "Matt Ramsey (Head of Investor Relations)",
+        "Operator (Operator)"
+      ],
+      "transcript_truncated": false
+    },
+    "AMD_2026Q1": {
+      "ticker": "AMD",
+      "quarter": "2026Q1",
+      "key_points": [
+        "First quarter revenue was $10.3 billion, up 38% year-over-year",
+        "Data center revenue increased 57% to $5.8 billion, driven by EPIC CPUs and Instinct GPUs",
+        "Client revenue grew 26% to $2.9 billion, led by Ryzen processors and commercial PC adoption",
+        "Gaming revenue increased 11% to $720 million, driven by Radeon GPUs",
+        "Free cash flow more than tripled to $2.6 billion, a record for the company"
+      ],
+      "reasons": [
+        "Accelerating demand for AI infrastructure across the portfolio",
+        "Strong growth in data center revenue, particularly in EPIC CPUs and Instinct GPUs",
+        "Increased order revenue and earnings growth",
+        "Expanding market opportunities in client and gaming segments",
+        "Growth in embedded segment driven by test, measurement, and aerospace markets"
+      ],
+      "assumptions": [
+        "Continued growth in AI adoption and infrastructure demand",
+        "Strong customer demand for EPIC and Instinct products",
+        "Expansion of commercial PC adoption and market share",
+        "Increased investments in R&D and go-to-market activities to support growth",
+        "Tight supply chain conditions and memory price inflation impacting second-half demand"
+      ],
+      "speakers_cited": [
+        "Lisa Su (CEO)",
+        "Jean Hu (CFO)",
+        "Matt Ramsey (Head of Investor Relations)"
+      ],
+      "transcript_truncated": false
+    },
+    "AMD_2026Q2": {
+      "ticker": "AMD",
+      "quarter": "2026Q2",
+      "key_points": [
+        "Revenue increased 50% year-over-year to $11.5 billion",
+        "Data center revenue grew 107% year-over-year to $6.7 billion",
+        "Client revenue increased 23% year-over-year to $3.1 billion",
+        "Gaming revenue declined 31% year-over-year to $779 million",
+        "Embedded revenue increased 19% year-over-year to $977 million",
+        "Operating income was $3.1 billion, representing a 27% operating margin",
+        "Expect revenue to be approximately $13 billion plus or minus $300 million in Q3 2026"
+      ],
+      "reasons": [
+        "Record revenue and profitability driven by strong adoption of leadership products",
+        "Data center revenue more than doubled year-over-year, now representing 58% of total revenue",
+        "Client and gaming segment revenue grew 6% year-over-year",
+        "Embedded segment revenue increased 19% year-over-year",
+        "Strong demand for Epic processors and Instinct accelerators"
+      ],
+      "assumptions": [
+        "AI adoption cycle is in early stages with multi-year growth potential",
+        "Data center AI accelerator market to grow more than 45% annually to approximately $1.4 trillion by 2030",
+        "Server CPU market to grow more than 50% annually to approximately $220 billion by 2030",
+        "Overall market for high performance AI computing growing approximately 40% annually over the next several years, approaching $2 trillion by 2030"
+      ],
+      "speakers_cited": [
+        "Lisa Su (CEO)",
+        "Jean Hu (CFO)",
+        "Matt Ramsey (Head of Investor Relations)"
+      ],
+      "transcript_truncated": false
+    },
+    "CRDO_2026Q2": {
+      "ticker": "CRDO",
+      "quarter": "2026Q2",
+      "key_points": [
+        "Q2 revenue reached $268 million, a 272% YoY increase with 20% sequential growth",
+        "Non-GAAP gross margin was 67.7%, and non-GAAP net income was $128 million",
+        "AEC product line is the fastest-growing segment with four hyperscalers each contributing over 10% of revenue",
+        "Zero Flap optics, ALCs, and OmniConnect gearboxes expand total addressable market to over $10 billion",
+        "Q3 revenue guidance is $335-$345 million, reflecting 27% sequential growth at midpoint"
+      ],
+      "reasons": [
+        "Record revenue growth driven by expansion of AI training and inference clusters",
+        "Strong performance of AEC product line with increasing customer diversity",
+        "Launch of three new growth pillars: Zero Flap optics, ALCs, and OmniConnect gearboxes",
+        "Efficient operational leverage resulting in high non-GAAP net margin",
+        "Strategic partnerships and system-level solutions enhancing customer value"
+      ],
+      "assumptions": [
+        "Continued growth in AI cluster scale and complexity",
+        "Customer adoption of new connectivity solutions",
+        "Stable tariff regime impacting financial guidance",
+        "Ongoing wafer demand and foundry capacity considerations",
+        "Customer ramp rates and diversification"
+      ],
+      "speakers_cited": [
+        "William Brennan (CEO)",
+        "Daniel Fleming (CFO)",
+        "Operator (Operator)"
+      ],
+      "transcript_truncated": false
+    },
+    "CRDO_2026Q3": {
+      "ticker": "CRDO",
+      "quarter": "2026Q3",
+      "key_points": [
+        "Q3 revenue reached $407 million, up 52% sequentially and 200% year-over-year",
+        "Non-GAAP gross margin of 68.6% and non-GAAP net income of $208.8 million",
+        "AEC product line delivered strong growth with support from five hyperscalers",
+        "Zero-Flap Optics production began with first customer TensorWave",
+        "Active LED Cables (ALCs) and OmniConnect product lines expanding addressable market"
+      ],
+      "reasons": [
+        "Record revenue growth driven by strong demand from hyperscalers and neoclouds",
+        "Continued expansion of AEC product line with new customer wins",
+        "Successful ramp of new optical DSP and retimer products",
+        "Strong operational execution and supply chain management"
+      ],
+      "assumptions": [
+        "Continued AI infrastructure growth and hyperscaler expansion",
+        "Sustained demand for high-reliability connectivity solutions",
+        "Successful execution of new product launches and technology transitions",
+        "Stable supply chain and component availability"
+      ],
+      "speakers_cited": [
+        "Bill Brennan (CEO)",
+        "Dan Fleming (CFO)",
+        "Dan O'Neill (Head of Investor Relations)",
+        "Operator (Operator)"
+      ],
+      "transcript_truncated": false
+    },
+    "CRDO_2026Q4": {
+      "ticker": "CRDO",
+      "quarter": "2026Q4",
+      "key_points": [
+        "Fiscal 26 revenue exceeded $1.3 billion, tripling year-over-year",
+        "Q4 revenue reached record $437 million, exceeding fiscal 25 total revenue",
+        "Q4 non-GAAP gross margin was 68.3%",
+        "Optical portfolio expected to contribute over $600 million in fiscal 27",
+        "Credo acquired Dust Photonics to expand optical capabilities"
+      ],
+      "reasons": [
+        "AI infrastructure scaling drives demand for Credo's connectivity solutions",
+        "Credo's vertically integrated approach differentiates it in the market",
+        "Strong customer adoption across hyperscalers and neocloud operators",
+        "Optical portfolio expected to drive significant growth in fiscal 27",
+        "Supply chain partnerships ensure capacity for product ramps"
+      ],
+      "assumptions": [
+        "AI cluster scaling continues at rapid pace",
+        "Customer demand for reliability and power efficiency remains high",
+        "Supply chain partnerships maintain capacity for product ramps",
+        "Favorable tariff regime persists",
+        "Customer diversification continues across hyperscalers and neoclouds"
+      ],
+      "speakers_cited": [
+        "Bill Brennan (CEO)",
+        "Dan Fleming (CFO)",
+        "Operator (Operator)",
+        "Dan O'Neill (Head of Investor Relations)",
+        "Tom O'Malley (Analyst — Barclays)",
+        "Tore Svanberg (Analyst — Stifel)",
+        "Joseph Cardoso (Analyst — JP Morgan)",
+        "Sean O'Loughlin (Analyst — T.D. Cowen)",
+        "Quinn Bolton (Analyst — Needham)",
+        "Carl Ackerman (Analyst — BNP Paribas)",
+        "Sebastian Ngy (Analyst — William Blair)",
+        "Suji Da Silva (Analyst — ROTH Capital)",
+        "Blaine Curtis (Analyst — Jefferies)",
+        "Vijay Rakesh (Analyst — Mizuho)",
+        "Yanko Venter (Analyst — Arete Research)",
+        "Tours Van Berg (Analyst — Stifel)",
+        "Jim Schneider (Analyst — Goldman Sachs)"
+      ],
+      "transcript_truncated": false
+    },
+    "META_2026Q1": {
+      "ticker": "META",
+      "quarter": "2026Q1",
+      "key_points": [
+        "Meta reported Q1 2026 revenue of $56.3 billion, up 33% year-over-year",
+        "Daily active users across Meta apps totaled 3.56 billion, with growth in Instagram, Facebook, and WhatsApp",
+        "Muse Spark model released, enhancing Meta AI capabilities and user engagement",
+        "Infrastructure investments increased, including custom silicon and cloud deals",
+        "Ad revenue grew 33%, driven by impression growth and price increases"
+      ],
+      "reasons": [
+        "Release of Muse family of models and Meta AI updates, showing progress in AI research and product development",
+        "Strong engagement and growth across Instagram, Facebook, WhatsApp, and Threads",
+        "Increasing infrastructure investments to support AI and compute needs",
+        "Expansion of AI-driven recommendation systems and monetization strategies",
+        "Growth in AI glasses and metaverse efforts"
+      ],
+      "assumptions": [
+        "Continued investment in AI and infrastructure will drive future growth and innovation",
+        "AI models will improve engagement and monetization over time",
+        "Consumer demand for AI-powered products and services will remain strong",
+        "Economic conditions and ad market performance will support revenue growth",
+        "Regulatory environment will not significantly impede operations"
+      ],
+      "speakers_cited": [
+        "Mark Zuckerberg (CEO)",
+        "Susan Li (CFO)",
+        "Operator (Operator)"
+      ],
+      "transcript_truncated": false
+    },
+    "META_2026Q3": {
+      "ticker": "META",
+      "quarter": "2026Q3",
+      "key_points": [
+        "Muse personal agent has over 10 million users in the US and Canada, with strong engagement and retention.",
+        "Family of Apps revenue grew 26% to $64.2 billion, driven by ad revenue and other revenue growth.",
+        "Reality Labs revenue decreased 6% to $443 million, primarily due to lower Quest headset sales.",
+        "Total expenses increased 68% year-over-year, including a $9.9 billion charge related to a legal settlement.",
+        "Q4 2026 total revenue guidance is $73 to $76 billion, assuming a 1% foreign currency headwind.",
+        "New class of non-voting stock created to support future capital raising and investments."
+      ],
+      "reasons": [
+        "Muse personal agent has shown strong initial adoption and engagement, with plans to scale and improve efficiency.",
+        "Core business remains strong with growth in engagement and monetization across Facebook, Instagram, and Threads.",
+        "Reality Labs segment revenue declined due to lower Quest headset sales, but AI glasses revenue grew.",
+        "AI investments are expected to drive future revenue diversification through subscriptions, transactions, and enterprise offerings.",
+        "Compute efficiency improvements are critical for scaling Muse and reducing costs.",
+        "New class of non-voting stock created to provide additional flexibility for capital raising and investments."
+      ],
+      "assumptions": [
+        "Muse will achieve product market fit and scale to billions of users with improved compute efficiency.",
+        "Core advertising business will continue to grow through engagement and monetization improvements.",
+        "AI-driven initiatives will contribute to revenue diversification and long-term profitability.",
+        "Compute costs will decrease significantly through efficiency gains and model optimization.",
+        "Enterprise and small business adoption of AI agents will create new revenue streams.",
+        "Capital structure changes will support continued investment in AI and other growth initiatives."
+      ],
+      "speakers_cited": [
+        "Mark Zuckerberg (CEO)",
+        "Susan Li (CFO)",
+        "Operator (Operator)",
+        "Rob Bevegny (Head of Investor Relations)",
+        "Brian Nowak (Analyst — Morgan Stanley)",
+        "Eric Sheridan (Analyst — Goldman Sachs)",
+        "Doug (Analyst — J.P. Morgan)",
+        "Justin Post (Analyst — Bank of America)",
+        "Mark Shmulek (Analyst — Bernstein)",
+        "Ross Sandler (Analyst — Barclays)",
+        "Mark Mahaney (Analyst — Evercore ISI)"
+      ],
+      "transcript_truncated": false
+    },
+    "NBIS_2025Q4": {
+      "ticker": "NBIS",
+      "quarter": "2025Q4",
+      "key_points": [
+        "Nebius achieved $228 million in revenue for Q4 2025, representing 547% YoY growth",
+        "Annualized run-rate revenue reached $1.2 billion, exceeding guidance",
+        "Group adjusted EBITDA turned positive in Q4",
+        "Company announced nine new data centers and raised 2026 power guidance to over 3 gigawatts",
+        "2026 revenue guidance set at $3.0 billion to $3.4 billion with adjusted EBITDA margin target of approximately 40%"
+      ],
+      "reasons": [
+        "Strong demand for AI cloud services and robust customer growth",
+        "Successful execution on capacity expansion and new data center deployments",
+        "Effective pricing power and utilization rates",
+        "Strategic acquisitions enhancing platform capabilities",
+        "Prudent financial management and strong balance sheet position"
+      ],
+      "assumptions": [
+        "Continued strong demand for AI compute resources",
+        "Successful execution of capacity expansion plans",
+        "Stable pricing environment for GPUs",
+        "Effective integration of acquisitions",
+        "Sustained customer growth and expansion"
+      ],
+      "speakers_cited": [
+        "Arkady Volozh",
+        "Dado Alonso",
+        "Neil Doshi",
+        "Andrey Korolenko",
+        "Tom Blackwell",
+        "Marc"
+      ],
+      "transcript_truncated": false
+    },
+    "NBIS_2026Q1": {
+      "ticker": "NBIS",
+      "quarter": "2026Q1",
+      "key_points": [
+        "Nebius contracted over 3.5 GW of power, targeting at least 4 GW this year",
+        "Raised 2026 CAPEX guidance to $20-$25 billion to support future capacity",
+        "Q1 revenue grew 684% YoY to $399 million, with AI business revenue up 841%",
+        "Group adjusted EBITDA was $130 million, with AI business margin at 45%",
+        "Secured $4.3 billion in convertible notes and $2 billion from NVIDIA",
+        "Pipeline grew 3.5x QoQ, excluding hyperscaler deals like Meta"
+      ],
+      "reasons": [
+        "Strong demand for AI infrastructure leading to sold-out capacity",
+        "Strategic acquisitions enhancing platform capabilities",
+        "Increased contract durations and prepayments improving financial metrics",
+        "Successful capital raises and strategic partnerships providing financial stability",
+        "Expansion of infrastructure footprint to meet future demand",
+        "Focus on full-stack AI solutions driving customer acquisition and retention"
+      ],
+      "assumptions": [
+        "Continued strong demand for AI infrastructure",
+        "Successful execution of expansion plans",
+        "Stable macroeconomic conditions supporting capital raising",
+        "Effective integration of acquisitions",
+        "Sustained partnerships with key technology providers",
+        "Effective management of regulatory and political challenges"
+      ],
+      "speakers_cited": [
+        "Arkady Volozh (CEO)",
+        "Dado Alonso (CFO)",
+        "Marc Boroditsky",
+        "Roman Chernin",
+        "Andrey Korolenko (CTO)",
+        "Gili Naftalovich (Head of Investor Relations)",
+        "Tom Blackwell (CFO)",
+        "Operator"
+      ],
+      "transcript_truncated": false
+    },
+    "NBIS_2026Q2": {
+      "ticker": "NBIS",
+      "quarter": "2026Q2",
+      "key_points": [
+        "Q2 revenue grew 454% to $582 million with Arunebio's AR business up 514%",
+        "Adjusted EBITDA margin expanded to 41% from 32% in Q1",
+        "Customer prepayments reached an all-time high, exceeding $9 billion for the year",
+        "Raised year-end contracted power target to five gigawatts for 2026",
+        "Launched successful capacity auction clearing at 15% above previous highest price"
+      ],
+      "reasons": [
+        "Strong demand for AI infrastructure leading to significant revenue growth",
+        "Successful execution of strategy resulting in triple-digit revenue and ARR growth",
+        "Expansion of adjusted EBITDA margin through higher revenue and new business models",
+        "Strengthened funding position with substantial customer prepayments and diverse financing options",
+        "Increased capacity deployment and future growth potential"
+      ],
+      "assumptions": [
+        "Continued strong demand for AI infrastructure",
+        "Successful execution of capacity expansion plans",
+        "Effective monetization of new business models like auctions and short-term deals",
+        "Sustained customer prepayments and favorable financing conditions",
+        "Growth in open-source model adoption and Token Factory usage"
+      ],
+      "speakers_cited": [
+        "Arkady (CEO)",
+        "Dado (CFO)",
+        "Gili (Head of Investor Relations)",
+        "Andrey (CTO)",
+        "Mark",
+        "Roman"
+      ],
+      "transcript_truncated": false
+    },
+    "RIVN_2026Q1": {
+      "ticker": "RIVN",
+      "quarter": "2026Q1",
+      "key_points": [
+        "R2 production has started and deliveries to employees have begun",
+        "RAP1 chip development is on track and autonomy feature development is progressing well",
+        "Partnership with Uber will accelerate autonomous vehicle goals",
+        "Rivian Assistant AI-powered voice assistant will be launched on R1 and R2 vehicles",
+        "Production capacity for mid-sized vehicle platform in Georgia increased by 50% to 300,000 units annually"
+      ],
+      "reasons": [
+        "Start of saleable R2 production and initial employee deliveries",
+        "Progress on RAP1 chip development and autonomy feature development",
+        "Partnership with Uber to accelerate autonomous vehicle goals",
+        "Launch of Rivian Assistant AI-powered voice assistant",
+        "Strategic decision to increase production capacity for mid-sized vehicle platform in Georgia"
+      ],
+      "assumptions": [
+        "R2 production ramp and deliveries will be back half-weighted in 2026",
+        "Gross profit will increase year over year but complexity of new vehicle launch will impact automotive gross profit in Q2 and Q3",
+        "Full-year deliveries of between 62,000 and 67,000 total vehicles across R1, R2, and commercial vans",
+        "Adjusted EBITDA loss of between $2.1 to $1.8 billion for 2026",
+        "Capital expenditure guidance of $1.95 to $2.05 billion for 2026"
+      ],
+      "speakers_cited": [
+        "RJ Scaringe (CEO)",
+        "Claire McDonough (CFO)",
+        "Javier Varela (COO)",
+        "Tim Bei (Head of Investor Relations)",
+        "Operator (Operator)"
+      ],
+      "transcript_truncated": false
+    },
+    "RIVN_2026Q2": {
+      "ticker": "RIVN",
+      "quarter": "2026Q2",
+      "key_points": [
+        "R2 deliveries to external customers began in June 2026, with over 57,000 demo drives hosted in Q2 2026",
+        "Consolidated revenue increased 27% to $1.66 billion in Q2 2026",
+        "Automotive gross profit improved by $299 million compared to Q2 2025, primarily due to increased delivery volumes and regulatory credit revenues",
+        "Software and services revenue increased 37% to $515 million in Q2 2026",
+        "Autonomy development is progressing with the rollout of point-to-point capabilities expected by the end of 2026",
+        "Capital expenditure guidance was reduced by $250 million to $1.7-$1.8 billion for 2026",
+        "2026 vehicle delivery guidance was increased to 65,000-70,000 units"
+      ],
+      "reasons": [
+        "R2 deliveries began in June 2026, with strong early customer feedback and high demo drive participation",
+        "Manufacturing footprint expansion is progressing with the construction of a new site in Georgia",
+        "Autonomy development is on track with the rollout of point-to-point capabilities expected by the end of 2026",
+        "Software and services segment reported strong growth, driven by vehicle electrical architecture and software development services"
+      ],
+      "assumptions": [
+        "R2 production ramp will continue to scale in the second half of 2026, with a focus on supply chain coordination and process improvements",
+        "Autonomy development will progress with the rollout of point-to-point capabilities by the end of 2026 and level 4 capabilities by 2028",
+        "Regulatory credit income will decline in the second half of 2026 compared to the first half",
+        "Raw material, memory, and logistics cost increases will impact profitability in the near term"
+      ],
+      "speakers_cited": [
+        "Timothy Bei",
+        "RJ Scaringe",
+        "Claire McDonough",
+        "Javier Varela",
+        "Operator",
+        "Mark Delaney",
+        "George Gianarikas",
+        "Shreyas Patil",
+        "Rajat Gupta",
+        "Itay Michaeli",
+        "Joseph Spak",
+        "Dan Levy",
+        "Andrew Percoco",
+        "Chris Pierce",
+        "Philippe Bouchois"
+      ],
+      "transcript_truncated": false
+    },
+    "RIVN_2026Q3": {
+      "ticker": "RIVN",
+      "quarter": "2026Q3",
+      "key_points": [
+        "R2 is Rivian's best-selling vehicle outselling R1 and EDV in Q3",
+        "Record production of 19,751 vehicles and deliveries of 19,248 vehicles in Q3",
+        "Autonomy Plus available on R2 and R1 with point-to-point feature expected in 2027",
+        "Partnership with Uber on autonomous fleet expected to unlock $250M investment",
+        "Acquisition of third-dimension AI to support autonomy development"
+      ],
+      "reasons": [
+        "R2 is already Rivian's best-selling vehicle by volume, outselling both R1 and EDV in Q3",
+        "Record production volumes and deliveries achieved in Q3",
+        "Autonomy Plus offering on R2 and R1 has strong take rates and is a key differentiator",
+        "Partnership with Uber on autonomous fleet expected to unlock additional $250M investment",
+        "Acquisition of third-dimension AI to support autonomy development"
+      ],
+      "assumptions": [
+        "R2 production ramp will continue to increase in coming quarters",
+        "Autonomy Plus take rates will continue to trend ahead of expectations",
+        "Uber partnership milestone will be achieved by year-end unlocking additional investment",
+        "New variants of R2 will launch in coming months generating additional excitement",
+        "EDV demand will continue to grow with potential for new commercial customers"
+      ],
+      "speakers_cited": [
+        "Timothy Bei",
+        "RJ Scaringe",
+        "Claire McDonough",
+        "Derek Mulvey",
+        "Javier Varela",
+        "Operator"
+      ],
+      "transcript_truncated": false
+    },
+    "ROOT_2025Q4": {
+      "ticker": "ROOT",
+      "quarter": "2025Q4",
+      "key_points": [
+        "2025 was another strong year with $1.5 billion in premiums and exceptional financial performance",
+        "Five growth levers: pricing, geographic expansion, independent agents, connected technology ecosystem, and direct distribution machine",
+        "Partnerships business is achieving profitability and loss ratio targets with deep integrations like Carvana and ViewSet",
+        "Toyota partnership enables instant telematics-based quotes for connected vehicle owners",
+        "2026 expects accelerating annual PIF growth fueled by continued channel expansion and investments"
+      ],
+      "reasons": [
+        "Strong execution across all business segments led to 29% revenue growth and 30% net income growth",
+        "Technology advantage enables better pricing, automation, and distribution integration",
+        "Partnerships channel nearly half of overall new writings with deep technical integrations",
+        "Independent agent channel is fastest-growing segment with total addressable market over $100 billion",
+        "Connected technology ecosystem includes telematics-based pricing through OEM partnerships"
+      ],
+      "assumptions": [
+        "Loss ratio trends based on seasonal driving patterns and investment levels",
+        "Growth assumptions tied to distribution channel expansion and pricing strategy",
+        "OEM partnership scalability and data integration effectiveness",
+        "Retention assumptions based on pricing accuracy and product flexibility",
+        "Assumptions about autonomous vehicle technology adoption and its impact on loss costs"
+      ],
+      "speakers_cited": [
+        "Alexander Timm (CEO)",
+        "Jason Shapiro (Other)",
+        "Megan Binkley (CFO)",
+        "Matt LaMalva (Head of Investor Relations)",
+        "Operator (Operator)",
+        "Tommy McJoint (Analyst — KBW)",
+        "Charlie (on for Andrew Anderson) (Analyst — Jefferies)",
+        "Andrew Kligerman (Analyst — TD Securities)",
+        "Christian Getzoff (Analyst — Wells Fargo)"
+      ],
+      "transcript_truncated": false
+    },
+    "ROOT_2026Q2": {
+      "ticker": "ROOT",
+      "quarter": "2026Q2",
+      "key_points": [
+        "Net income increased 15% year-over-year to $25 million, generating approximately a 31% annualized return on equity",
+        "Revenue increased 2% year-over-year to $389 million, while policies in force increased 6% year-over-year to 484,000 policies",
+        "The company successfully refinanced its $200 million debt facility into a new term loan, reducing cost of debt and increasing financial flexibility",
+        "R&D investments are focused on expanding into new acquisition channels and enhancing AI capabilities",
+        "The company expects to launch a new predictive pricing model later this year, with early results showing meaningful gains"
+      ],
+      "reasons": [
+        "The company is prioritizing profitable growth over aggressive expansion in a competitive direct market environment",
+        "Strong underwriting performance with a net combined ratio of 92.1%",
+        "Continued investment in AI and technology to enhance pricing, claims, and customer experiences"
+      ],
+      "assumptions": [
+        "Geographic expansion will continue to be a key growth driver as the company moves toward a national footprint by the end of 2027",
+        "Partnerships and independent agent channels will provide diversified growth opportunities",
+        "AI and technology investments will drive long-term efficiency and growth"
+      ],
+      "speakers_cited": [
+        "Alex Timm",
+        "Megan Binkley",
+        "Matt LaMalva"
+      ],
+      "transcript_truncated": false
+    }
+  }
+}
