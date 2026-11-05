@@ -249,7 +249,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"run   {t} {q} ...", flush=True)
         briefs[(t, q)] = run_brief(t, q)
         r = briefs[(t, q)]
-        print(f"      status={r['status']} tokens={r['run'].get('total_tokens', r['run'].get('tokens', '?'))}")
+        print(f"      status={r['status']} tokens={r['run'].get('tokens_used', '?')}")
 
     ask = bedrock_judge(judge_id)
     scored = []
