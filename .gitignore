@@ -28,3 +28,6 @@ cdk.context.json
 # v2 corpus: raw transcripts are never committed (Alpha Vantage terms,
 # company copyright). corpus/manifest.json with hashes is committed instead.
 corpus/raw/
+
+# Equibles raw transcripts (same reason); corpus/manifest_equibles.json is committed.
+corpus/equibles/raw/
