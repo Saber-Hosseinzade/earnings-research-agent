@@ -1,0 +1,155 @@
+{
+  "_comment": "The fixed v2 corpus. label = the quarter id used in file names and the golden set; fiscal_year and fiscal_quarter = the period the call reports. Edit this file to choose your own calls.",
+  "frozen": "2026-11-05",
+  "notes": {
+    "AMD": "2026Q3 not available on 5 Nov; next-older quarter used",
+    "ROOT": "2026Q3 not available on 5 Nov; next-older quarter used",
+    "CRDO": "Fiscal year ends early May; labels are fiscal. Q1 FY2027 not available on 5 Nov, so Q1 FY2026 is used"
+  },
+  "calls": [
+    {
+      "ticker": "AMD",
+      "label": "2025Q3",
+      "fiscal_year": 2025,
+      "fiscal_quarter": 3
+    },
+    {
+      "ticker": "AMD",
+      "label": "2025Q4",
+      "fiscal_year": 2025,
+      "fiscal_quarter": 4
+    },
+    {
+      "ticker": "AMD",
+      "label": "2026Q1",
+      "fiscal_year": 2026,
+      "fiscal_quarter": 1
+    },
+    {
+      "ticker": "AMD",
+      "label": "2026Q2",
+      "fiscal_year": 2026,
+      "fiscal_quarter": 2
+    },
+    {
+      "ticker": "RIVN",
+      "label": "2025Q4",
+      "fiscal_year": 2025,
+      "fiscal_quarter": 4
+    },
+    {
+      "ticker": "RIVN",
+      "label": "2026Q1",
+      "fiscal_year": 2026,
+      "fiscal_quarter": 1
+    },
+    {
+      "ticker": "RIVN",
+      "label": "2026Q2",
+      "fiscal_year": 2026,
+      "fiscal_quarter": 2
+    },
+    {
+      "ticker": "RIVN",
+      "label": "2026Q3",
+      "fiscal_year": 2026,
+      "fiscal_quarter": 3
+    },
+    {
+      "ticker": "ROOT",
+      "label": "2025Q3",
+      "fiscal_year": 2025,
+      "fiscal_quarter": 3
+    },
+    {
+      "ticker": "ROOT",
+      "label": "2025Q4",
+      "fiscal_year": 2025,
+      "fiscal_quarter": 4
+    },
+    {
+      "ticker": "ROOT",
+      "label": "2026Q1",
+      "fiscal_year": 2026,
+      "fiscal_quarter": 1
+    },
+    {
+      "ticker": "ROOT",
+      "label": "2026Q2",
+      "fiscal_year": 2026,
+      "fiscal_quarter": 2
+    },
+    {
+      "ticker": "META",
+      "label": "2025Q4",
+      "fiscal_year": 2025,
+      "fiscal_quarter": 4
+    },
+    {
+      "ticker": "META",
+      "label": "2026Q1",
+      "fiscal_year": 2026,
+      "fiscal_quarter": 1
+    },
+    {
+      "ticker": "META",
+      "label": "2026Q2",
+      "fiscal_year": 2026,
+      "fiscal_quarter": 2
+    },
+    {
+      "ticker": "META",
+      "label": "2026Q3",
+      "fiscal_year": 2026,
+      "fiscal_quarter": 3
+    },
+    {
+      "ticker": "CRDO",
+      "label": "2026Q1",
+      "fiscal_year": 2026,
+      "fiscal_quarter": 1
+    },
+    {
+      "ticker": "CRDO",
+      "label": "2026Q2",
+      "fiscal_year": 2026,
+      "fiscal_quarter": 2
+    },
+    {
+      "ticker": "CRDO",
+      "label": "2026Q3",
+      "fiscal_year": 2026,
+      "fiscal_quarter": 3
+    },
+    {
+      "ticker": "CRDO",
+      "label": "2026Q4",
+      "fiscal_year": 2026,
+      "fiscal_quarter": 4
+    },
+    {
+      "ticker": "NBIS",
+      "label": "2025Q3",
+      "fiscal_year": 2025,
+      "fiscal_quarter": 3
+    },
+    {
+      "ticker": "NBIS",
+      "label": "2025Q4",
+      "fiscal_year": 2025,
+      "fiscal_quarter": 4
+    },
+    {
+      "ticker": "NBIS",
+      "label": "2026Q1",
+      "fiscal_year": 2026,
+      "fiscal_quarter": 1
+    },
+    {
+      "ticker": "NBIS",
+      "label": "2026Q2",
+      "fiscal_year": 2026,
+      "fiscal_quarter": 2
+    }
+  ]
+}

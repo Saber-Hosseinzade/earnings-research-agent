@@ -14,13 +14,24 @@ sys.modules["run_eval"] = ev
 _spec.loader.exec_module(ev)
 
 
-def test_golden_passages_point_at_real_turns_with_their_quote():
-    """Every answerable passage's quote is inside the turn it points to (needs corpus/v2/raw)."""
+FIXTURES = Path(__file__).resolve().parent / "fixtures"
+
+
+def _fixture_row(monkeypatch):
+    """First row of the invented golden set, with the corpus pointed at the invented call."""
+    monkeypatch.setattr(ev, "CORPUS_RAW", FIXTURES / "corpus")
+    return json.loads((FIXTURES / "golden_set.jsonl").read_text().splitlines()[0])
+
+
+def test_golden_set_passes_check_golden():
+    """eval/check_golden.py on the real golden set (needs corpus/v2/raw, so skipped without it)."""
     if not ev.CORPUS_RAW.exists():
         pytest.skip("raw corpus not present")
-    for row in ev.load_golden():
-        if row["answerable"]:
-            assert row["passage"]["quote"].lower() in ev.evidence_text(row).lower(), row["id"]
+    _spec_cg = importlib.util.spec_from_file_location("check_golden", _PATH.parent / "check_golden.py")
+    cg = importlib.util.module_from_spec(_spec_cg)
+    _spec_cg.loader.exec_module(cg)
+    problems, rows = cg.check(ev.GOLDEN, ev.CORPUS_RAW)
+    assert problems == {} and len(rows) == len(ev.load_golden())
 
 
 def test_render_transcript_names_unnamed_speakers_by_role_and_caps(monkeypatch):
@@ -41,8 +52,8 @@ def test_parse_judge_accepts_json_inside_prose_and_rejects_bad_values():
         ev.parse_judge("no json here")
 
 
-def test_judge_row_retries_once_then_records_a_judge_error():
-    row = ev.load_golden()[0]
+def test_judge_row_retries_once_then_records_a_judge_error(monkeypatch):
+    row = _fixture_row(monkeypatch)
     replies = iter(["garbage", '{"has_claim": false, "task": "missing", "grounding": "no_claim", "note": "x"}'])
     assert ev.judge_row(row, {"key_points": []}, lambda p: next(replies))["task"] == "missing"
     v = ev.judge_row(row, {"key_points": []}, lambda p: "garbage")
@@ -67,10 +78,8 @@ def test_aggregate_separates_the_dimensions():
     assert s["abstention_correct"] == 1 and s["answered_anyway"] == 1
 
 
-def test_quote_in_call_ignores_case_spacing_and_trailing_punctuation():
-    if not ev.CORPUS_RAW.exists():
-        pytest.skip("raw corpus not present")
-    row = ev.load_golden()[0]
+def test_quote_in_call_ignores_case_spacing_and_trailing_punctuation(monkeypatch):
+    row = _fixture_row(monkeypatch)
     quote = row["passage"]["quote"]
     assert ev.quote_in_call("  " + quote.upper() + ".", row)
     assert not ev.quote_in_call("Management announced a special dividend of five dollars.", row)

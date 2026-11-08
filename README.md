@@ -129,6 +129,8 @@ python scripts/pull_corpus_v2.py          # writes corpus/v2/raw/, updates the m
 
 All provider-specific code is in `scripts/transcript_source.py`; to use another provider, adapt that file.
 
+The calls to pull are listed in `corpus/calls.json`; edit it to choose your own. The golden set's quotes match only this corpus, so with another provider or other calls, write your own golden set: [docs/golden_set.md](docs/golden_set.md) walks through it, with `eval/find_passage.py` to fill in passages and `eval/check_golden.py` to check every row against the transcripts.
+
 ## Measurements
 
 Single runs on Nova 2 Lite in eu-central-1, so these show scale, not an average.

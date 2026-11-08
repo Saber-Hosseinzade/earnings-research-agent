@@ -1,0 +1,51 @@
+{
+ "_comment": "Invented transcript for tests and as a format example. Not a real company or call.",
+ "ticker": "DEMO",
+ "eventTitle": "Demo Robotics Q1 FY2026 Earnings Call (invented)",
+ "callDate": "2026-04-30T00:00:00+00:00",
+ "fiscalYear": 2026,
+ "fiscalQuarter": 1,
+ "data": [
+  {
+   "speakerIndex": 0,
+   "speakerName": null,
+   "speakerRole": "Operator",
+   "startSeconds": 0.6,
+   "endSeconds": 30.2,
+   "text": "Good afternoon and welcome to the Demo Robotics first quarter call. Thank you for joining."
+  },
+  {
+   "speakerIndex": 1,
+   "speakerName": "Ana Ortiz",
+   "speakerRole": "CEO",
+   "startSeconds": 30.4,
+   "endSeconds": 140.0,
+   "text": "Thank you. Demand for our warehouse robots stayed strong this quarter. We opened a second factory in Porto to shorten delivery times for European customers."
+  },
+  {
+   "speakerIndex": 2,
+   "speakerName": "Ben Kato",
+   "speakerRole": "CFO",
+   "startSeconds": 140.5,
+   "endSeconds": 260.0,
+   "text": "Revenue grew 18% year over year to $1.2 billion. Gross margin was 41%, down one point, because the new factory is still ramping. For the second quarter we expect revenue of about $1.3 billion."
+  },
+  {
+   "speakerIndex": 3,
+   "speakerName": "Chris Lee",
+   "speakerRole": "Analyst",
+   "startSeconds": null,
+   "endSeconds": null,
+   "text": "Thank you. How long until the Porto factory reaches full output?"
+  },
+  {
+   "speakerIndex": 2,
+   "speakerName": "Ben Kato",
+   "speakerRole": "CFO",
+   "startSeconds": 275.3,
+   "endSeconds": 320.0,
+   "text": "We assume it reaches full output by the end of the year, and margin should recover as it does."
+  }
+ ],
+ "turnCount": 5
+}
