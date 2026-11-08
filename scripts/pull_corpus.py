@@ -18,9 +18,9 @@ Keys are used in order; a key that hits the daily cap is dropped and the next
 one takes over. Calls already in corpus/raw/ are skipped, so a run that stops on
 the daily cap can be resumed the next day without spending requests twice.
 
-Gaps are printed and recorded in the manifest, not filled automatically: the
-quarter table in PROJECT_CONTEXT.md is the source of truth, so a fallback to an
-older quarter is a decision made there, then reflected in CORPUS below.
+Gaps are printed and recorded in the manifest, not filled automatically: a
+fallback to an older quarter is a decision, recorded in corpus/calls.json (the
+list of calls; edit it to choose your own).
 
 Label check: the period the call states about itself ("third quarter 2026",
 "first quarter of fiscal 2027") is read from the opening segments and compared
@@ -56,7 +56,7 @@ ENV_FILE = ROOT / ".env.local"   # git-ignored via .env.*; see .env.local.exampl
 RAW_DIR = ROOT / "corpus" / "raw"
 MANIFEST = ROOT / "corpus" / "manifest.json"
 SOURCE = "Alpha Vantage EARNINGS_CALL_TRANSCRIPT"
-FROZEN = "2026-11-05"  # calls reported after this date are not added
+CALLS_FILE = ROOT / "corpus" / "calls.json"
 
 HTTP_TIMEOUT_S = 30.0
 PAUSE_S = 1.5          # between requests; the free tier also has a burst limit
@@ -75,29 +75,14 @@ class Call:
         return RAW_DIR / f"{self.ticker}_{self.label}.json"
 
 
-def _calendar(ticker: str, quarters: list[tuple[int, int]]) -> list[Call]:
-    return [Call(ticker, f"{y}Q{q}", q, y) for y, q in quarters]
+def load_calls(path: Path = CALLS_FILE) -> tuple[list[Call], str]:
+    """The calls to pull, in order, and the freeze date (calls reported after it are not added)."""
+    doc = json.loads(path.read_text())
+    calls = [Call(c["ticker"], c["label"], int(c["fiscal_quarter"]), int(c["fiscal_year"])) for c in doc["calls"]]
+    return calls, doc.get("frozen", "")
 
 
-_LAST_FOUR = [(2025, 4), (2026, 1), (2026, 2), (2026, 3)]
-# Latest call not on Alpha Vantage as of 5 Nov: next-older quarter used (§8.3).
-_FALLBACK = [(2025, 3), (2025, 4), (2026, 1), (2026, 2)]
-
-# PROJECT_CONTEXT.md §8.3. Keep in sync with that table.
-CORPUS: list[Call] = [
-    *_calendar("AMD", _FALLBACK),   # 2026Q3 not returned
-    *_calendar("RIVN", _LAST_FOUR),
-    *_calendar("ROOT", _FALLBACK),  # 2026Q3 not returned
-    *_calendar("META", _LAST_FOUR),
-    # Fiscal year ends early May. Alpha Vantage uses fiscal labels (checked
-    # 5 Nov: each label returned the call for that fiscal quarter).
-    # 2027Q1 (Q1 FY27) not returned, so Q1 FY26 is used instead.
-    Call("CRDO", "2026Q1", 1, 2026),
-    Call("CRDO", "2026Q2", 2, 2026),
-    Call("CRDO", "2026Q3", 3, 2026),
-    Call("CRDO", "2026Q4", 4, 2026),
-    *_calendar("NBIS", [(2025, 3), (2025, 4), (2026, 1), (2026, 2)]),
-]
+CORPUS, FROZEN = load_calls()
 
 
 # ---------------------------------------------------------------- label check
