@@ -95,3 +95,25 @@ def test_aggregate_adds_v11_fields_only_when_present():
     # v1.1 declines by its own flag, not by the judge's has_claim
     assert s["abstention_correct"] == 1 and s["answered_anyway"] == 0 and s["false_abstentions"] == 0
     assert ev.aggregate([dict(_r(False, False), abstained=False)])["answered_anyway"] == 1
+
+
+def test_write_results_keeps_agent_outputs_out_of_the_scores_file(tmp_path):
+    out = {"label": "baseline-x", "date": "2026-11-08", "run_at": "t", "target": "v1.1",
+           "summary": {"answerable": 1}, "questions": [{"id": "Q1", "verdict": {"task": "correct"}}]}
+    outputs = {"Q1": {"answer": "a", "quote": "copied transcript text"}}
+    path, outputs_path = ev.write_results(out, outputs, "baseline-x-2026-11-08", tmp_path)
+    scores = json.loads(path.read_text())
+    assert path.name == "baseline-x-2026-11-08.json" and outputs_path.name == "baseline-x-2026-11-08.outputs.json"
+    assert "copied transcript text" not in path.read_text() and scores["summary"] == {"answerable": 1}
+    assert scores["outputs_file"].startswith("baseline-x-2026-11-08.outputs.json")
+    assert json.loads(outputs_path.read_text())["outputs"] == outputs
+
+
+def test_outputs_files_are_git_ignored():
+    import subprocess
+    root = Path(__file__).resolve().parents[1]
+    probe = subprocess.run(["git", "check-ignore", "-q", "eval/results/any-run-2026-01-01.outputs.json"], cwd=root)
+    if probe.returncode == 128:
+        pytest.skip("not a git checkout")
+    assert probe.returncode == 0
+    assert subprocess.run(["git", "check-ignore", "-q", "eval/results/any-run-2026-01-01.json"], cwd=root).returncode == 1

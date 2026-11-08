@@ -16,6 +16,8 @@ so a run makes no transcript API requests. agent/ is not modified.
     python eval/run_eval.py --dry-run
     python eval/run_eval.py --limit 3              # smoke test: first 3 questions
     python eval/run_eval.py                        # full run, writes eval/results/
+                                                   # (<label>-<date>.json = scores, committed;
+                                                   #  .outputs.json = agent outputs, git-ignored)
 
 Scores by dimension:
   retrieval   the right call was fetched (v1 definition; the real retrieval
@@ -255,6 +257,24 @@ def git(*args: str) -> str:
         return "unknown"
 
 
+def write_results(out: dict[str, Any], outputs: dict[str, Any], stem: str,
+                  folder: Path | None = None) -> tuple[Path, Path]:
+    """Write scores to <stem>.json (committed) and the agent's outputs to <stem>.outputs.json.
+
+    The outputs hold text the agent copied from the transcripts, so that file is
+    git-ignored (eval/results/*.outputs.json) and stays local. The scores file
+    names it, so a local run can be traced back to what the agent said.
+    """
+    folder = folder or RESULTS
+    folder.mkdir(parents=True, exist_ok=True)
+    path, outputs_path = folder / f"{stem}.json", folder / f"{stem}.outputs.json"
+    scores = {**out, "outputs_file": f"{outputs_path.name} (git-ignored, local only)"}
+    path.write_text(json.dumps(scores, indent=2, ensure_ascii=False) + "\n")
+    header = {k: out[k] for k in ("label", "date", "run_at", "target") if k in out}
+    outputs_path.write_text(json.dumps({**header, "outputs": outputs}, indent=2, ensure_ascii=False) + "\n")
+    return path, outputs_path
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--dry-run", action="store_true", help="show the plan; no model calls")
@@ -326,13 +346,11 @@ def main(argv: list[str] | None = None) -> int:
         "summary": summary,
         "agent_runs": {k: {"status": r["status"], "run": r["run"]} for k, r in results.items()},
         "questions": scored,
-        "outputs": {k: r["output"] for k, r in results.items()},
     }
-    RESULTS.mkdir(exist_ok=True)
-    path = RESULTS / f"{args.label}-{out['date']}{'-partial' if args.limit else ''}.json"
-    path.write_text(json.dumps(out, indent=2, ensure_ascii=False) + "\n")
+    stem = f"{args.label}-{out['date']}{'-partial' if args.limit else ''}"
+    path, outputs_path = write_results(out, {k: r["output"] for k, r in results.items()}, stem)
     print(json.dumps(summary, indent=2))
-    print(f"wrote {path.relative_to(ROOT)}")
+    print(f"wrote {path.relative_to(ROOT)} (scores, committed) and {outputs_path.relative_to(ROOT)} (agent outputs, git-ignored)")
     return 0
 
 
