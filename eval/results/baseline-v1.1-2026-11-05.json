@@ -7,7 +7,7 @@
   "git_head": "9ae5798",
   "git_tag_v1.0": "c1a7eac",
   "agent_source_sha256": "3251c880f0b7411fc03a1b40df606788b18c4b9b84fbc236ad08add16a429874",
-  "corpus_manifest": "corpus/manifest_equibles.json",
+  "corpus_manifest": "corpus/manifest_v2.json",
   "target": "v1.1",
   "scored_as": "v1.1 CallAnswer, one run per question",
   "summary": {
