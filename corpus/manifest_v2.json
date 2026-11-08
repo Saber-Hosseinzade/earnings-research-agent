@@ -1,5 +1,5 @@
 {
-  "source": "Equibles /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
+  "source": "transcript API /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
   "frozen": "2026-11-05",
   "expected_calls": 24,
   "calls": [
@@ -11,14 +11,14 @@
       "label_check": "match",
       "call_date": "2025-11-04",
       "is_filed_record": false,
-      "source": "Equibles /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
+      "source": "transcript API /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
       "fetched_at": "2026-11-05T23:09:08+00:00",
       "turns": 58,
       "speakers": 4,
       "unnamed_turns": 34,
       "chars": 45150,
       "sha256": "1361429e212143958d5499476c1f9b341d2ca79852c1d94286f2cae49072c04c",
-      "file": "corpus/equibles/raw/AMD_2025Q3.json"
+      "file": "corpus/v2/raw/AMD_2025Q3.json"
     },
     {
       "ticker": "AMD",
@@ -28,14 +28,14 @@
       "label_check": "match",
       "call_date": "2026-02-03",
       "is_filed_record": false,
-      "source": "Equibles /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
+      "source": "transcript API /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
       "fetched_at": "2026-11-05T23:09:09+00:00",
       "turns": 68,
       "speakers": 14,
       "unnamed_turns": 19,
       "chars": 49202,
       "sha256": "ebc07dfc143e3beba39e3e5d5d4d0b77114c8bd5715bd519e6ea145ae35ac9a8",
-      "file": "corpus/equibles/raw/AMD_2025Q4.json"
+      "file": "corpus/v2/raw/AMD_2025Q4.json"
     },
     {
       "ticker": "AMD",
@@ -45,14 +45,14 @@
       "label_check": "match",
       "call_date": "2026-05-05",
       "is_filed_record": false,
-      "source": "Equibles /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
+      "source": "transcript API /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
       "fetched_at": "2026-11-05T23:09:09+00:00",
       "turns": 51,
       "speakers": 13,
       "unnamed_turns": 11,
       "chars": 55366,
       "sha256": "4c8aacf5bfde0d90770aca68763720ba690bdb844f42d50b8f36ec448023a231",
-      "file": "corpus/equibles/raw/AMD_2026Q1.json"
+      "file": "corpus/v2/raw/AMD_2026Q1.json"
     },
     {
       "ticker": "AMD",
@@ -62,14 +62,14 @@
       "label_check": "match",
       "call_date": "2026-08-04",
       "is_filed_record": false,
-      "source": "Equibles /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
+      "source": "transcript API /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
       "fetched_at": "2026-11-05T23:09:10+00:00",
       "turns": 56,
       "speakers": 14,
       "unnamed_turns": 12,
       "chars": 52178,
       "sha256": "605ff2b1bc83a38fee62479e7edd876d9402074de7589f6978d5743dbaac6634",
-      "file": "corpus/equibles/raw/AMD_2026Q2.json"
+      "file": "corpus/v2/raw/AMD_2026Q2.json"
     },
     {
       "ticker": "RIVN",
@@ -79,14 +79,14 @@
       "label_check": "match",
       "call_date": "2026-02-12",
       "is_filed_record": false,
-      "source": "Equibles /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
+      "source": "transcript API /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
       "fetched_at": "2026-11-05T23:09:11+00:00",
       "turns": 74,
       "speakers": 16,
       "unnamed_turns": 3,
       "chars": 47743,
       "sha256": "d8a4d5bda96de91fa3a86570952543809a4439134d0d2c96b2d4670060696d58",
-      "file": "corpus/equibles/raw/RIVN_2025Q4.json"
+      "file": "corpus/v2/raw/RIVN_2025Q4.json"
     },
     {
       "ticker": "RIVN",
@@ -96,14 +96,14 @@
       "label_check": "match",
       "call_date": "2026-04-30",
       "is_filed_record": false,
-      "source": "Equibles /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
+      "source": "transcript API /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
       "fetched_at": "2026-11-05T23:09:12+00:00",
       "turns": 60,
       "speakers": 14,
       "unnamed_turns": 16,
       "chars": 54397,
       "sha256": "2354b557c4497915181e1b07129db6f1a3d9d2c7965d2136ebdbbecd3a34263b",
-      "file": "corpus/equibles/raw/RIVN_2026Q1.json"
+      "file": "corpus/v2/raw/RIVN_2026Q1.json"
     },
     {
       "ticker": "RIVN",
@@ -113,14 +113,14 @@
       "label_check": "match",
       "call_date": "2026-07-30",
       "is_filed_record": false,
-      "source": "Equibles /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
+      "source": "transcript API /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
       "fetched_at": "2026-11-05T23:09:13+00:00",
       "turns": 68,
       "speakers": 15,
       "unnamed_turns": 15,
       "chars": 57005,
       "sha256": "f218023b3ca49762193063f941d3a2b6f15c2a193a3effb4a4dbc55c377ca747",
-      "file": "corpus/equibles/raw/RIVN_2026Q2.json"
+      "file": "corpus/v2/raw/RIVN_2026Q2.json"
     },
     {
       "ticker": "RIVN",
@@ -130,14 +130,14 @@
       "label_check": "match",
       "call_date": "2026-10-29",
       "is_filed_record": false,
-      "source": "Equibles /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
+      "source": "transcript API /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
       "fetched_at": "2026-11-05T23:09:14+00:00",
       "turns": 75,
       "speakers": 18,
       "unnamed_turns": 12,
       "chars": 52470,
       "sha256": "58d7dab1a09b9b3406d333b9714682bdaeae615c2f9ec225aea4820560c3930f",
-      "file": "corpus/equibles/raw/RIVN_2026Q3.json"
+      "file": "corpus/v2/raw/RIVN_2026Q3.json"
     },
     {
       "ticker": "ROOT",
@@ -147,14 +147,14 @@
       "label_check": "match",
       "call_date": "2025-11-05",
       "is_filed_record": false,
-      "source": "Equibles /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
+      "source": "transcript API /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
       "fetched_at": "2026-11-05T23:09:15+00:00",
       "turns": 25,
       "speakers": 4,
       "unnamed_turns": 14,
       "chars": 16045,
       "sha256": "04888050c7b3a7e19eee2040fc5853c8773cf47507ceba73375cb8c2b69441ab",
-      "file": "corpus/equibles/raw/ROOT_2025Q3.json"
+      "file": "corpus/v2/raw/ROOT_2025Q3.json"
     },
     {
       "ticker": "ROOT",
@@ -164,14 +164,14 @@
       "label_check": "match",
       "call_date": "2026-02-25",
       "is_filed_record": false,
-      "source": "Equibles /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
+      "source": "transcript API /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
       "fetched_at": "2026-11-05T23:09:16+00:00",
       "turns": 37,
       "speakers": 9,
       "unnamed_turns": 6,
       "chars": 38696,
       "sha256": "ce4970d8caf028d42280a4423f9680d306ec02a19b99e4083832e96ed3efc426",
-      "file": "corpus/equibles/raw/ROOT_2025Q4.json"
+      "file": "corpus/v2/raw/ROOT_2025Q4.json"
     },
     {
       "ticker": "ROOT",
@@ -181,14 +181,14 @@
       "label_check": "match",
       "call_date": "2026-05-06",
       "is_filed_record": false,
-      "source": "Equibles /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
+      "source": "transcript API /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
       "fetched_at": "2026-11-05T23:09:17+00:00",
       "turns": 50,
       "speakers": 9,
       "unnamed_turns": 12,
       "chars": 34950,
       "sha256": "daf1deb8886ad314bca5aa831bc923526aa108943fef8cb27a9d39218d127d63",
-      "file": "corpus/equibles/raw/ROOT_2026Q1.json"
+      "file": "corpus/v2/raw/ROOT_2026Q1.json"
     },
     {
       "ticker": "ROOT",
@@ -198,14 +198,14 @@
       "label_check": "match",
       "call_date": "2026-08-05",
       "is_filed_record": false,
-      "source": "Equibles /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
+      "source": "transcript API /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
       "fetched_at": "2026-11-05T23:09:17+00:00",
       "turns": 41,
       "speakers": 8,
       "unnamed_turns": 6,
       "chars": 32630,
       "sha256": "57c061116d577b34ea9be3b932867bd300060a229ae410e03e039dbd75e0341e",
-      "file": "corpus/equibles/raw/ROOT_2026Q2.json"
+      "file": "corpus/v2/raw/ROOT_2026Q2.json"
     },
     {
       "ticker": "META",
@@ -215,14 +215,14 @@
       "label_check": "match",
       "call_date": "2026-01-28",
       "is_filed_record": false,
-      "source": "Equibles /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
+      "source": "transcript API /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
       "fetched_at": "2026-11-05T23:09:18+00:00",
       "turns": 37,
       "speakers": 13,
       "unnamed_turns": 10,
       "chars": 58245,
       "sha256": "3082b2dc6707d9b54baec3cb69e82feb526b3c1f9aae59b3f848e613e3fdd9ce",
-      "file": "corpus/equibles/raw/META_2025Q4.json"
+      "file": "corpus/v2/raw/META_2025Q4.json"
     },
     {
       "ticker": "META",
@@ -232,14 +232,14 @@
       "label_check": "match",
       "call_date": "2026-04-29",
       "is_filed_record": false,
-      "source": "Equibles /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
+      "source": "transcript API /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
       "fetched_at": "2026-11-05T23:09:19+00:00",
       "turns": 33,
       "speakers": 12,
       "unnamed_turns": 11,
       "chars": 58482,
       "sha256": "56d4c6cf4dca31873c4772d55bffbd05116fb0578fb1086c3ac8da58159cf587",
-      "file": "corpus/equibles/raw/META_2026Q1.json"
+      "file": "corpus/v2/raw/META_2026Q1.json"
     },
     {
       "ticker": "META",
@@ -249,14 +249,14 @@
       "label_check": "match",
       "call_date": "2026-07-29",
       "is_filed_record": false,
-      "source": "Equibles /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
+      "source": "transcript API /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
       "fetched_at": "2026-11-05T23:09:20+00:00",
       "turns": 31,
       "speakers": 11,
       "unnamed_turns": 8,
       "chars": 61239,
       "sha256": "7ed0ca8c4c0632b880c193d4c6d5a6f9d4228cc80babbed7d3f8eae492c368e6",
-      "file": "corpus/equibles/raw/META_2026Q2.json"
+      "file": "corpus/v2/raw/META_2026Q2.json"
     },
     {
       "ticker": "META",
@@ -266,14 +266,14 @@
       "label_check": "match",
       "call_date": "2026-10-21",
       "is_filed_record": false,
-      "source": "Equibles /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
+      "source": "transcript API /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
       "fetched_at": "2026-11-05T23:09:21+00:00",
       "turns": 33,
       "speakers": 11,
       "unnamed_turns": 11,
       "chars": 58217,
       "sha256": "5e3a1bf2ab747ddf14a41cc7cc49846619265c574e38996f1453895136b65eb1",
-      "file": "corpus/equibles/raw/META_2026Q3.json"
+      "file": "corpus/v2/raw/META_2026Q3.json"
     },
     {
       "ticker": "CRDO",
@@ -283,14 +283,14 @@
       "label_check": "match",
       "call_date": "2025-09-03",
       "is_filed_record": false,
-      "source": "Equibles /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
+      "source": "transcript API /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
       "fetched_at": "2026-11-05T23:09:22+00:00",
       "turns": 67,
       "speakers": 13,
       "unnamed_turns": 12,
       "chars": 46204,
       "sha256": "9b511b7a241c7512c483ffc1e0357efcebf5657009fb87a27518f6dc33ef408a",
-      "file": "corpus/equibles/raw/CRDO_2026Q1.json"
+      "file": "corpus/v2/raw/CRDO_2026Q1.json"
     },
     {
       "ticker": "CRDO",
@@ -300,14 +300,14 @@
       "label_check": "match",
       "call_date": "2025-12-01",
       "is_filed_record": false,
-      "source": "Equibles /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
+      "source": "transcript API /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
       "fetched_at": "2026-11-05T23:09:23+00:00",
       "turns": 60,
       "speakers": 4,
       "unnamed_turns": 36,
       "chars": 46217,
       "sha256": "939df006b98d1bb923b7a66af840ad90d9d7e621c2b005c20d47a199a1be0b08",
-      "file": "corpus/equibles/raw/CRDO_2026Q2.json"
+      "file": "corpus/v2/raw/CRDO_2026Q2.json"
     },
     {
       "ticker": "CRDO",
@@ -317,14 +317,14 @@
       "label_check": "match",
       "call_date": "2026-03-02",
       "is_filed_record": false,
-      "source": "Equibles /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
+      "source": "transcript API /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
       "fetched_at": "2026-11-05T23:09:24+00:00",
       "turns": 55,
       "speakers": 16,
       "unnamed_turns": 17,
       "chars": 45325,
       "sha256": "d4ed535b7583b4ce4aa1fdd2cac8f876b17e4fe90ed006b53cfff728d4c0022a",
-      "file": "corpus/equibles/raw/CRDO_2026Q3.json"
+      "file": "corpus/v2/raw/CRDO_2026Q3.json"
     },
     {
       "ticker": "CRDO",
@@ -334,14 +334,14 @@
       "label_check": "match",
       "call_date": "2026-06-01",
       "is_filed_record": false,
-      "source": "Equibles /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
+      "source": "transcript API /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
       "fetched_at": "2026-11-05T23:09:25+00:00",
       "turns": 47,
       "speakers": 16,
       "unnamed_turns": 15,
       "chars": 41057,
       "sha256": "47f5203f54e494ccebf6a97412f216516044450025ab40269edc6c415bc7aa1a",
-      "file": "corpus/equibles/raw/CRDO_2026Q4.json"
+      "file": "corpus/v2/raw/CRDO_2026Q4.json"
     },
     {
       "ticker": "NBIS",
@@ -351,14 +351,14 @@
       "label_check": "match",
       "call_date": "2025-11-11",
       "is_filed_record": false,
-      "source": "Equibles /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
+      "source": "transcript API /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
       "fetched_at": "2026-11-05T23:09:25+00:00",
       "turns": 56,
       "speakers": 4,
       "unnamed_turns": 16,
       "chars": 40964,
       "sha256": "83cc46625ccc307c2ded37bc766f325dd9ce04793b20d7c3964913c68523bc29",
-      "file": "corpus/equibles/raw/NBIS_2025Q3.json"
+      "file": "corpus/v2/raw/NBIS_2025Q3.json"
     },
     {
       "ticker": "NBIS",
@@ -368,14 +368,14 @@
       "label_check": "match",
       "call_date": "2026-02-12",
       "is_filed_record": false,
-      "source": "Equibles /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
+      "source": "transcript API /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
       "fetched_at": "2026-11-05T23:09:26+00:00",
       "turns": 43,
       "speakers": 7,
       "unnamed_turns": 7,
       "chars": 37676,
       "sha256": "a51d758037a3204b50d9095c42233b3bbc4fe66e124f36c0a53aa7a883892e69",
-      "file": "corpus/equibles/raw/NBIS_2025Q4.json"
+      "file": "corpus/v2/raw/NBIS_2025Q4.json"
     },
     {
       "ticker": "NBIS",
@@ -385,14 +385,14 @@
       "label_check": "match",
       "call_date": "2026-05-13",
       "is_filed_record": false,
-      "source": "Equibles /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
+      "source": "transcript API /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
       "fetched_at": "2026-11-05T23:09:27+00:00",
       "turns": 35,
       "speakers": 8,
       "unnamed_turns": 3,
       "chars": 39281,
       "sha256": "e7913a0b03dcc80f0ded460267924873f72c73ad69411994328168cec00af3b6",
-      "file": "corpus/equibles/raw/NBIS_2026Q1.json"
+      "file": "corpus/v2/raw/NBIS_2026Q1.json"
     },
     {
       "ticker": "NBIS",
@@ -402,14 +402,14 @@
       "label_check": "match",
       "call_date": "2026-08-12",
       "is_filed_record": false,
-      "source": "Equibles /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
+      "source": "transcript API /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers",
       "fetched_at": "2026-11-05T23:09:28+00:00",
       "turns": 32,
       "speakers": 8,
       "unnamed_turns": 2,
       "chars": 41958,
       "sha256": "9a624c22737a476249edbec334967b4f97a27ca84a769c3d7cd6fe554b3a924c",
-      "file": "corpus/equibles/raw/NBIS_2026Q2.json"
+      "file": "corpus/v2/raw/NBIS_2026Q2.json"
     }
   ],
   "gaps": []

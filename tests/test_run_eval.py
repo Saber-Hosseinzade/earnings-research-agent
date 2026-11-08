@@ -15,7 +15,7 @@ _spec.loader.exec_module(ev)
 
 
 def test_golden_passages_point_at_real_turns_with_their_quote():
-    """Every answerable passage's quote is inside the turn it points to (needs corpus/equibles/raw)."""
+    """Every answerable passage's quote is inside the turn it points to (needs corpus/v2/raw)."""
     if not ev.CORPUS_RAW.exists():
         pytest.skip("raw corpus not present")
     for row in ev.load_golden():
