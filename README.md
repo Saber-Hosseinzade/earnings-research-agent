@@ -115,6 +115,20 @@ aws logs delete-log-group --log-group-name <each group listed>   # the stack doe
 
 Transaction Search stays on. To undo it: `aws xray update-trace-segment-destination --destination XRay`.
 
+## Evaluation corpus
+
+The evaluation set uses a fixed corpus of 24 earnings-call transcripts from a third-party transcript API. Raw transcripts are not in the repo; `corpus/manifest_v2.json` records the sha256 of each one, so a fresh pull can be checked against it. The hashes match only text from the same provider.
+
+To pull them yourself, use your own key and base URL for a provider that serves the endpoint and response shape described in `scripts/transcript_source.py`. Put both in `.env.local`, which is git-ignored:
+
+```bash
+cp .env.local.example .env.local          # then set TRANSCRIPT_API_KEY and TRANSCRIPT_API_BASE
+python scripts/pull_corpus_v2.py --dry-run
+python scripts/pull_corpus_v2.py          # writes corpus/v2/raw/, updates the manifest
+```
+
+All provider-specific code is in `scripts/transcript_source.py`; to use another provider, adapt that file.
+
 ## Measurements
 
 Single runs on Nova 2 Lite in eu-central-1, so these show scale, not an average.

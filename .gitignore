@@ -29,5 +29,5 @@ cdk.context.json
 # company copyright). corpus/manifest.json with hashes is committed instead.
 corpus/raw/
 
-# Equibles raw transcripts (same reason); corpus/manifest_equibles.json is committed.
-corpus/equibles/raw/
+# v2 transcripts (same reason); corpus/manifest_v2.json is committed.
+corpus/v2/raw/

@@ -1,22 +1,23 @@
 #!/usr/bin/env python3
-"""Pull the v2 corpus from Equibles: the same 24 (ticker, fiscal quarter) pairs as
+"""Pull the v2 corpus: the same 24 (ticker, fiscal quarter) pairs as
 scripts/pull_corpus.py, so the golden set's calls are unchanged.
 
-One raw JSON per call goes to corpus/equibles/raw/ (git-ignored: company
-copyright, provider terms). corpus/manifest_equibles.json (committed) records,
-per call, the turn, speaker and character counts and the sha256 of the raw file.
+One raw JSON per call goes to corpus/v2/raw/ (git-ignored: company copyright,
+provider terms). corpus/manifest_v2.json (committed) records, per call, the turn,
+speaker and character counts and the sha256 of the raw file.
 
-Usage (from the repo root):
+Usage (from the repo root; see the README for where to get a key):
 
-    export EQUIBLES_API_KEY=eq_...           # or put the line in .env.local
-    python scripts/pull_corpus_equibles.py             # fetches only missing calls
-    python scripts/pull_corpus_equibles.py --dry-run   # list what would be fetched
-    python scripts/pull_corpus_equibles.py --force     # refetch everything
+    export TRANSCRIPT_API_KEY=...          # your own key; or put both lines in .env.local
+    export TRANSCRIPT_API_BASE=...         # the provider's base URL, from the README
+    python scripts/pull_corpus_v2.py             # fetches only missing calls
+    python scripts/pull_corpus_v2.py --dry-run   # list what would be fetched
+    python scripts/pull_corpus_v2.py --force     # refetch everything
 
-Equibles labels calls by the company's own fiscal year and quarter, and the
+The API labels calls by the company's own fiscal year and quarter, and the
 response states them, so the label check compares the response with the request
-instead of reading the opening text. Free tier: 100 requests a day, shared with
-MCP. A call is one request per 200 turns.
+instead of reading the opening text. Free tier: 100 requests a day. A call is
+one request per 200 turns. Provider-specific code lives in transcript_source.py.
 
 Standard library only.
 """
@@ -26,65 +27,26 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import os
 import sys
-import time
-import urllib.error
-import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from pull_corpus import CORPUS, ROOT, FROZEN, Call, load_env_file  # noqa: E402
+import transcript_source as source  # noqa: E402
 
 ENV_FILE = ROOT / ".env.local"
-RAW_DIR = ROOT / "corpus" / "equibles" / "raw"
-MANIFEST = ROOT / "corpus" / "manifest_equibles.json"
-SOURCE = "Equibles /v1/stocks/{ticker}/earnings-calls/{fy}/{fq}/speakers"
-BASE = "https://api.equibles.com"
-PAGE = 200
-PAUSE_S = 0.5
-HTTP_TIMEOUT_S = 30.0
+RAW_DIR = ROOT / "corpus" / "v2" / "raw"
+MANIFEST = ROOT / "corpus" / "manifest_v2.json"
 
 
 def raw_path(call: Call) -> Path:
     return RAW_DIR / f"{call.ticker}_{call.label}.json"
 
 
-def get_page(call: Call, offset: int, key: str) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
-    url = (f"{BASE}/v1/stocks/{call.ticker}/earnings-calls/{call.fiscal_year}/{call.fiscal_quarter}"
-           f"/speakers?limit={PAGE}&offset={offset}")
-    req = urllib.request.Request(url, headers={"Authorization": f"Bearer {key}"})
-    try:
-        with urllib.request.urlopen(req, timeout=HTTP_TIMEOUT_S) as resp:
-            return json.load(resp), None
-    except urllib.error.HTTPError as exc:  # never include the key in a message
-        kind = {404: "not_found", 429: "rate_limited", 401: "unauthorized"}.get(exc.code, "upstream_error")
-        return None, {"type": kind, "message": f"HTTP {exc.code}"}
-    except (urllib.error.URLError, TimeoutError, OSError, json.JSONDecodeError) as exc:
-        return None, {"type": "upstream_error", "message": type(exc).__name__}
-
-
 def fetch(call: Call, key: str) -> tuple[dict[str, Any] | None, dict[str, Any] | None, int]:
-    """All turns of one call (paged), the error if any, and requests used."""
-    merged: dict[str, Any] | None = None
-    offset, used = 0, 0
-    while True:
-        time.sleep(PAUSE_S)
-        page, err = get_page(call, offset, key)
-        used += 1
-        if err is not None:
-            return None, err, used
-        if merged is None:
-            merged = {k: v for k, v in page.items() if k not in ("data", "turnCount", "offset", "hasMore")}
-            merged["data"] = []
-        merged["data"].extend(page["data"])
-        if not page.get("hasMore") or not page["data"]:
-            break
-        offset += page["turnCount"]
-    merged["turnCount"] = len(merged["data"])
-    return merged, None, used
+    return source.fetch(call.ticker, call.fiscal_year, call.fiscal_quarter, key)
 
 
 def manifest_entry(call: Call, raw: bytes, fetched_at: str) -> dict[str, Any]:
@@ -100,7 +62,7 @@ def manifest_entry(call: Call, raw: bytes, fetched_at: str) -> dict[str, Any]:
         "label_check": "match" if got == want else "mismatch",
         "call_date": (body.get("callDate") or "")[:10],
         "is_filed_record": body.get("isFiledRecord"),
-        "source": SOURCE,
+        "source": source.SOURCE,
         "fetched_at": fetched_at,
         "turns": len(turns),
         "speakers": len({t.get("speakerName") or t.get("speakerRole") for t in turns}),
@@ -127,9 +89,10 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     load_env_file(ENV_FILE)
-    key = os.environ.get("EQUIBLES_API_KEY", "").strip()
-    if todo and not key:
-        print("EQUIBLES_API_KEY is not set (shell or .env.local)", file=sys.stderr)
+    key = source.api_key()
+    missing = [v for v, val in ((source.KEY_VAR, key), (source.BASE_VAR, source.base_url())) if not val]
+    if todo and missing:
+        print(f"{', '.join(missing)} not set (shell or .env.local)", file=sys.stderr)
         return 2
 
     RAW_DIR.mkdir(parents=True, exist_ok=True)
@@ -161,7 +124,7 @@ def main(argv: list[str] | None = None) -> int:
 
     order = [f"{c.ticker}_{c.label}" for c in CORPUS]
     MANIFEST.write_text(json.dumps({
-        "source": SOURCE, "frozen": FROZEN, "expected_calls": len(CORPUS),
+        "source": source.SOURCE, "frozen": FROZEN, "expected_calls": len(CORPUS),
         "calls": [entries[k] for k in order if k in entries], "gaps": gaps,
     }, indent=2) + "\n")
 

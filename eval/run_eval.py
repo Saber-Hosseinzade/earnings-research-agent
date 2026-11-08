@@ -7,9 +7,9 @@ question. So v1.0 is scored as shipped: it runs once per call, and every golden
 question for that call is scored against that one brief. Low scores on specific
 questions are the honest baseline, not a bug in the harness.
 
-Transcripts come from corpus/equibles/raw/ through a local tool that replaces
+Transcripts come from corpus/v2/raw/ through a local tool that replaces
 the Lambda tool (same "Speaker (Role): text" format, same 100,000-character cap),
-so a run uses no Alpha Vantage or Equibles requests. agent/ is not modified.
+so a run makes no transcript API requests. agent/ is not modified.
 
     export MODEL_ID=eu.amazon.nova-2-lite-v1:0     # agent model
     export AWS_PROFILE=sandbox AWS_REGION=eu-central-1
@@ -47,7 +47,7 @@ from typing import Any, Callable
 
 ROOT = Path(__file__).resolve().parents[1]
 GOLDEN = ROOT / "eval" / "golden_set.jsonl"
-CORPUS_RAW = ROOT / "corpus" / "equibles" / "raw"
+CORPUS_RAW = ROOT / "corpus" / "v2" / "raw"
 RESULTS = ROOT / "eval" / "results"
 MAX_TRANSCRIPT_CHARS = 100_000  # same as the Lambda tool's default
 DEFAULT_JUDGE = "eu.amazon.nova-pro-v1:0"
@@ -319,7 +319,7 @@ def main(argv: list[str] | None = None) -> int:
         "git_head": git("rev-parse", "--short", "HEAD"),
         "git_tag_v1.0": git("rev-parse", "--short", "v1.0"),
         "agent_source_sha256": hashlib.sha256(prompt_src.encode()).hexdigest(),
-        "corpus_manifest": "corpus/manifest_equibles.json",
+        "corpus_manifest": "corpus/manifest_v2.json",
         "target": args.target,
         "scored_as": ("v1 EarningsBrief, one brief per call, every question for that call judged against it"
                       if not per_question else "v1.1 CallAnswer, one run per question"),

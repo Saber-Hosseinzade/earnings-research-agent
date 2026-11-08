@@ -7,7 +7,7 @@
   "git_head": "e050967",
   "git_tag_v1.0": "c1a7eac",
   "agent_main_sha256": "6af6150c56561ceb68fc54ba7486338b0700d064d149502da42171cef046627f",
-  "corpus_manifest": "corpus/manifest_equibles.json",
+  "corpus_manifest": "corpus/manifest_v2.json",
   "scored_as": "v1 EarningsBrief, one brief per call, every question for that call judged against it",
   "summary": {
     "answerable": 30,
