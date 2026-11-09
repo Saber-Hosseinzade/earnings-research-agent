@@ -1,6 +1,7 @@
 {
   "app": "python3 app.py",
   "context": {
-    "model_id": "eu.amazon.nova-2-lite-v1:0"
+    "model_id": "eu.amazon.nova-2-lite-v1:0",
+    "vector_store": "s3vectors"
   }
 }
