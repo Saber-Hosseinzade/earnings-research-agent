@@ -473,6 +473,8 @@ def main(argv: list[str] | None = None) -> int:
         entry = {"id": row["id"], "ticker": row["ticker"], "quarter": row["quarter"],
                  "answerable": row["answerable"], "kind": row["kind"], "status": res["status"],
                  "retrieval": score_retrieval(row, res["fetched"]), "verdict": verdict}
+        if args.target == "v2.0":  # searches are kept even for runs with no answer: they show why
+            entry["queries"] = [q["query"] for q in (res.get("retrieval") or {}).get("queries", [])]
         if args.target == "v2.0" and res["output"]:
             entry.update(v2_entry(row, res, ask))
         elif per_question and res["output"]:
