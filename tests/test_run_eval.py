@@ -117,3 +117,69 @@ def test_outputs_files_are_git_ignored():
         pytest.skip("not a git checkout")
     assert probe.returncode == 0
     assert subprocess.run(["git", "check-ignore", "-q", "eval/results/any-run-2026-01-01.json"], cwd=root).returncode == 1
+
+
+# ---------------------------------------------------------------- v2.0
+
+def test_parse_passage_id_and_gold_match():
+    assert ev.parse_passage_id("AMD_2026Q2_t003_p1") == ("AMD", "2026Q2", 3)
+    assert ev.parse_passage_id("AMD_2026Q2_t003") == ("AMD", "2026Q2", 3)
+    assert ev.parse_passage_id("made up") is None
+    row = {"ticker": "AMD", "quarter": "2026Q2", "passage": {"turn": 3}}
+    assert ev.is_gold("AMD_2026Q2_t003_p2", row) and not ev.is_gold("AMD_2026Q1_t003", row)
+    assert not ev.is_gold("AMD_2026Q2_t003", {"ticker": "AMD", "quarter": "2026Q2", "passage": None})
+
+
+def _v2_res(covered, cited, returned, check):
+    return {"output": {"covered": covered, "answer": "Revenue was $11.5 billion.", "citations": cited},
+            "retrieval": {"returned": returned}, "citation_check": check}
+
+
+def test_v2_entry_scores_citations_and_judges_only_verified_ones(tmp_path):
+    (tmp_path / "AMD_2026Q2_t003_p1.txt").write_text("CFO: Revenue was $11.5 billion.")
+    row = {"ticker": "AMD", "quarter": "2026Q2", "passage": {"turn": 3}}
+    prompts = []
+    ask = lambda p: prompts.append(p) or '{"support": "supported", "note": "n"}'  # noqa: E731
+    res = _v2_res(True, ["AMD_2026Q2_t003_p1", "AMD_2025Q4_t001"], ["AMD_2026Q2_t009", "AMD_2026Q2_t003_p1"],
+                  {"ok": False, "problems": ["cited_not_returned"], "verified": ["AMD_2026Q2_t003_p1"],
+                   "unreturned": ["AMD_2025Q4_t001"]})
+    e = ev.v2_entry(row, res, ask, tmp_path)
+    assert e["gold_returned"] and e["gold_cited"] and e["citation_check_ok"] is False
+    assert e["citation_support"]["support"] == "supported"
+    assert len(prompts) == 1 and "AMD_2025Q4_t001" not in prompts[0] and "$11.5 billion" in prompts[0]
+
+
+def test_v2_entry_skips_the_citation_judge_when_declined_or_text_missing(tmp_path):
+    row = {"ticker": "AMD", "quarter": "2026Q2", "passage": None}
+    no_judge = lambda p: pytest.fail("no citation judge call")  # noqa: E731
+    e = ev.v2_entry(row, _v2_res(False, [], ["AMD_2026Q2_t009"], {"ok": True, "problems": [], "verified": []}),
+                    no_judge, tmp_path)
+    assert e["abstained"] and e["citation_support"] is None and e["gold_returned"] is None
+    v = ev.judge_citations("a", ["AMD_2026Q2_t404"], no_judge, tmp_path)
+    assert v["judge_error"] and v["support"] is None
+
+
+def test_aggregate_adds_v2_citation_fields():
+    def row(answerable, abstained, ok, problems, gold_ret, gold_cited, support):
+        return dict(_r(answerable, not abstained), abstained=abstained, citation_check_ok=ok,
+                    citation_problems=problems, gold_returned=gold_ret, gold_cited=gold_cited,
+                    citation_support=support and {"support": support})
+    rows = [row(True, False, True, [], True, True, "supported"),
+            row(True, False, False, ["cited_not_returned"], True, False, "partial"),
+            row(True, True, True, [], False, False, None),
+            row(False, False, False, ["uncited_answer"], None, None, None)]
+    s = ev.aggregate(rows)
+    assert s["citations"] == {"answers_given": 3, "check_ok": 1, "cited_not_returned": 1, "uncited_answers": 1,
+                              "support": {"supported": 1, "partial": 1, "unsupported": 0}, "support_judge_errors": 0}
+    assert s["gold_turn_returned"] == 2 and s["gold_turn_cited"] == 1
+    assert s["false_abstentions"] == 1 and s["answered_anyway"] == 1
+    assert "quotes_given" not in s
+    assert "citations" not in ev.aggregate([_r(True, True)])
+
+
+def test_a_stopped_run_is_no_answer_not_a_decline():
+    stopped = [dict(_r(True, False), status="stopped"), dict(_r(False, False), status="stopped"),
+               dict(_r(False, False), status="ok")]
+    s = ev.aggregate(stopped)
+    assert s["no_answer"] == {"answerable": 1, "unanswerable": 1}
+    assert s["false_abstentions"] == 0 and s["abstention_correct"] == 1 and s["answered_anyway"] == 0
