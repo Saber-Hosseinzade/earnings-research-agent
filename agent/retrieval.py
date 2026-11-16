@@ -14,6 +14,12 @@ the entrypoint *pins* them: the pinned values are applied in code and the model
 cannot widen the search. When nothing is pinned, the model may pass ticker and
 quarter itself.
 
+Search limit: the prompt asks for at most two searches and no repeated query, but
+the model does not keep to it (11 Nov: three keyword variants of one query, then
+the run budget). So the tool enforces it in code: past ``max_searches``, or for a
+query already used in this run, it refuses with a non-retryable ``search_limit``
+error and does not call the retriever.
+
 Result shape matches the Lambda tool: ``{"ok": true, ...}`` or
 ``{"ok": false, "error": {"type", "message", "retryable"}}``.
 """
@@ -29,6 +35,7 @@ from typing import Any, Callable
 from strands import tool
 
 DEFAULT_K = 5
+MAX_SEARCHES = 2
 MAX_K = 8
 QUARTER = re.compile(r"^\d{4}Q[1-4]$")
 
@@ -43,12 +50,19 @@ class Ledger:
 
     queries: list[dict[str, Any]] = field(default_factory=list)
     returned: dict[str, dict[str, Any]] = field(default_factory=dict)  # passage_id -> metadata (no text)
+    refused: list[str] = field(default_factory=list)  # queries refused by the search limit
+    texts: dict[str, str] = field(default_factory=dict, repr=False)  # passage_id -> text, for the final answer
 
     def record(self, query: str, ticker: str | None, quarter: str | None, passages: list[dict[str, Any]]) -> None:
         self.queries.append({"query": query, "ticker": ticker, "quarter": quarter,
                              "returned": [p["passage_id"] for p in passages]})
         for p in passages:
             self.returned.setdefault(p["passage_id"], {k: v for k, v in p.items() if k != "text"})
+            self.texts.setdefault(p["passage_id"], p.get("text", ""))
+
+    def used(self, query: str) -> bool:
+        key = " ".join(query.lower().split())
+        return any(" ".join(q["query"].lower().split()) == key for q in self.queries)
 
 
 def _error(kind: str, message: str, retryable: bool = False) -> str:
@@ -56,7 +70,8 @@ def _error(kind: str, message: str, retryable: bool = False) -> str:
 
 
 def make_retrieve_tool(retriever: Retriever, ledger: Ledger,
-                       pinned_ticker: str | None = None, pinned_quarter: str | None = None):
+                       pinned_ticker: str | None = None, pinned_quarter: str | None = None,
+                       max_searches: int = MAX_SEARCHES):
     """Build the tool for one run. Pinned values override whatever the model passes."""
 
     @tool
@@ -81,6 +96,11 @@ def make_retrieve_tool(retriever: Retriever, ledger: Ledger,
             return _error("bad_request", "query is empty")
         if q and not QUARTER.match(q):
             return _error("bad_request", f"quarter must look like 2026Q2, got {q!r}")
+        if len(ledger.queries) >= max_searches or ledger.used(query):
+            ledger.refused.append(query)
+            why = "this query was already used" if ledger.used(query) else f"the limit is {max_searches} searches"
+            return _error("search_limit", f"Search refused: {why}. Do not search again. "
+                          "Answer now from the passages you already have, or say the calls did not discuss it.")
         k = max(1, min(int(k or DEFAULT_K), MAX_K))
         try:
             passages = retriever(query, t, q, k)
