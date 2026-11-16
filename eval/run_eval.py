@@ -343,6 +343,10 @@ def _v2_extras(rows: list[dict[str, Any]]) -> dict[str, Any]:
         },
         "gold_turn_returned": sum(bool(r["gold_returned"]) for r in ans),
         "gold_turn_cited": sum(bool(r["gold_cited"]) for r in ans),
+        "search_limit": {  # rows from runs before the search limit (16 Nov) have neither key: counted as 0
+            "runs_with_refused_search": sum(bool(r.get("searches_refused")) for r in rows if "queries" in r),
+            "final_answer_after_stop": sum(bool(r.get("final_answer")) for r in rows if "queries" in r),
+        },
     }
 
 
@@ -475,6 +479,8 @@ def main(argv: list[str] | None = None) -> int:
                  "retrieval": score_retrieval(row, res["fetched"]), "verdict": verdict}
         if args.target == "v2.0":  # searches are kept even for runs with no answer: they show why
             entry["queries"] = [q["query"] for q in (res.get("retrieval") or {}).get("queries", [])]
+            entry["searches_refused"] = (res.get("run") or {}).get("searches_refused", 0)
+            entry["final_answer"] = bool((res.get("run") or {}).get("final_answer"))
         if args.target == "v2.0" and res["output"]:
             entry.update(v2_entry(row, res, ask))
         elif per_question and res["output"]:
