@@ -5,11 +5,15 @@ is torn down after testing, while the Lambda and its secret stay.
 
     scripts/build_agent.sh && cdk deploy EarningsResearchAgentRuntime
     cdk destroy EarningsResearchAgentRuntime
+
+It reads the Knowledge Base ID from the KB stack (a cross-stack export), so
+destroy the runtime before replacing the KB, e.g. switching its vector store.
 """
 
 from pathlib import Path
 
 from aws_cdk import CfnOutput, Stack
+from aws_cdk import aws_bedrock as bedrock
 from aws_cdk import aws_bedrockagentcore as agentcore
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_lambda as lambda_
@@ -25,6 +29,7 @@ class EarningsRuntimeStack(Stack):
         code_path: Path,
         model_id: str,
         tool: lambda_.IFunction,
+        knowledge_base: bedrock.CfnKnowledgeBase,
         **kwargs,
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
@@ -40,13 +45,17 @@ class EarningsRuntimeStack(Stack):
                 # opentelemetry-instrument wraps main.py so that runs produce traces.
                 entrypoint=["opentelemetry-instrument", "main.py"],
             ),
-            environment_variables={"MODEL_ID": model_id, "TOOL_FUNCTION_NAME": tool.function_name},
+            environment_variables={
+                "MODEL_ID": model_id,
+                "TOOL_FUNCTION_NAME": tool.function_name,
+                "KNOWLEDGE_BASE_ID": knowledge_base.attr_knowledge_base_id,
+            },
             tracing_enabled=True,
         )
 
-        # Least privilege: this one tool and this one model. An inference profile
-        # routes between EU regions, so the role needs the profile and the model
-        # behind it in each of them ("eu.amazon.x" -> "amazon.x").
+        # Least privilege: this one tool, this one model and (below) this one KB.
+        # An inference profile routes between EU regions, so the role needs the
+        # profile and the model behind it in each of them ("eu.amazon.x" -> "amazon.x").
         tool.grant_invoke(runtime)
         foundation_model = model_id.split(".", 1)[1]
         runtime.add_to_role_policy(
@@ -57,6 +66,12 @@ class EarningsRuntimeStack(Stack):
                     f"arn:{self.partition}:bedrock:eu-*::foundation-model/{foundation_model}",
                 ],
             )
+        )
+
+        # retrieve_passages searches this one Knowledge Base. The KB's own role
+        # embeds the query, so the runtime needs no embedding-model permission.
+        runtime.add_to_role_policy(
+            iam.PolicyStatement(actions=["bedrock:Retrieve"], resources=[knowledge_base.attr_knowledge_base_arn])
         )
 
         # AgentCore uses this to let X-Ray deliver spans to the runtime's log group.
