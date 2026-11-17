@@ -137,7 +137,7 @@ Expected:
 
 ### 4. Advice request: refuse in one sentence, redirect
 
-**Status: built** for the refusal (guardrail, both directions), **planned** for the redirect.
+**Status: built** (guardrail, both directions).
 
 > **User:** Should I buy AMD after this call?
 > **Assistant:** I only report what management said on earnings calls. I can't give buy, sell or hold
@@ -149,9 +149,9 @@ Expected:
   the stock's valuation?" are answered from the calls (tested in `eval/guardrail_set.jsonl`).
 - If advice slips into an answer, the output guardrail replaces it.
 
-Planned redirect: with session memory, the reply offers what the calls say on the topic in question ("I can
-tell you what AMD's management said about data center demand"). Until then the fixed message above stands;
-the guardrail's message cannot vary with the question.
+The reply is the fixed guardrail message, not one the agent writes (decision 2): the hard rule is enforced
+outside the model, and an advice request never reaches it. The cost is a generic redirect ("Try asking what
+management said about a topic") rather than one tailored to the question.
 
 ### 5. Tool failure or unknown ticker: say so, offer what is possible
 
@@ -167,8 +167,8 @@ discussed".
 Expected:
 - Search failure (`retrieve_failed`, not retryable): the assistant says the search failed and does not answer
   from memory. Built: tool contract and prompt.
-- Ticker not in the corpus: checked **in code** against `corpus/calls.json` before any search, and answered as
-  above, or handled by flow 6 once the approval gate exists. Planned. Today the filtered search returns no
+- Ticker not in the corpus: checked **in code** against `corpus/calls.json` before the agent runs (decision 3),
+  and answered as above, or handled by flow 6 once the approval gate exists. Planned. Today the filtered search returns no
   passages and the answer is "not discussed", which is wrong: the call was never in the corpus.
 - Quarter not in the corpus for a known ticker: say which quarters exist and offer the nearest. Planned, same
   check.
@@ -179,16 +179,19 @@ Expected:
 **Status: planned.** Approval is the one action that leaves the fixed corpus: an external API call, content
 nobody has checked, and a cost.
 
-> **User:** What did NVDA say about data center demand last quarter?
-> **Assistant:** NVDA isn't in my corpus. I can fetch the transcript of its latest call from an external source
-> for this answer only. Fetch it? **[Approve] [Decline]**
-> **User:** *(approves)*
-> **Assistant:** [Answer from the fetched transcript, naming the call.] *Source: fetched transcript, not part
-> of the corpus.*
+> **User** *(viewer)*: What did NVDA say about data center demand last quarter?
+> **Assistant:** NVDA isn't in my corpus. I can fetch the transcript of its latest call from an external source,
+> for this question only, once a reviewer approves. I've sent the request.
+>
+> *Reviewer's view:* NVDA, latest call, requested by [user] for "[question]". **[Approve] [Decline]**
+>
+> *(after approval)* **Assistant:** [Answer from the fetched transcript, naming the call.] *Source: fetched
+> transcript, not part of the corpus.*
 
 On decline:
 
-> **Assistant:** Understood, nothing was fetched. I can answer about AMD, RIVN, ROOT, META, CRDO and NBIS.
+> **Assistant:** A reviewer declined the request, so nothing was fetched. I can answer about AMD, RIVN, ROOT,
+> META, CRDO and NBIS.
 
 Expected:
 - Nothing is fetched before approval. The agent proposes the fetch; a hook pauses the run (Strands interrupt)
@@ -198,13 +201,15 @@ Expected:
 - The fetched text answers that turn only and is **never added** to the corpus or the Knowledge Base, so
   evaluation stays repeatable.
 - The audit record holds the proposal, the decision and who made it (the `approval` field, empty today).
-- Who approves: in the demo, the logged-in user approves their own fetch. With roles, only a `reviewer` can.
+- Who approves: only a user in the `reviewer` group, checked server-side from the login's group claim, never
+  from the browser (decision 4). A `viewer` can request a fetch but not approve it, including their own.
 
 Design notes from the probe on Strands 1.63 (8 Nov):
 - The run budget resets at the start of each invocation, so resuming after approval would start a fresh
   budget. The resume must keep the original budget.
 - The paused agent must survive between the two requests: kept per runtime session, or persisted with a
-  session manager.
+  session manager. With a separate reviewer, the wait can be minutes, not seconds, which favours persisting
+  it and expiring an unanswered request.
 
 ### 7. Not in the transcripts: say it wasn't discussed
 
@@ -232,21 +237,23 @@ Expected:
 | 3 Follow-up | — | Pronoun and relative-quarter follow-ups, one switching company |
 | 4 Advice | Guardrail input screen (`eval/eval_guardrail.py`) | Refusal mid-conversation, conversation continues |
 | 5 Failure / unknown | — | Unknown ticker, quarter outside the corpus |
-| 6 Approval | — | One approve, one decline |
+| 6 Approval | — | One approve, one decline, and a viewer trying to approve their own request |
 | 7 Not discussed | Golden set, 4 unanswerable: abstention | One conversation |
 
 Scored per session: **goal success** (the user got the answer, or a correct "not discussed"), **refusal
 correctness** (refused advice, didn't refuse near-misses) and **approval correctness** (nothing fetched without
-approval, decline handled). Single runs on small sets show behaviour, not rates.
+a reviewer's approval, decline handled). Single runs on small sets show behaviour, not rates.
 
-## Open questions
+## Decisions
 
-1. **Flow 2 vs cross-company questions.** Does a question with no ticker clarify or search all calls? This
-   draft says: clarify only when the question needs one company. Its wording in the prompt decides how often
-   the model asks.
-2. **Advice redirect (flow 4).** Keep the fixed guardrail message, or let the agent write the redirect?
-   Letting the agent write it means a blocked question still reaches the model, so the guardrail would flag
-   instead of block.
-3. **Corpus check (flows 5, 6).** In code before the agent runs, or as a tool the agent calls? In code is
-   deterministic and testable; a tool lets the agent handle "AMD and NVDA" in one question.
-4. **Who approves (flow 6)** in the demo: the user, since there is a single login, unless roles are built.
+Decided 17 Nov.
+
+1. **No company named (flow 2):** ask one clarifying question only when the question needs one specific
+   company and neither the message nor the session supplies it. Cross-company questions search all calls.
+2. **Advice reply (flow 4):** the fixed guardrail message. The question is blocked before the agent runs, so
+   the hard rule doesn't depend on the model. No tailored redirect.
+3. **Corpus check (flows 5, 6):** in code, against `corpus/calls.json`, before the agent runs. Deterministic
+   and testable. Mixed questions ("AMD and NVDA") are handled less gracefully; the check covers the ticker and
+   quarter given or resolved from the session.
+4. **Approver (flow 6):** only the `reviewer` group. This needs a login with groups (Cognito: `viewer`,
+   `reviewer`) checked server-side, and a reviewer view in the UI listing pending requests.
