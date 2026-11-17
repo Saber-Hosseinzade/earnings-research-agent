@@ -12,7 +12,9 @@ ask.py and main.py are untouched, so the v1.0 and v1.1 baselines stay reproducib
               "citation_check": {"ok", "problems", "verified", "unreturned"} | null,
               "retrieval": {"queries": [...], "returned": [passage ids]},
               "run": {budget counters, latency_ms, model_id, prompts: {name: source, id, version, sha256}},
-              "guardrail": {"input": check, "output": check | null} | null}
+              "guardrail": {"input": check, "output": check | null} | null,
+              "audit": {"turn_id", "written", "error"}}   (only with an audit writer)
+    payload may also carry session_id, user_id and role; they go to the audit record only.
 
 Guardrail (``guard.py``), when a guard is passed: the question is checked before the
 agent runs (advice or prompt attack -> "blocked", no agent run; PII masked), and the
@@ -42,6 +44,7 @@ from strands import Agent
 from strands.models import BedrockModel
 from strands.types.exceptions import StructuredOutputException
 
+import audit
 import prompts
 from budget import RunBudget
 from citations import check_citations
@@ -80,7 +83,18 @@ def final_answer(prompt: str, ledger: Ledger, model: Any | None = None) -> tuple
 
 
 def run(payload: dict[str, Any], model: Any | None = None, budget: RunBudget | None = None,
-        retriever: Retriever | None = None, guard: Guard | None = None) -> dict[str, Any]:
+        retriever: Retriever | None = None, guard: Guard | None = None,
+        audit_writer: audit.Writer | None = None) -> dict[str, Any]:
+    """One turn. With an audit writer, every turn (rejected and blocked ones too) gets one record
+    (audit.py); result["audit"] says whether it was written."""
+    result = _run(payload, model, budget, retriever, guard)
+    if audit_writer is not None:
+        result["audit"] = audit.write(audit_writer, result, payload)
+    return result
+
+
+def _run(payload: dict[str, Any], model: Any | None, budget: RunBudget | None,
+         retriever: Retriever | None, guard: Guard | None) -> dict[str, Any]:
     question = str(payload.get("question", "")).strip()
     ticker = str(payload.get("ticker") or "").strip().upper() or None
     quarter = str(payload.get("quarter") or "").strip().upper() or None

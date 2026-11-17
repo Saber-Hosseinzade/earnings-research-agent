@@ -18,6 +18,7 @@ answer (it is returned with the error recorded), so a guardrail outage is visibl
 from __future__ import annotations
 
 import os
+import time
 from dataclasses import asdict, dataclass, field
 from typing import Any, Protocol
 
@@ -37,6 +38,8 @@ class Check:
     text: str | None = None  # replacement text: the blocked message, or the masked input/answer
     grounding: dict[str, Any] | None = None  # {"GROUNDING": {"score", "threshold", "flagged"}, "RELEVANCE": {...}}
     error: str | None = None
+    usage: dict[str, int] | None = None  # ApplyGuardrail text units per policy (what is billed)
+    latency_ms: int | None = None
 
     @property
     def grounding_flagged(self) -> bool:
@@ -76,6 +79,7 @@ def parse(resp: dict[str, Any]) -> Check:
                 score is not None and threshold is not None and score < threshold)
             grounding[f.get("type")] = {"score": score, "threshold": threshold, "flagged": bool(flagged)}
     check.blocked = bool(check.blocked_by)
+    check.usage = {k: v for k, v in (resp.get("usage") or {}).items() if isinstance(v, int) and v} or None
     check.grounding = grounding or None
     outputs = resp.get("outputs") or []
     if resp.get("action") == "GUARDRAIL_INTERVENED" and outputs and (check.blocked or check.masked):
@@ -96,12 +100,15 @@ class BedrockGuard:
         self.client = client
 
     def _apply(self, source: str, content: list[dict[str, Any]]) -> Check:
+        started = time.perf_counter()
         try:
             resp = self.client.apply_guardrail(guardrailIdentifier=self.guardrail_id, guardrailVersion=self.version,
                                                source=source, content=content)
+            check = parse(resp)
         except Exception as exc:  # noqa: BLE001 - any failure is recorded; the caller decides open or closed
-            return Check(error=f"{type(exc).__name__}: {str(exc)[:200]}")
-        return parse(resp)
+            check = Check(error=f"{type(exc).__name__}: {str(exc)[:200]}")
+        check.latency_ms = round((time.perf_counter() - started) * 1000)
+        return check
 
     def check_input(self, question: str) -> Check:
         return self._apply("INPUT", [{"text": {"text": question}}])

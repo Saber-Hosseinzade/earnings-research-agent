@@ -9,6 +9,7 @@ from aws_cdk.assertions import Template
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "infra"))
 
+from audit_stack import LOG_GROUP_NAME, EarningsAuditStack  # noqa: E402
 from guardrail_stack import PII_TYPES, EarningsGuardrailStack  # noqa: E402
 from kb_stack import EarningsKnowledgeBaseStack  # noqa: E402
 from prompt_stack import PROMPT_NAMES, EarningsPromptStack  # noqa: E402
@@ -24,9 +25,11 @@ def runtime(tmp_path):
     kb = EarningsKnowledgeBaseStack(app, "KB", vector_store="s3vectors")
     guard = EarningsGuardrailStack(app, "Guard")
     prompts = EarningsPromptStack(app, "Prompts")
+    audit = EarningsAuditStack(app, "Audit")
     stack = EarningsRuntimeStack(app, "Runtime", code_path=tmp_path, model_id=MODEL_ID, tool=tool.function,
                                  knowledge_base=kb.knowledge_base, guardrail=guard.guardrail,
-                                 guardrail_version=guard.version, prompts=prompts.prompts)
+                                 guardrail_version=guard.version, prompts=prompts.prompts,
+                                 audit_log=audit.log_group)
     return stack
 
 
@@ -156,3 +159,28 @@ def test_versions_are_retained_and_follow_the_text(tmp_path):
              for k, v in _prompt_template(tmp_path).find_resources("AWS::Bedrock::PromptVersion").items()}
     changed = [k for k in before if before[k] != after[k]]
     assert len(changed) == 1 and changed[0].startswith("AnswerSystem")
+
+
+# --- audit log -------------------------------------------------------------------------------------------------
+
+def test_audit_log_has_retention_and_survives_stack_deletion():
+    groups = Template.from_stack(EarningsAuditStack(cdk.App(), "A")).find_resources("AWS::Logs::LogGroup")
+    (group,) = groups.values()
+    assert group["Properties"]["LogGroupName"] == LOG_GROUP_NAME
+    assert group["Properties"]["RetentionInDays"] == 30
+    assert group["DeletionPolicy"] == "Retain"
+
+
+def test_role_may_only_append_to_the_audit_log(tmp_path):
+    # The Runtime construct grants its own log group separately; this is the audit statement.
+    found = [st for st in by_action(statements(tmp_path), "logs:PutLogEvents") if "AuditLog" in json.dumps(st)]
+    assert len(found) == 1
+    assert sorted(found[0]["Action"]) == ["logs:CreateLogStream", "logs:PutLogEvents"]  # no reads, no deletes
+    resource = json.dumps(found[0]["Resource"])
+    assert ":log-stream:*" in resource and "AuditLog" in resource
+    assert ":*:log-stream" not in resource  # not built from the Arn attribute, which ends in ":*"
+
+
+def test_runtime_gets_the_audit_log_group(tmp_path):
+    res = Template.from_stack(runtime(tmp_path)).find_resources("AWS::BedrockAgentCore::Runtime")
+    assert "AUDIT_LOG_GROUP" in next(iter(res.values()))["Properties"]["EnvironmentVariables"]
