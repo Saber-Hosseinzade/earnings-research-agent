@@ -573,6 +573,10 @@ def main(argv: list[str] | None = None) -> int:
         "git_head": git("rev-parse", "--short", "HEAD"),
         "git_tag_v1.0": git("rev-parse", "--short", "v1.0"),
         "agent_source_sha256": hashlib.sha256(prompt_src.encode()).hexdigest(),
+        # since prompt management (17 Nov) answer.py's prompts are files; their hashes match prompts.Prompt.sha256
+        **({"prompt_sha256": {f.stem: hashlib.sha256(f.read_bytes()).hexdigest()
+                              for f in sorted((ROOT / "agent" / "prompts").glob("answer_*.txt"))}}
+           if args.target == "v2.0" else {}),
         "corpus_manifest": "corpus/manifest_v2.json",
         "target": args.target,
         "scored_as": ("v1 EarningsBrief, one brief per call, every question for that call judged against it"

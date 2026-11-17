@@ -6,8 +6,8 @@ is torn down after testing, while the Lambda and its secret stay.
     scripts/build_agent.sh && cdk deploy EarningsResearchAgentRuntime
     cdk destroy EarningsResearchAgentRuntime
 
-It reads the Knowledge Base and guardrail IDs from their stacks (cross-stack exports),
-so destroy the runtime before replacing either, e.g. switching the KB's vector store.
+It reads the Knowledge Base, guardrail and prompt IDs from their stacks (cross-stack
+exports), so destroy the runtime before replacing any of them, e.g. switching the KB's vector store.
 """
 
 from pathlib import Path
@@ -32,6 +32,7 @@ class EarningsRuntimeStack(Stack):
         knowledge_base: bedrock.CfnKnowledgeBase,
         guardrail: bedrock.CfnGuardrail,
         guardrail_version: bedrock.CfnGuardrailVersion,
+        prompts: dict[str, tuple[bedrock.CfnPrompt, bedrock.CfnPromptVersion]],
         **kwargs,
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
@@ -53,11 +54,18 @@ class EarningsRuntimeStack(Stack):
                 "KNOWLEDGE_BASE_ID": knowledge_base.attr_knowledge_base_id,
                 "GUARDRAIL_ID": guardrail.attr_guardrail_id,
                 "GUARDRAIL_VERSION": guardrail_version.attr_version,
+                # agent/prompts.py loads these pinned versions and fails rather than fall back to a file.
+                "PROMPT_SOURCE": "bedrock",
+                **{
+                    f"{name.upper()}_PROMPT_{key}": value
+                    for name, (prompt, version) in prompts.items()
+                    for key, value in (("ID", prompt.attr_id), ("VERSION", version.attr_version))
+                },
             },
             tracing_enabled=True,
         )
 
-        # Least privilege: this one tool, this one model and (below) this one KB and guardrail.
+        # Least privilege: this one tool, this one model and (below) this one KB, guardrail and set of prompts.
         # An inference profile routes between EU regions, so the role needs the
         # profile and the model behind it in each of them ("eu.amazon.x" -> "amazon.x").
         tool.grant_invoke(runtime)
@@ -83,6 +91,15 @@ class EarningsRuntimeStack(Stack):
             iam.PolicyStatement(
                 actions=["bedrock:ApplyGuardrail"],
                 resources=[guardrail.attr_guardrail_arn, f"{guardrail.attr_guardrail_arn}:*"],
+            )
+        )
+
+        # agent/prompts.py reads the agent's prompts, these and no others.
+        prompt_arns = [prompt.attr_arn for prompt, _ in prompts.values()]
+        runtime.add_to_role_policy(
+            iam.PolicyStatement(
+                actions=["bedrock:GetPrompt"],
+                resources=prompt_arns + [f"{arn}:*" for arn in prompt_arns],
             )
         )
 
