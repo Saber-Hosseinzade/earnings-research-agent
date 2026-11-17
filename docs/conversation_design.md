@@ -1,0 +1,252 @@
+# Conversation design
+
+How the research assistant behaves in a conversation: who it is, what it answers, and seven flows with the
+expected behaviour for each. The multi-turn evaluation set is built from this document: one or more scripted
+conversations per flow, scored per session.
+
+Each flow carries a status: **built** (in the code and tested), **partly built** or **planned**. Example
+dialogues are illustrative. Answers are shown as placeholders such as `[answer]` rather than real transcript
+content, and passage IDs follow the real format (`AMD_2026Q2_t003_p1` = AMD, 2026Q2 call, turn 3, part 1).
+
+## Scope
+
+The assistant answers questions about **what company management said on earnings calls**: results, the
+reasons they gave, what they assumed, guidance, and how any of these changed between quarters.
+
+It works over a **fixed corpus** of 24 calls: AMD, RIVN, ROOT, META, CRDO and NBIS, four quarters each
+(`corpus/calls.json`). The corpus is fixed so that evaluation is repeatable. Quarters are the company's own
+fiscal quarters, so the windows differ: CRDO's fiscal year ends in May, and AMD, ROOT, CRDO and NBIS end one
+quarter earlier than RIVN and META.
+
+It does **not**:
+- give buy, sell or hold recommendations, price targets, valuation opinions or portfolio advice;
+- use stock prices or market data (it has none, so "is it cheap?" has nothing to stand on);
+- answer from the model's general knowledge: if the calls don't say it, the assistant doesn't either.
+
+It is a research aid. Its answers can be wrong; every factual answer cites the passages it relies on so that
+the reader can check.
+
+## Persona and tone
+
+A careful research assistant reporting what management said, not an analyst with views.
+
+- **Short.** Two or three sentences per answer, with the figures and reasons management gave.
+- **Attributed.** Say who said it and in which call ("the CFO said on the Q2 2026 call…"). Management's
+  forecasts are their forecasts, not facts: "management expects", never "revenue will".
+- **Cited.** Every factual answer lists the passage IDs it relies on. No citation, no factual claim.
+- **Plain about gaps.** "The Q2 2026 call didn't discuss this" is a complete answer. No guessing, no padding.
+- **Neutral.** No adjectives that judge the company ("strong", "disappointing") unless quoting management,
+  and then attributed.
+- **One disclaimer, in the UI.** The interface shows "research aid, can be wrong, not investment advice"
+  once. Answers do not repeat it every turn; refusals explain themselves in one sentence.
+
+## Anatomy of a turn
+
+What runs for every message, in order (`agent/answer.py`):
+
+1. **Request check:** a question is required; a quarter (`2026Q2`) only together with a ticker.
+2. **Guardrail on the question** (`agent/guard.py`, Bedrock Guardrails): investment-advice requests and prompt
+   attacks are blocked here and the agent does not run. Personal data (email, phone, card and account numbers)
+   is masked; the agent only ever sees the masked question.
+3. **Agent loop:** Nova 2 Lite with one tool, `retrieve_passages` (Bedrock Knowledge Base, one passage per
+   speaker turn). At most two searches; a repeated or third search is refused in code. Run budget: model
+   calls, tool calls and tokens.
+4. **Citation check in code** (`agent/citations.py`): every cited passage ID must have been returned by a
+   search in this turn. A failed check is flagged, not hidden.
+5. **Guardrail on the answer:** advice in the answer → replaced; personal data masked; grounding of the answer
+   in the cited passages scored, and a low score flagged (answer kept).
+6. **Audit record** (`agent/audit.py`): one JSON record per turn, kept 30 days.
+
+Planned additions: session memory (AgentCore Memory) before step 3, and the approval pause inside step 3
+(flow 6).
+
+## Messages
+
+Fixed texts, so that tests and the UI can rely on them.
+
+| When | Text | Source |
+|---|---|---|
+| Question asks for investment advice | I only report what management said on earnings calls. I can't give buy, sell or hold recommendations, price targets or investment advice. Try asking what management said about a topic. | Guardrail, blocked input |
+| Answer reads as investment advice | I can't give that answer: it read as investment advice. I only report what management said on earnings calls. | Guardrail, blocked output |
+| Prompt attack | I can't follow instructions to change how I work. Ask a question about what management said on an earnings call. | `agent/guard.py` |
+| Guardrail unavailable | The safety check could not run, so this question was not answered. Please try again. | `agent/guard.py` |
+| Not discussed | One sentence, written by the model, saying the calls searched did not discuss it; `covered=false`, no citations | System prompt |
+
+## Context rules
+
+How a message is resolved to a company and quarter. These rules apply from flow 3 on; until session memory
+exists, every message stands alone.
+
+1. A ticker or company name in the message wins. "And META?" switches company.
+2. Otherwise the ticker and quarter of the previous turn carry over. "And margins?" after a question about
+   AMD's Q2 2026 call means AMD, Q2 2026.
+3. Relative quarters resolve against the corpus, not the calendar. "Last quarter" means the latest quarter
+   in the corpus for that ticker, which is not the same quarter for every company.
+4. Cross-company questions are allowed without a ticker ("which companies talked about tariffs?"); they
+   search all calls and the answer names each company it cites.
+5. A clarifying question is asked only when the question needs one specific company or quarter and neither
+   the message nor the session supplies it (flow 2). At most one clarifying question per turn.
+
+## Flows
+
+### 1. Happy path: question answered with cited passages
+
+**Status: built.** Measured on the 30 answerable golden-set questions (`eval/`).
+
+> **User:** Why did AMD's gross margin change in Q2 2026?
+> **Assistant:** [Two or three sentences: the change and the reasons management gave, attributed to the speaker.]
+> *Cited: AMD_2026Q2_t…*
+
+Expected:
+- One or two searches, filtered to the ticker and quarter when given.
+- Answer from the returned passages only, with the figures and reasons management gave.
+- Every cited ID was returned in this turn (citation check passes); the cited passages support the answer.
+
+### 2. Missing slot: one clarifying question, not a guess
+
+**Status: planned.** Today a question without a ticker searches all calls, which suits cross-company
+questions but can answer about the wrong company.
+
+> **User:** What did they say about gross margin?
+> **Assistant:** Which company do you mean? I have calls for AMD, RIVN, ROOT, META, CRDO and NBIS.
+> **User:** AMD
+> **Assistant:** [Answer about AMD's latest call in the corpus, naming the quarter.] *Cited: …*
+
+Expected:
+- A clarifying question only when the question needs one company and none is known (context rule 5).
+- One question, naming the options. No search before the answer arrives.
+- A question without a quarter does not need clarifying: the latest quarter in the corpus is used and named
+  in the answer ("on the Q2 2026 call…").
+
+Design note: the decision is made by the model (prompt), since "they" and "the company" can't be resolved in
+code. The multi-turn set checks it.
+
+### 3. Follow-up: resolved against the session
+
+**Status: planned** (AgentCore Memory, short-term).
+
+> **User:** Why did RIVN's average selling price change in Q3 2026?
+> **Assistant:** [Answer.] *Cited: RIVN_2026Q3_t…*
+> **User:** And how did that compare with the quarter before?
+> **Assistant:** [Answer comparing the two calls, naming both quarters.] *Cited: RIVN_2026Q3_t…, RIVN_2026Q2_t…*
+
+Expected:
+- "That" and "the quarter before" resolve against the previous turn (context rules 2 and 3).
+- The search filter follows the resolved ticker and quarter; a cross-quarter question searches both calls.
+- Earlier answers are context only: new claims still need passages returned in this turn.
+
+### 4. Advice request: refuse in one sentence, redirect
+
+**Status: built** for the refusal (guardrail, both directions), **planned** for the redirect.
+
+> **User:** Should I buy AMD after this call?
+> **Assistant:** I only report what management said on earnings calls. I can't give buy, sell or hold
+> recommendations, price targets or investment advice. Try asking what management said about a topic.
+
+Expected:
+- Blocked before the agent runs; the turn is recorded with the reason (`topic:InvestmentAdvice`).
+- Near-misses are **not** refused: "what did management say about the buyback?", "did management comment on
+  the stock's valuation?" are answered from the calls (tested in `eval/guardrail_set.jsonl`).
+- If advice slips into an answer, the output guardrail replaces it.
+
+Planned redirect: with session memory, the reply offers what the calls say on the topic in question ("I can
+tell you what AMD's management said about data center demand"). Until then the fixed message above stands;
+the guardrail's message cannot vary with the question.
+
+### 5. Tool failure or unknown ticker: say so, offer what is possible
+
+**Status: partly built.** Search failures are handled; unknown tickers are not yet told apart from "not
+discussed".
+
+> **User:** What did XYZQ say about margins?
+> **Assistant:** I don't have earnings calls for XYZQ. I can answer about AMD, RIVN, ROOT, META, CRDO and NBIS.
+
+> **User:** What did AMD say about margins in Q3 2026?
+> **Assistant:** The corpus has AMD's calls for Q3 2025 to Q2 2026, not Q3 2026. Do you want the Q2 2026 call?
+
+Expected:
+- Search failure (`retrieve_failed`, not retryable): the assistant says the search failed and does not answer
+  from memory. Built: tool contract and prompt.
+- Ticker not in the corpus: checked **in code** against `corpus/calls.json` before any search, and answered as
+  above, or handled by flow 6 once the approval gate exists. Planned. Today the filtered search returns no
+  passages and the answer is "not discussed", which is wrong: the call was never in the corpus.
+- Quarter not in the corpus for a known ticker: say which quarters exist and offer the nearest. Planned, same
+  check.
+- Guardrail unavailable: the question is not answered (fixed message). Built.
+
+### 6. Out-of-corpus ticker: ask for approval before fetching
+
+**Status: planned.** Approval is the one action that leaves the fixed corpus: an external API call, content
+nobody has checked, and a cost.
+
+> **User:** What did NVDA say about data center demand last quarter?
+> **Assistant:** NVDA isn't in my corpus. I can fetch the transcript of its latest call from an external source
+> for this answer only. Fetch it? **[Approve] [Decline]**
+> **User:** *(approves)*
+> **Assistant:** [Answer from the fetched transcript, naming the call.] *Source: fetched transcript, not part
+> of the corpus.*
+
+On decline:
+
+> **Assistant:** Understood, nothing was fetched. I can answer about AMD, RIVN, ROOT, META, CRDO and NBIS.
+
+Expected:
+- Nothing is fetched before approval. The agent proposes the fetch; a hook pauses the run (Strands interrupt)
+  and the UI shows approve / decline.
+- Approve → one fetch through the transcript tool, then the answer. Decline → the tool call is cancelled and
+  the reply above follows; the declined request is not proposed again in the same session unless asked.
+- The fetched text answers that turn only and is **never added** to the corpus or the Knowledge Base, so
+  evaluation stays repeatable.
+- The audit record holds the proposal, the decision and who made it (the `approval` field, empty today).
+- Who approves: in the demo, the logged-in user approves their own fetch. With roles, only a `reviewer` can.
+
+Design notes from the probe on Strands 1.63 (8 Nov):
+- The run budget resets at the start of each invocation, so resuming after approval would start a fresh
+  budget. The resume must keep the original budget.
+- The paused agent must survive between the two requests: kept per runtime session, or persisted with a
+  session manager.
+
+### 7. Not in the transcripts: say it wasn't discussed
+
+**Status: built.** Measured on the 4 unanswerable golden-set questions (in-corpus ticker and quarter, topic
+not discussed on the call).
+
+> **User:** Did Rivian announce a dividend on its Q2 2026 call?
+> **Assistant:** Rivian's Q2 2026 call didn't discuss a dividend.
+
+(Golden-set question NA-01; the absence was checked by keyword search of the whole call.)
+
+Expected:
+- `covered=false`, no citations, no guess, no answer from general knowledge.
+- At most two searches, then the answer; a third or repeated search is refused in code (16 Nov: no run
+  stopped on the budget in two full runs, all 4 declined both times).
+- Planned with session memory: offer what was said nearby ("The call discussed [related topic]; do you want
+  that?"), only when a returned passage actually covers a related topic.
+
+## Evaluation
+
+| Flow | Single-turn (built) | Multi-turn (planned) |
+|---|---|---|
+| 1 Happy path | Golden set, 30 answerable: retrieval, grounding, task, citation check | One conversation |
+| 2 Missing slot | — | Asks once, answers after the reply |
+| 3 Follow-up | — | Pronoun and relative-quarter follow-ups, one switching company |
+| 4 Advice | Guardrail input screen (`eval/eval_guardrail.py`) | Refusal mid-conversation, conversation continues |
+| 5 Failure / unknown | — | Unknown ticker, quarter outside the corpus |
+| 6 Approval | — | One approve, one decline |
+| 7 Not discussed | Golden set, 4 unanswerable: abstention | One conversation |
+
+Scored per session: **goal success** (the user got the answer, or a correct "not discussed"), **refusal
+correctness** (refused advice, didn't refuse near-misses) and **approval correctness** (nothing fetched without
+approval, decline handled). Single runs on small sets show behaviour, not rates.
+
+## Open questions
+
+1. **Flow 2 vs cross-company questions.** Does a question with no ticker clarify or search all calls? This
+   draft says: clarify only when the question needs one company. Its wording in the prompt decides how often
+   the model asks.
+2. **Advice redirect (flow 4).** Keep the fixed guardrail message, or let the agent write the redirect?
+   Letting the agent write it means a blocked question still reaches the model, so the guardrail would flag
+   instead of block.
+3. **Corpus check (flows 5, 6).** In code before the agent runs, or as a tool the agent calls? In code is
+   deterministic and testable; a tool lets the agent handle "AMD and NVDA" in one question.
+4. **Who approves (flow 6)** in the demo: the user, since there is a single login, unless roles are built.
