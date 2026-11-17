@@ -6,8 +6,8 @@ is torn down after testing, while the Lambda and its secret stay.
     scripts/build_agent.sh && cdk deploy EarningsResearchAgentRuntime
     cdk destroy EarningsResearchAgentRuntime
 
-It reads the Knowledge Base ID from the KB stack (a cross-stack export), so
-destroy the runtime before replacing the KB, e.g. switching its vector store.
+It reads the Knowledge Base and guardrail IDs from their stacks (cross-stack exports),
+so destroy the runtime before replacing either, e.g. switching the KB's vector store.
 """
 
 from pathlib import Path
@@ -30,6 +30,8 @@ class EarningsRuntimeStack(Stack):
         model_id: str,
         tool: lambda_.IFunction,
         knowledge_base: bedrock.CfnKnowledgeBase,
+        guardrail: bedrock.CfnGuardrail,
+        guardrail_version: bedrock.CfnGuardrailVersion,
         **kwargs,
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
@@ -49,11 +51,13 @@ class EarningsRuntimeStack(Stack):
                 "MODEL_ID": model_id,
                 "TOOL_FUNCTION_NAME": tool.function_name,
                 "KNOWLEDGE_BASE_ID": knowledge_base.attr_knowledge_base_id,
+                "GUARDRAIL_ID": guardrail.attr_guardrail_id,
+                "GUARDRAIL_VERSION": guardrail_version.attr_version,
             },
             tracing_enabled=True,
         )
 
-        # Least privilege: this one tool, this one model and (below) this one KB.
+        # Least privilege: this one tool, this one model and (below) this one KB and guardrail.
         # An inference profile routes between EU regions, so the role needs the
         # profile and the model behind it in each of them ("eu.amazon.x" -> "amazon.x").
         tool.grant_invoke(runtime)
@@ -72,6 +76,14 @@ class EarningsRuntimeStack(Stack):
         # embeds the query, so the runtime needs no embedding-model permission.
         runtime.add_to_role_policy(
             iam.PolicyStatement(actions=["bedrock:Retrieve"], resources=[knowledge_base.attr_knowledge_base_arn])
+        )
+
+        # agent/guard.py checks the question and the answer with this one guardrail.
+        runtime.add_to_role_policy(
+            iam.PolicyStatement(
+                actions=["bedrock:ApplyGuardrail"],
+                resources=[guardrail.attr_guardrail_arn, f"{guardrail.attr_guardrail_arn}:*"],
+            )
         )
 
         # AgentCore uses this to let X-Ray deliver spans to the runtime's log group.
