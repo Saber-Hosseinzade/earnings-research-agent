@@ -14,13 +14,14 @@ on the answer, with the retrieved passages as the grounding source. Policies:
   like a failed citation check, and keeps the answer.
 
 The version resource is immutable, so its description carries a hash of the policy:
-change the policy and CDK publishes a new version.
+change the policy and CDK publishes a new version. Replaced versions are retained
+(version 1 was deleted when version 2 was published, 17 Nov, before this was set).
 """
 
 import hashlib
 import json
 
-from aws_cdk import CfnOutput, Stack
+from aws_cdk import CfnOutput, RemovalPolicy, Stack
 from aws_cdk import aws_bedrock as bedrock
 from constructs import Construct
 
@@ -127,6 +128,7 @@ class EarningsGuardrailStack(Stack):
             guardrail_identifier=self.guardrail.attr_guardrail_id,
             description=f"policy {digest}",
         )
+        self.version.apply_removal_policy(RemovalPolicy.RETAIN)  # keep earlier versions when a new one replaces it
 
         CfnOutput(self, "GuardrailId", value=self.guardrail.attr_guardrail_id)
         CfnOutput(self, "GuardrailVersionNumber", value=self.version.attr_version)

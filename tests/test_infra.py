@@ -115,6 +115,11 @@ def test_version_changes_when_the_policy_changes(monkeypatch):
     assert version_description() != before
 
 
+def test_guardrail_versions_are_retained():
+    res = Template.from_stack(EarningsGuardrailStack(cdk.App(), "G")).find_resources("AWS::Bedrock::GuardrailVersion")
+    assert {v["DeletionPolicy"] for v in res.values()} == {"Retain"}
+
+
 # --- prompt management -----------------------------------------------------------------------------------------
 
 def test_role_may_read_only_the_agents_prompts(tmp_path):
