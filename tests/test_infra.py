@@ -1,4 +1,4 @@
-"""The runtime stack, offline: its role reaches the one tool and the one model."""
+"""The runtime stack, offline: its role reaches the one tool, the one model and the one KB."""
 
 import json
 import sys
@@ -9,6 +9,7 @@ from aws_cdk.assertions import Template
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "infra"))
 
+from kb_stack import EarningsKnowledgeBaseStack  # noqa: E402
 from runtime_stack import EarningsRuntimeStack  # noqa: E402
 from stack import EarningsToolStack  # noqa: E402
 
@@ -18,7 +19,9 @@ MODEL_ID = "eu.amazon.nova-2-lite-v1:0"
 def statements(tmp_path):
     app = cdk.App()
     tool = EarningsToolStack(app, "Tool")
-    stack = EarningsRuntimeStack(app, "Runtime", code_path=tmp_path, model_id=MODEL_ID, tool=tool.function)
+    kb = EarningsKnowledgeBaseStack(app, "KB", vector_store="s3vectors")
+    stack = EarningsRuntimeStack(app, "Runtime", code_path=tmp_path, model_id=MODEL_ID, tool=tool.function,
+                                 knowledge_base=kb.knowledge_base)
     policies = Template.from_stack(stack).find_resources("AWS::IAM::Policy")
     return [s for policy in policies.values() for s in policy["Properties"]["PolicyDocument"]["Statement"]]
 
@@ -39,3 +42,12 @@ def test_role_may_call_only_the_configured_model(tmp_path):
     assert f"inference-profile/{MODEL_ID}" in resources
     assert "foundation-model/amazon.nova-2-lite-v1:0" in resources
     assert '"*"' not in resources
+
+
+def test_role_may_retrieve_only_from_the_knowledge_base(tmp_path):
+    found = by_action(statements(tmp_path), "bedrock:Retrieve")
+    assert len(found) == 1
+    assert found[0]["Action"] == "bedrock:Retrieve"
+    resource = json.dumps(found[0]["Resource"])
+    assert "KnowledgeBaseArn" in resource  # imported from the KB stack, not a wildcard
+    assert '"*"' not in resource
