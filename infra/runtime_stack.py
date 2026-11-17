@@ -6,7 +6,7 @@ is torn down after testing, while the Lambda and its secret stay.
     scripts/build_agent.sh && cdk deploy EarningsResearchAgentRuntime
     cdk destroy EarningsResearchAgentRuntime
 
-It reads the Knowledge Base, guardrail and prompt IDs from their stacks (cross-stack
+It reads the Knowledge Base, guardrail, prompt and audit log IDs from their stacks (cross-stack
 exports), so destroy the runtime before replacing any of them, e.g. switching the KB's vector store.
 """
 
@@ -17,6 +17,7 @@ from aws_cdk import aws_bedrock as bedrock
 from aws_cdk import aws_bedrockagentcore as agentcore
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_lambda as lambda_
+from aws_cdk import aws_logs as logs
 from constructs import Construct
 
 
@@ -33,6 +34,7 @@ class EarningsRuntimeStack(Stack):
         guardrail: bedrock.CfnGuardrail,
         guardrail_version: bedrock.CfnGuardrailVersion,
         prompts: dict[str, tuple[bedrock.CfnPrompt, bedrock.CfnPromptVersion]],
+        audit_log: logs.ILogGroup,
         **kwargs,
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
@@ -55,6 +57,7 @@ class EarningsRuntimeStack(Stack):
                 "GUARDRAIL_ID": guardrail.attr_guardrail_id,
                 "GUARDRAIL_VERSION": guardrail_version.attr_version,
                 # agent/prompts.py loads these pinned versions and fails rather than fall back to a file.
+                "AUDIT_LOG_GROUP": audit_log.log_group_name,
                 "PROMPT_SOURCE": "bedrock",
                 **{
                     f"{name.upper()}_PROMPT_{key}": value
@@ -65,7 +68,7 @@ class EarningsRuntimeStack(Stack):
             tracing_enabled=True,
         )
 
-        # Least privilege: this one tool, this one model and (below) this one KB, guardrail and set of prompts.
+        # Least privilege: this one tool, this one model and (below) this one KB, guardrail, set of prompts and audit log.
         # An inference profile routes between EU regions, so the role needs the
         # profile and the model behind it in each of them ("eu.amazon.x" -> "amazon.x").
         tool.grant_invoke(runtime)
@@ -100,6 +103,18 @@ class EarningsRuntimeStack(Stack):
             iam.PolicyStatement(
                 actions=["bedrock:GetPrompt"],
                 resources=prompt_arns + [f"{arn}:*" for arn in prompt_arns],
+            )
+        )
+
+        # agent/audit.py writes one record per turn to this group: new streams and events, no reads.
+        runtime.add_to_role_policy(
+            iam.PolicyStatement(
+                actions=["logs:CreateLogStream", "logs:PutLogEvents"],
+                # Built from the name: the group's Arn attribute already ends in ":*".
+                resources=[
+                    f"arn:{self.partition}:logs:{self.region}:{self.account}"
+                    f":log-group:{audit_log.log_group_name}:log-stream:*"
+                ],
             )
         )
 
