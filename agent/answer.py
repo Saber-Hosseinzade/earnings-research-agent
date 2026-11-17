@@ -7,11 +7,17 @@ ask.py and main.py are untouched, so the v1.0 and v1.1 baselines stay reproducib
 
     payload: {"question": "Why did gross margin expand?", "ticker": "AMD", "quarter": "2026Q2"}
              ticker and quarter are optional; when given they pin the search filter in code.
-    returns: {"status": "ok" | "stopped" | "invalid_output" | "bad_request",
+    returns: {"status": "ok" | "stopped" | "invalid_output" | "bad_request" | "blocked" | "guardrail_error",
               "answer": {"covered", "answer", "citations"} | null,
               "citation_check": {"ok", "problems", "verified", "unreturned"} | null,
               "retrieval": {"queries": [...], "returned": [passage ids]},
-              "run": {budget counters, latency_ms, model_id}}
+              "run": {budget counters, latency_ms, model_id},
+              "guardrail": {"input": check, "output": check | null} | null}
+
+Guardrail (``guard.py``), when a guard is passed: the question is checked before the
+agent runs (advice or prompt attack -> "blocked", no agent run; PII masked), and the
+answer after it, with the cited passages as grounding source (advice -> "blocked";
+PII masked; low grounding score flagged, answer kept). Without a guard, nothing changes.
 
 Final answer after a budget stop: if the search loop ends on the run budget
 with passages in hand, one more model call, with no tools, answers from those
@@ -38,6 +44,7 @@ from strands.types.exceptions import StructuredOutputException
 
 from budget import RunBudget
 from citations import check_citations
+from guard import GUARD_ERROR_MESSAGE, PROMPT_ATTACK_MESSAGE, Guard
 from retrieval import Ledger, Retriever, bedrock_retriever, make_retrieve_tool
 
 SYSTEM_PROMPT = """You answer questions about companies' earnings calls.
@@ -99,13 +106,27 @@ def final_answer(prompt: str, ledger: Ledger, model: Any | None = None) -> tuple
 
 
 def run(payload: dict[str, Any], model: Any | None = None, budget: RunBudget | None = None,
-        retriever: Retriever | None = None) -> dict[str, Any]:
+        retriever: Retriever | None = None, guard: Guard | None = None) -> dict[str, Any]:
     question = str(payload.get("question", "")).strip()
     ticker = str(payload.get("ticker") or "").strip().upper() or None
     quarter = str(payload.get("quarter") or "").strip().upper() or None
     if not question or (quarter and not re.match(r"^\d{4}Q[1-4]$", quarter)) or (quarter and not ticker):
-        return {"status": "bad_request", "answer": None, "citation_check": None, "retrieval": None, "run": {},
+        return {"status": "bad_request", "answer": None, "citation_check": None, "retrieval": None, "run": {}, "guardrail": None,
                 "error": "need a question; ticker and quarter (like 2026Q2) are optional, quarter only with a ticker"}
+
+    guard_info: dict[str, Any] | None = None
+    if guard is not None:
+        gin = guard.check_input(question)
+        guard_info = {"input": gin.to_dict(), "output": None}
+        if gin.blocked or gin.error:
+            message = (GUARD_ERROR_MESSAGE if not gin.blocked
+                       else PROMPT_ATTACK_MESSAGE if "content:PROMPT_ATTACK" in gin.blocked_by else gin.text)
+            return {"status": "blocked" if gin.blocked else "guardrail_error",
+                    "answer": {"covered": False, "answer": message, "citations": []},
+                    "citation_check": None, "retrieval": None, "run": {}, "guardrail": guard_info,
+                    "error": gin.error}
+        if gin.text:  # PII masked: the agent only ever sees the masked question
+            question = gin.text
 
     ledger = Ledger()
     retrieve_tool = make_retrieve_tool(retriever or bedrock_retriever(), ledger, ticker, quarter)
@@ -141,6 +162,17 @@ def run(payload: dict[str, Any], model: Any | None = None, budget: RunBudget | N
     run_info["model_id"] = (agent.model.get_config() or {}).get("model_id")
     if budget.stopped_reason and status == "ok" and run_info["final_answer"] is None:
         status = "stopped"
+
+    if guard is not None and answer is not None:
+        cited = [ledger.texts[pid] for pid in (check or {}).get("verified", []) if pid in ledger.texts]
+        gout = guard.check_output(question, answer["answer"], cited if answer["covered"] else [])
+        guard_info["output"] = gout.to_dict()
+        if gout.blocked:
+            answer = {"covered": False, "answer": gout.text, "citations": []}
+            status = "blocked"
+        elif gout.text:  # PII masked
+            answer = {**answer, "answer": gout.text}
+
     return {"status": status, "answer": answer, "citation_check": check,
             "retrieval": {"queries": ledger.queries, "returned": list(ledger.returned)},
-            "run": run_info, "error": error}
+            "run": run_info, "guardrail": guard_info, "error": error}

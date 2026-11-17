@@ -42,6 +42,12 @@ It adds citation scores (PROJECT_CONTEXT.md 8.11):
 Retrieval (right call) for v2.0 = a returned passage is from the golden call.
 v2.0 needs KNOWLEDGE_BASE_ID, or reads it from the EarningsResearchAgentKB stack.
 
+--guardrail (v2.0 only) runs answer.py with the Bedrock Guardrail (agent/guard.py):
+GUARDRAIL_ID / GUARDRAIL_VERSION, or read from the EarningsResearchAgentGuardrail stack.
+Adds per question what the guardrail did, and a summary: questions blocked (on an
+answerable question, a false block), PII masked, and the grounding flag set against
+the two judge verdicts (gold-turn grounding, citation support) to tune its threshold.
+
 The judge is a different model from the agent (JUDGE_MODEL_ID). An LLM judge can
 be wrong; the per-question verdicts are saved so any score can be checked by hand.
 """
@@ -100,7 +106,7 @@ def render_transcript(turns: list[dict[str, Any]]) -> tuple[str, bool]:
 # ---------------------------------------------------------------- agent side
 
 
-def run_agent(target: str, payload: dict[str, Any]) -> dict[str, Any]:
+def run_agent(target: str, payload: dict[str, Any], guard: Any = None) -> dict[str, Any]:
     """Run an unmodified agent module (v1.0 main, v1.1 ask) with a local transcript tool in place of the Lambda.
     v2.0 (answer) runs as shipped against the deployed Knowledge Base."""
     sys.path.insert(0, str(ROOT / "agent"))
@@ -108,7 +114,7 @@ def run_agent(target: str, payload: dict[str, Any]) -> dict[str, Any]:
 
     v1 = importlib.import_module(TARGET_MODULE[target])  # needs MODEL_ID etc. at call time
     if target == "v2.0":
-        result = v1.run(payload)
+        result = v1.run(payload, guard=guard) if guard is not None else v1.run(payload)
         returned = (result.get("retrieval") or {}).get("returned", [])
         result["fetched"] = sorted({parse_passage_id(pid)[:2] for pid in returned if parse_passage_id(pid)})
         result["output"] = result.get("answer")
@@ -287,6 +293,52 @@ def v2_entry(row: dict[str, Any], res: dict[str, Any], ask: Callable[[str], str]
     return entry
 
 
+def guardrail_entry(res: dict[str, Any]) -> dict[str, Any] | None:
+    """What the guardrail did on one run, reduced for the scores file (no text)."""
+    g = res.get("guardrail")
+    if not g:
+        return None
+    gin, gout = g.get("input") or {}, g.get("output") or {}
+    ground = gout.get("grounding") or {}
+    return {
+        "blocked_by": gin.get("blocked_by", []) + gout.get("blocked_by", []),
+        "blocked_at": "input" if gin.get("blocked") else "output" if gout.get("blocked") else None,
+        "masked": gin.get("masked", []) + gout.get("masked", []),
+        "grounding_score": (ground.get("GROUNDING") or {}).get("score"),
+        "relevance_score": (ground.get("RELEVANCE") or {}).get("score"),
+        "grounding_flagged": bool(gout.get("grounding_flagged")),
+        "error": gin.get("error") or gout.get("error"),
+    }
+
+
+def _guardrail_extras(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    g = [r for r in rows if r.get("guardrail")]
+    if not g:
+        return {}
+    scored = [r for r in g if r["guardrail"]["grounding_score"] is not None]
+
+    def cross(verdict_of: Callable[[dict[str, Any]], str | None]) -> dict[str, dict[str, int]]:
+        table: dict[str, Counter] = {"flagged": Counter(), "not_flagged": Counter()}
+        for r in scored:
+            v = verdict_of(r)
+            if v:
+                table["flagged" if r["guardrail"]["grounding_flagged"] else "not_flagged"][v] += 1
+        return {k: dict(c) for k, c in table.items()}
+
+    return {"guardrail": {
+        "runs": len(g),
+        "blocked": {"answerable": sum(bool(r["guardrail"]["blocked_at"]) for r in g if r["answerable"]),
+                    "unanswerable": sum(bool(r["guardrail"]["blocked_at"]) for r in g if not r["answerable"])},
+        "blocked_by": dict(Counter(b for r in g for b in r["guardrail"]["blocked_by"])),
+        "masked": sum(bool(r["guardrail"]["masked"]) for r in g),
+        "errors": sum(bool(r["guardrail"]["error"]) for r in g),
+        "grounding_scored": len(scored),
+        "grounding_flagged": sum(r["guardrail"]["grounding_flagged"] for r in scored),
+        "flag_vs_judge_grounding": cross(lambda r: r["verdict"]["grounding"]),
+        "flag_vs_citation_support": cross(lambda r: (r.get("citation_support") or {}).get("support")),
+    }}
+
+
 def declined(r: dict[str, Any]) -> bool:
     """Did the system decline to answer? v1.1 says so itself (covered_in_call=false). A v1 brief has no way to
     say it, so there it means the brief makes no claim about the question. The judge's has_claim is not used
@@ -322,6 +374,7 @@ def aggregate(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "judge_errors": sum(bool(r["verdict"].get("judge_error")) for r in rows),
         **_v11_extras(rows),
         **_v2_extras(rows),
+        **_guardrail_extras(rows),
     }
 
 
@@ -428,7 +481,10 @@ def main(argv: list[str] | None = None) -> int:
                     help="v1.0: brief, one run per call. v1.1: question in, answer out, one run per question. "
                          "v2.0: question in, answer from KB passages with checked citations, one run per question")
     ap.add_argument("--label", help="result file prefix (default baseline-<target>)")
+    ap.add_argument("--guardrail", action="store_true", help="v2.0 only: run with the Bedrock Guardrail (agent/guard.py)")
     args = ap.parse_args(argv)
+    if args.guardrail and args.target != "v2.0":
+        ap.error("--guardrail needs --target v2.0")
 
     golden = load_golden()[: args.limit]
     args.label = args.label or f"baseline-{args.target}"
@@ -456,6 +512,20 @@ def main(argv: list[str] | None = None) -> int:
         os.environ["KNOWLEDGE_BASE_ID"] = next(o["OutputValue"] for o in stack["Outputs"]
                                                if o["OutputKey"] == "KnowledgeBaseId")
 
+    guard = None
+    if args.guardrail:
+        if not os.environ.get("GUARDRAIL_ID"):
+            import boto3  # noqa: PLC0415
+
+            outs = {o["OutputKey"]: o["OutputValue"] for o in boto3.client(
+                "cloudformation", region_name=os.environ.get("AWS_REGION", "eu-central-1")).describe_stacks(
+                StackName="EarningsResearchAgentGuardrail")["Stacks"][0]["Outputs"]}
+            os.environ["GUARDRAIL_ID"], os.environ["GUARDRAIL_VERSION"] = outs["GuardrailId"], outs["GuardrailVersionNumber"]
+        sys.path.insert(0, str(ROOT / "agent"))
+        from guard import BedrockGuard  # noqa: PLC0415
+
+        guard = BedrockGuard()
+
     results: dict[str, dict[str, Any]] = {}  # key: call (v1.0) or question id (v1.1)
 
     def get_result(row: dict[str, Any]) -> dict[str, Any]:
@@ -465,7 +535,7 @@ def main(argv: list[str] | None = None) -> int:
             payload = {"ticker": row["ticker"], "quarter": row["quarter"]}
             if per_question:
                 payload["question"] = row["question"]
-            results[key] = run_agent(args.target, payload)
+            results[key] = run_agent(args.target, payload, guard)
             print(f"      status={results[key]['status']} tokens={results[key]['run'].get('tokens_used', '?')}")
         return results[key]
 
@@ -481,6 +551,8 @@ def main(argv: list[str] | None = None) -> int:
             entry["queries"] = [q["query"] for q in (res.get("retrieval") or {}).get("queries", [])]
             entry["searches_refused"] = (res.get("run") or {}).get("searches_refused", 0)
             entry["final_answer"] = bool((res.get("run") or {}).get("final_answer"))
+            if guard is not None:
+                entry["guardrail"] = guardrail_entry(res)
         if args.target == "v2.0" and res["output"]:
             entry.update(v2_entry(row, res, ask))
         elif per_question and res["output"]:
@@ -509,6 +581,8 @@ def main(argv: list[str] | None = None) -> int:
         "summary": summary,
         "agent_runs": {k: {"status": r["status"], "run": r["run"]} for k, r in results.items()},
         **({"kb_docs_sha256": kb_docs_sha256()} if args.target == "v2.0" else {}),
+        **({"guardrail": {"id": os.environ["GUARDRAIL_ID"], "version": os.environ["GUARDRAIL_VERSION"]}}
+           if guard is not None else {}),
         "questions": scored,
     }
     stem = f"{args.label}-{out['date']}{'-partial' if args.limit else ''}"

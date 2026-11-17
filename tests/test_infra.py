@@ -1,4 +1,4 @@
-"""The runtime stack, offline: its role reaches the one tool, the one model and the one KB."""
+"""The runtime and guardrail stacks, offline: the role reaches one tool, model, KB and guardrail."""
 
 import json
 import sys
@@ -9,6 +9,7 @@ from aws_cdk.assertions import Template
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "infra"))
 
+from guardrail_stack import PII_TYPES, EarningsGuardrailStack  # noqa: E402
 from kb_stack import EarningsKnowledgeBaseStack  # noqa: E402
 from runtime_stack import EarningsRuntimeStack  # noqa: E402
 from stack import EarningsToolStack  # noqa: E402
@@ -20,8 +21,10 @@ def statements(tmp_path):
     app = cdk.App()
     tool = EarningsToolStack(app, "Tool")
     kb = EarningsKnowledgeBaseStack(app, "KB", vector_store="s3vectors")
+    guard = EarningsGuardrailStack(app, "Guard")
     stack = EarningsRuntimeStack(app, "Runtime", code_path=tmp_path, model_id=MODEL_ID, tool=tool.function,
-                                 knowledge_base=kb.knowledge_base)
+                                 knowledge_base=kb.knowledge_base, guardrail=guard.guardrail,
+                                 guardrail_version=guard.version)
     policies = Template.from_stack(stack).find_resources("AWS::IAM::Policy")
     return [s for policy in policies.values() for s in policy["Properties"]["PolicyDocument"]["Statement"]]
 
@@ -51,3 +54,53 @@ def test_role_may_retrieve_only_from_the_knowledge_base(tmp_path):
     resource = json.dumps(found[0]["Resource"])
     assert "KnowledgeBaseArn" in resource  # imported from the KB stack, not a wildcard
     assert '"*"' not in resource
+
+
+def test_role_may_apply_only_the_guardrail(tmp_path):
+    found = by_action(statements(tmp_path), "bedrock:ApplyGuardrail")
+    assert len(found) == 1
+    resource = json.dumps(found[0]["Resource"])
+    assert "GuardrailArn" in resource
+    assert '"*"' not in resource
+
+
+def guardrail_props():
+    app = cdk.App()
+    props = Template.from_stack(EarningsGuardrailStack(app, "Guard")).find_resources("AWS::Bedrock::Guardrail")
+    (resource,) = props.values()
+    return resource["Properties"]
+
+
+def test_guardrail_denies_advice_and_prompt_attacks():
+    p = guardrail_props()
+    (topic,) = p["TopicPolicyConfig"]["TopicsConfig"]
+    assert topic["Type"] == "DENY" and topic["Name"] == "InvestmentAdvice"
+    (attack,) = p["ContentPolicyConfig"]["FiltersConfig"]
+    assert attack == {"Type": "PROMPT_ATTACK", "InputStrength": "HIGH", "OutputStrength": "NONE"}
+
+
+def test_guardrail_masks_pii_but_not_speaker_names():
+    entities = guardrail_props()["SensitiveInformationPolicyConfig"]["PiiEntitiesConfig"]
+    types = {e["Type"] for e in entities}
+    assert types == set(PII_TYPES)
+    assert "NAME" not in types  # executives' names are the speakers the agent cites
+    for e in entities:  # input set explicitly: "Action" alone masked only the output (live check)
+        assert e["InputAction"] == e["OutputAction"] == "ANONYMIZE" and e["InputEnabled"] and e["OutputEnabled"]
+
+
+def test_grounding_is_detect_only():
+    filters = guardrail_props()["ContextualGroundingPolicyConfig"]["FiltersConfig"]
+    assert {f["Type"] for f in filters} == {"GROUNDING", "RELEVANCE"}
+    assert {f["Action"] for f in filters} == {"NONE"}  # flagged in code, answer kept
+
+
+def test_version_changes_when_the_policy_changes(monkeypatch):
+    import guardrail_stack
+
+    def version_description():
+        res = Template.from_stack(EarningsGuardrailStack(cdk.App(), "G")).find_resources("AWS::Bedrock::GuardrailVersion")
+        return next(iter(res.values()))["Properties"]["Description"]
+
+    before = version_description()
+    monkeypatch.setattr(guardrail_stack, "GROUNDING_THRESHOLD", 0.8)
+    assert version_description() != before

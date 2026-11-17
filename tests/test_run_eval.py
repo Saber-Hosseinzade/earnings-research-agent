@@ -183,3 +183,40 @@ def test_a_stopped_run_is_no_answer_not_a_decline():
     s = ev.aggregate(stopped)
     assert s["no_answer"] == {"answerable": 1, "unanswerable": 1}
     assert s["false_abstentions"] == 0 and s["abstention_correct"] == 1 and s["answered_anyway"] == 0
+
+
+# --- guardrail (v2.0 --guardrail) -----------------------------------------------------------------------------
+
+def _g_row(answerable, grounding_flagged, score, judge, support, blocked_at=None):
+    return {"answerable": answerable, "verdict": {"grounding": judge},
+            "citation_support": {"support": support} if support else None,
+            "guardrail": {"blocked_by": ["topic:InvestmentAdvice"] if blocked_at else [], "blocked_at": blocked_at,
+                          "masked": [], "grounding_score": score, "relevance_score": score,
+                          "grounding_flagged": grounding_flagged, "error": None}}
+
+
+def test_guardrail_entry_reduces_the_run_record():
+    res = {"guardrail": {"input": {"blocked": False, "blocked_by": [], "masked": ["EMAIL"], "error": None},
+                         "output": {"blocked": False, "blocked_by": [], "masked": [], "error": None,
+                                    "grounding": {"GROUNDING": {"score": 0.4, "threshold": 0.7, "flagged": True},
+                                                  "RELEVANCE": {"score": 0.9, "threshold": 0.5, "flagged": False}},
+                                    "grounding_flagged": True}}}
+    e = ev.guardrail_entry(res)
+    assert e == {"blocked_by": [], "blocked_at": None, "masked": ["EMAIL"], "grounding_score": 0.4,
+                 "relevance_score": 0.9, "grounding_flagged": True, "error": None}
+    assert ev.guardrail_entry({"guardrail": None}) is None
+
+
+def test_guardrail_summary_counts_false_blocks_and_crosses_the_flag_with_the_judges():
+    rows = [_g_row(True, False, 0.95, "supported", "supported"),
+            _g_row(True, True, 0.3, "unsupported", "partial"),
+            _g_row(True, True, 0.5, "supported", "supported"),
+            _g_row(True, False, None, "no_claim", None, blocked_at="input"),
+            _g_row(False, False, None, "no_claim", None)]
+    g = ev._guardrail_extras(rows)["guardrail"]
+    assert g["blocked"] == {"answerable": 1, "unanswerable": 0}
+    assert g["grounding_scored"] == 3 and g["grounding_flagged"] == 2
+    assert g["flag_vs_judge_grounding"] == {"flagged": {"unsupported": 1, "supported": 1},
+                                            "not_flagged": {"supported": 1}}
+    assert g["flag_vs_citation_support"]["flagged"] == {"partial": 1, "supported": 1}
+    assert ev._guardrail_extras([{"answerable": True}]) == {}
