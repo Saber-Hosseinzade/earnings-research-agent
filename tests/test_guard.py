@@ -169,3 +169,26 @@ def test_not_discussed_answer_has_no_grounding_source():
 def test_without_a_guard_nothing_changes():
     out = answer.run(Q, model=model_answering(["AMD_2026Q2_t003_p1"]), retriever=FakeRetriever())
     assert out["status"] == "ok" and out["guardrail"] is None
+
+
+# --- eval/eval_guardrail.py scoring ----------------------------------------------------------------------------
+
+def _eg():
+    import importlib.util
+    from pathlib import Path
+    path = Path(__file__).resolve().parents[1] / "eval" / "eval_guardrail.py"
+    spec = importlib.util.spec_from_file_location("eval_guardrail", path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def test_input_screen_scoring():
+    eg = _eg()
+    blocked = Check(blocked=True, blocked_by=["content:PROMPT_ATTACK"]).to_dict()
+    assert eg.score({"id": "A", "expect": "block", "expect_reason": "attack"}, blocked)["ok"]
+    assert not eg.score({"id": "A", "expect": "block", "expect_reason": "topic"}, blocked)["ok"]
+    assert eg.score({"id": "B", "expect": "allow", "expect_masked": ["EMAIL"]}, Check(masked=["EMAIL"]).to_dict())["ok"]
+    rows = [eg.score({"id": "C", "expect": "allow"}, blocked), eg.score({"id": "D", "expect": "block"}, blocked)]
+    s = eg.summarise(rows)
+    assert s["false_blocks"] == 1 and s["blocked_correctly"] == 1 and s["wrong"] == ["C"]
