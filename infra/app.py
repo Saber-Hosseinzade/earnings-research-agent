@@ -6,6 +6,7 @@ import aws_cdk as cdk
 
 from guardrail_stack import EarningsGuardrailStack
 from kb_stack import EarningsKnowledgeBaseStack
+from prompt_stack import EarningsPromptStack
 from runtime_stack import EarningsRuntimeStack
 from stack import EarningsToolStack
 
@@ -24,8 +25,9 @@ kb = EarningsKnowledgeBaseStack(
     tags=TAGS,
 )
 guard = EarningsGuardrailStack(app, "EarningsResearchAgentGuardrail", tags=TAGS)
+prompts = EarningsPromptStack(app, "EarningsResearchAgentPrompts", tags=TAGS)
 # The runtime stack uploads build/agent as its code. Without a build it is left
-# out, so the tool, KB and guardrail stacks can still be deployed or destroyed.
+# out, so the tool, KB, guardrail and prompt stacks can still be deployed or destroyed.
 if CODE_PATH.is_dir() and any(CODE_PATH.iterdir()):
     EarningsRuntimeStack(
         app,
@@ -36,6 +38,7 @@ if CODE_PATH.is_dir() and any(CODE_PATH.iterdir()):
         knowledge_base=kb.knowledge_base,
         guardrail=guard.guardrail,
         guardrail_version=guard.version,
+        prompts=prompts.prompts,
         tags=TAGS,
     )
 else:
