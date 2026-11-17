@@ -84,7 +84,8 @@ def test_guardrail_masks_pii_but_not_speaker_names():
     types = {e["Type"] for e in entities}
     assert types == set(PII_TYPES)
     assert "NAME" not in types  # executives' names are the speakers the agent cites
-    assert {e["Action"] for e in entities} == {"ANONYMIZE"}
+    for e in entities:  # input set explicitly: "Action" alone masked only the output (live check)
+        assert e["InputAction"] == e["OutputAction"] == "ANONYMIZE" and e["InputEnabled"] and e["OutputEnabled"]
 
 
 def test_grounding_is_detect_only():

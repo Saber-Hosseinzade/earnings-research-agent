@@ -9,7 +9,7 @@ on the answer, with the retrieved passages as the grounding source. Policies:
 
 - denied topic "investment advice" (input and output) -> blocked
 - prompt-attack filter (input only; Bedrock allows no output strength for it) -> blocked
-- PII: contact and payment identifiers masked. Not NAME: executives' names are the speakers we cite.
+- PII: contact and payment identifiers masked, in the question and the answer. Not NAME: executives' names are the speakers we cite.
 - contextual grounding and relevance: detect only (action NONE). The agent flags a low score,
   like a failed citation check, and keeps the answer.
 
@@ -66,7 +66,13 @@ def policy() -> dict:
             "filters_config": [{"type": "PROMPT_ATTACK", "input_strength": "HIGH", "output_strength": "NONE"}]
         },
         "sensitive_information_policy_config": {
-            "pii_entities_config": [{"type": t, "action": "ANONYMIZE"} for t in PII_TYPES]
+            # input_* explicitly: with only "action" set, the deployed guardrail masked
+            # output but let an email in the question through (live check, 17 Nov).
+            "pii_entities_config": [
+                {"type": t, "action": "ANONYMIZE", "input_action": "ANONYMIZE", "input_enabled": True,
+                 "output_action": "ANONYMIZE", "output_enabled": True}
+                for t in PII_TYPES
+            ]
         },
         "contextual_grounding_policy_config": {
             "filters_config": [

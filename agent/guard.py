@@ -21,6 +21,9 @@ import os
 from dataclasses import asdict, dataclass, field
 from typing import Any, Protocol
 
+# A guardrail has one blocked-input message (the advice one); a prompt attack gets its own.
+PROMPT_ATTACK_MESSAGE = ("I can't follow instructions to change how I work. "
+                         "Ask a question about what management said on an earnings call.")
 GUARD_ERROR_MESSAGE = "The safety check could not run, so this question was not answered. Please try again."
 
 

@@ -44,7 +44,7 @@ from strands.types.exceptions import StructuredOutputException
 
 from budget import RunBudget
 from citations import check_citations
-from guard import GUARD_ERROR_MESSAGE, Guard
+from guard import GUARD_ERROR_MESSAGE, PROMPT_ATTACK_MESSAGE, Guard
 from retrieval import Ledger, Retriever, bedrock_retriever, make_retrieve_tool
 
 SYSTEM_PROMPT = """You answer questions about companies' earnings calls.
@@ -119,7 +119,8 @@ def run(payload: dict[str, Any], model: Any | None = None, budget: RunBudget | N
         gin = guard.check_input(question)
         guard_info = {"input": gin.to_dict(), "output": None}
         if gin.blocked or gin.error:
-            message = gin.text if gin.blocked else GUARD_ERROR_MESSAGE
+            message = (GUARD_ERROR_MESSAGE if not gin.blocked
+                       else PROMPT_ATTACK_MESSAGE if "content:PROMPT_ATTACK" in gin.blocked_by else gin.text)
             return {"status": "blocked" if gin.blocked else "guardrail_error",
                     "answer": {"covered": False, "answer": message, "citations": []},
                     "citation_check": None, "retrieval": None, "run": {}, "guardrail": guard_info,
