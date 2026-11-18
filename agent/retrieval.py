@@ -39,6 +39,45 @@ MAX_SEARCHES = 2
 MAX_K = 8
 QUARTER = re.compile(r"^\d{4}Q[1-4]$")
 
+# Abbreviations common on earnings calls, and what they stand for. A query that uses one is sent
+# with the full phrase appended in brackets ("capex" -> "capex (capital expenditures)"): the
+# embedding model often misses the passage that spells it out, and the bare phrase alone misses
+# passages where management says the abbreviation (ASP). Measured 18 Nov, eval/eval_abbreviations.py:
+# 16 terms x the calls that mention them, top-5 hit 64/125 bare, 92/125 expanded.
+ABBREVIATIONS = {
+    "capex": "capital expenditures",
+    "opex": "operating expenses",
+    "FCF": "free cash flow",
+    "OCF": "operating cash flow",
+    "EPS": "earnings per share",
+    "ARR": "annual recurring revenue",
+    "SBC": "stock-based compensation",
+    "R&D": "research and development",
+    "SG&A": "selling, general and administrative expenses",
+    "D&A": "depreciation and amortization",
+    "TAM": "total addressable market",
+    "ASP": "average selling price",
+    "CAC": "customer acquisition cost",
+    "LTV": "lifetime value",
+    "GWP": "gross written premium",
+    "DAP": "daily active people",
+}
+_ABBREVIATION = re.compile(
+    r"(?<![A-Za-z&])(" + "|".join(re.escape(a) for a in sorted(ABBREVIATIONS, key=len, reverse=True)) + r")s?(?![A-Za-z&])",
+    re.IGNORECASE)
+_LOOKUP = {a.lower(): full for a, full in ABBREVIATIONS.items()}
+
+
+def expand_abbreviations(query: str) -> str:
+    """The query with "(full phrase)" appended for each known abbreviation it uses, once each,
+    unless the phrase is already in the query. Other text is unchanged."""
+    added: list[str] = []
+    for m in _ABBREVIATION.finditer(query):
+        full = _LOOKUP[m.group(1).lower()]
+        if full not in added and full.lower() not in query.lower():
+            added.append(full)
+    return f"{query} ({'; '.join(added)})" if added else query
+
 # retrieve(query, ticker_or_None, quarter_or_None, k) -> [{"passage_id", "ticker", "quarter", "speaker",
 #                                                          "role", "start_seconds", "score", "text"}]
 Retriever = Callable[[str, str | None, str | None, int], list[dict[str, Any]]]
@@ -53,8 +92,10 @@ class Ledger:
     refused: list[str] = field(default_factory=list)  # queries refused by the search limit
     texts: dict[str, str] = field(default_factory=dict, repr=False)  # passage_id -> text, for the final answer
 
-    def record(self, query: str, ticker: str | None, quarter: str | None, passages: list[dict[str, Any]]) -> None:
-        self.queries.append({"query": query, "ticker": ticker, "quarter": quarter,
+    def record(self, query: str, ticker: str | None, quarter: str | None, passages: list[dict[str, Any]],
+               sent: str | None = None) -> None:
+        """``query`` as the model wrote it; ``sent`` as it went to the retriever (abbreviations expanded)."""
+        self.queries.append({"query": query, "sent": sent or query, "ticker": ticker, "quarter": quarter,
                              "returned": [p["passage_id"] for p in passages]})
         for p in passages:
             self.returned.setdefault(p["passage_id"], {k: v for k, v in p.items() if k != "text"})
@@ -102,12 +143,13 @@ def make_retrieve_tool(retriever: Retriever, ledger: Ledger,
             return _error("search_limit", f"Search refused: {why}. Do not search again. "
                           "Answer now from the passages you already have, or say the calls did not discuss it.")
         k = max(1, min(int(k or DEFAULT_K), MAX_K))
+        sent = expand_abbreviations(query)
         try:
-            passages = retriever(query, t, q, k)
+            passages = retriever(sent, t, q, k)
         except Exception as exc:  # throttling, permissions, network
             retryable = type(exc).__name__ in {"ThrottlingException"} or "Throttl" in str(exc)
             return _error("retrieve_failed", str(exc), retryable)
-        ledger.record(query, t, q, passages)
+        ledger.record(query, t, q, passages, sent)
         return json.dumps({"ok": True, "filter": {"ticker": t, "quarter": q}, "passages": passages})
 
     return retrieve_passages

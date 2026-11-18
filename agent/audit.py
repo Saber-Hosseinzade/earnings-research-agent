@@ -12,7 +12,7 @@ A record (schema_version 1) holds exactly these fields:
     question                                     as the agent saw it: masked if the guardrail masked PII
     ticker, quarter                              the search filter pinned by the caller, if any
     status                                       ok | stopped | invalid_output | bad_request | blocked | guardrail_error
-    tool_calls                                   each search: query, filter, passage IDs returned
+    tool_calls                                   each search: query, as sent (abbreviations expanded), filter, IDs returned
     searches_refused                             searches the search limit refused
     cited, citation_check                        passage IDs the answer cited; {ok, problems, unreturned}
     guardrail                                    per check (input, output): blocked_by, masked types,
@@ -84,8 +84,9 @@ def build(result: dict[str, Any], payload: dict[str, Any], *, turn_id: str | Non
         "ticker": (str(payload.get("ticker") or "").strip().upper() or None),
         "quarter": (str(payload.get("quarter") or "").strip().upper() or None),
         "status": result.get("status"),
-        "tool_calls": [{"query": q["query"], "ticker": q.get("ticker"), "quarter": q.get("quarter"),
-                        "returned": q.get("returned", [])} for q in retrieval.get("queries", [])],
+        "tool_calls": [{"query": q["query"], "sent": q.get("sent", q["query"]), "ticker": q.get("ticker"),
+                        "quarter": q.get("quarter"), "returned": q.get("returned", [])}
+                       for q in retrieval.get("queries", [])],
         "searches_refused": run.get("searches_refused", 0),
         "cited": answer.get("citations", []),
         "citation_check": ({k: check.get(k) for k in ("ok", "problems", "unreturned")} if check else None),

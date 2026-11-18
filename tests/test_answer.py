@@ -206,3 +206,45 @@ def test_no_final_answer_when_no_passage_was_returned():
     out = answer.run({"question": "Why?", "ticker": "AMD"}, retriever=FakeRetriever(fail=RuntimeError("denied")),
                      model=FakeModel("loop_while_tool", tool=TOOL, tool_args={"query": "margins"}))
     assert out["status"] == "stopped" and out["answer"] is None and out["run"]["final_answer"] is None
+
+
+# --- abbreviation expansion -----------------------------------------------------------------------------------
+
+@pytest.mark.parametrize("query, sent", [
+    ("capex", "capex (capital expenditures)"),
+    ("Capex guidance for 2026", "Capex guidance for 2026 (capital expenditures)"),
+    ("FCF and EPS", "FCF and EPS (free cash flow; earnings per share)"),
+    ("R&D spending", "R&D spending (research and development)"),
+    ("SG&A", "SG&A (selling, general and administrative expenses)"),  # not also D&A
+    ("ASPs", "ASPs (average selling price)"),
+    ("capex, capital expenditures", "capex, capital expenditures"),   # phrase already there
+    ("capex and Capex", "capex and Capex (capital expenditures)"),    # phrase added once
+    ("gross margin", "gross margin"),
+    ("tampa expansion", "tampa expansion"),                           # not inside a word
+])
+def test_abbreviations_are_spelled_out(query, sent):
+    from retrieval import expand_abbreviations
+    assert expand_abbreviations(query) == sent
+
+
+def test_tool_sends_the_expanded_query_and_records_both():
+    r, ledger = FakeRetriever(), Ledger()
+    make_retrieve_tool(r, ledger, "META", "2026Q3")(query="capex")
+    assert r.calls[0]["query"] == "capex (capital expenditures)"
+    assert ledger.queries[0]["query"] == "capex" and ledger.queries[0]["sent"] == "capex (capital expenditures)"
+    out = json.loads(make_retrieve_tool(r, ledger, "META", "2026Q3")(query="capex"))
+    assert out["error"]["type"] == "search_limit"  # a repeat is judged on the model's own words
+
+
+def test_abbreviation_set_terms_are_known_and_questions_use_them():
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "eval"))
+    import eval_abbreviations as ea
+    from retrieval import ABBREVIATIONS, expand_abbreviations
+    rows = [json.loads(line) for line in ea.QUESTIONS.read_text().splitlines() if line.strip()]
+    assert len({r["id"] for r in rows}) == len(rows)
+    for r in rows:
+        assert r["term"] in ABBREVIATIONS and expand_abbreviations(r["question"]) != r["question"]
+    assert ea.topic_pattern("capex").search("capital expenditures were $34 billion")
+    assert ea.topic_pattern("R&D").search("our R&D spend") and not ea.topic_pattern("D&A").search("our R&D spend")

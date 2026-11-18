@@ -1,0 +1,642 @@
+{
+ "questions": 10,
+ "summary": {
+  "off-run1": {
+   "found": 4,
+   "of": 10,
+   "tokens": 96198
+  },
+  "off-run2": {
+   "found": 3,
+   "of": 10,
+   "tokens": 99410
+  },
+  "on-run1": {
+   "found": 8,
+   "of": 10,
+   "tokens": 87541
+  },
+  "on-run2": {
+   "found": 8,
+   "of": 10,
+   "tokens": 79956
+  }
+ },
+ "runs": {
+  "off-run1": [
+   {
+    "id": "ABBR-01",
+    "status": "ok",
+    "covered": false,
+    "cited": [],
+    "cited_on_topic": [],
+    "found": false,
+    "queries": [
+     "capex"
+    ],
+    "tokens": 8730
+   },
+   {
+    "id": "ABBR-02",
+    "status": "ok",
+    "covered": false,
+    "cited": [],
+    "cited_on_topic": [],
+    "found": false,
+    "queries": [
+     "capex",
+     "capital expenditure"
+    ],
+    "tokens": 13475
+   },
+   {
+    "id": "ABBR-03",
+    "status": "ok",
+    "covered": false,
+    "cited": [],
+    "cited_on_topic": [],
+    "found": false,
+    "queries": [
+     "opex"
+    ],
+    "tokens": 9513
+   },
+   {
+    "id": "ABBR-04",
+    "status": "ok",
+    "covered": true,
+    "cited": [
+     "AMD_2025Q4_t004_p1",
+     "AMD_2025Q4_t005_p3"
+    ],
+    "cited_on_topic": [
+     "AMD_2025Q4_t004_p1"
+    ],
+    "found": true,
+    "queries": [
+     "What FCF did AMD report?"
+    ],
+    "tokens": 4822
+   },
+   {
+    "id": "ABBR-05",
+    "status": "ok",
+    "covered": true,
+    "cited": [
+     "CRDO_2026Q4_t003_p1"
+    ],
+    "cited_on_topic": [
+     "CRDO_2026Q4_t003_p1"
+    ],
+    "found": true,
+    "queries": [
+     "What was Credo's EPS?"
+    ],
+    "tokens": 5595
+   },
+   {
+    "id": "ABBR-06",
+    "status": "ok",
+    "covered": false,
+    "cited": [],
+    "cited_on_topic": [],
+    "found": false,
+    "queries": [
+     "R&D"
+    ],
+    "tokens": 4859
+   },
+   {
+    "id": "ABBR-07",
+    "status": "ok",
+    "covered": true,
+    "cited": [
+     "NBIS_2026Q1_t003_p2"
+    ],
+    "cited_on_topic": [
+     "NBIS_2026Q1_t003_p2"
+    ],
+    "found": true,
+    "queries": [
+     "OCF",
+     "operating cash flow"
+    ],
+    "tokens": 9141
+   },
+   {
+    "id": "ABBR-08",
+    "status": "ok",
+    "covered": false,
+    "cited": [],
+    "cited_on_topic": [],
+    "found": false,
+    "queries": [
+     "How did GWP develop?",
+     "GWP development"
+    ],
+    "tokens": 22282
+   },
+   {
+    "id": "ABBR-09",
+    "status": "ok",
+    "covered": false,
+    "cited": [],
+    "cited_on_topic": [],
+    "found": false,
+    "queries": [
+     "How did DAP develop?"
+    ],
+    "tokens": 5005
+   },
+   {
+    "id": "ABBR-10",
+    "status": "ok",
+    "covered": true,
+    "cited": [
+     "RIVN_2026Q3_t072"
+    ],
+    "cited_on_topic": [
+     "RIVN_2026Q3_t072"
+    ],
+    "found": true,
+    "queries": [
+     "ASP",
+     "average selling price"
+    ],
+    "tokens": 12776
+   }
+  ],
+  "off-run2": [
+   {
+    "id": "ABBR-01",
+    "status": "ok",
+    "covered": false,
+    "cited": [],
+    "cited_on_topic": [],
+    "found": false,
+    "queries": [
+     "capex"
+    ],
+    "tokens": 8730
+   },
+   {
+    "id": "ABBR-02",
+    "status": "ok",
+    "covered": false,
+    "cited": [],
+    "cited_on_topic": [],
+    "found": false,
+    "queries": [
+     "capex",
+     "capital expenditures"
+    ],
+    "tokens": 18086
+   },
+   {
+    "id": "ABBR-03",
+    "status": "ok",
+    "covered": false,
+    "cited": [],
+    "cited_on_topic": [],
+    "found": false,
+    "queries": [
+     "opex"
+    ],
+    "tokens": 9513
+   },
+   {
+    "id": "ABBR-04",
+    "status": "ok",
+    "covered": true,
+    "cited": [
+     "AMD_2025Q4_t004_p1",
+     "AMD_2025Q4_t005_p3"
+    ],
+    "cited_on_topic": [
+     "AMD_2025Q4_t004_p1"
+    ],
+    "found": true,
+    "queries": [
+     "What FCF did AMD report?"
+    ],
+    "tokens": 4805
+   },
+   {
+    "id": "ABBR-05",
+    "status": "ok",
+    "covered": false,
+    "cited": [],
+    "cited_on_topic": [],
+    "found": false,
+    "queries": [
+     "EPS"
+    ],
+    "tokens": 8958
+   },
+   {
+    "id": "ABBR-06",
+    "status": "ok",
+    "covered": false,
+    "cited": [],
+    "cited_on_topic": [],
+    "found": false,
+    "queries": [
+     "R&D"
+    ],
+    "tokens": 4893
+   },
+   {
+    "id": "ABBR-07",
+    "status": "ok",
+    "covered": true,
+    "cited": [
+     "NBIS_2026Q1_t003_p2"
+    ],
+    "cited_on_topic": [
+     "NBIS_2026Q1_t003_p2"
+    ],
+    "found": true,
+    "queries": [
+     "OCF",
+     "operating cash flow"
+    ],
+    "tokens": 9141
+   },
+   {
+    "id": "ABBR-08",
+    "status": "ok",
+    "covered": true,
+    "cited": [],
+    "cited_on_topic": [],
+    "found": false,
+    "queries": [
+     "How did GWP develop?",
+     "GWP"
+    ],
+    "tokens": 17496
+   },
+   {
+    "id": "ABBR-09",
+    "status": "ok",
+    "covered": false,
+    "cited": [],
+    "cited_on_topic": [],
+    "found": false,
+    "queries": [
+     "How did DAP develop?"
+    ],
+    "tokens": 5017
+   },
+   {
+    "id": "ABBR-10",
+    "status": "ok",
+    "covered": true,
+    "cited": [
+     "RIVN_2026Q3_t072"
+    ],
+    "cited_on_topic": [
+     "RIVN_2026Q3_t072"
+    ],
+    "found": true,
+    "queries": [
+     "ASP",
+     "average selling price"
+    ],
+    "tokens": 12771
+   }
+  ],
+  "on-run1": [
+   {
+    "id": "ABBR-01",
+    "status": "ok",
+    "covered": true,
+    "cited": [
+     "META_2026Q3_t005_p1"
+    ],
+    "cited_on_topic": [
+     "META_2026Q3_t005_p1"
+    ],
+    "found": true,
+    "queries": [
+     "capex (capital expenditures)"
+    ],
+    "tokens": 5670
+   },
+   {
+    "id": "ABBR-02",
+    "status": "ok",
+    "covered": false,
+    "cited": [],
+    "cited_on_topic": [],
+    "found": false,
+    "queries": [
+     "capex (capital expenditures)",
+     "capital expenditure"
+    ],
+    "tokens": 13651
+   },
+   {
+    "id": "ABBR-03",
+    "status": "ok",
+    "covered": true,
+    "cited": [
+     "AMD_2025Q3_t003_p1"
+    ],
+    "cited_on_topic": [
+     "AMD_2025Q3_t003_p1"
+    ],
+    "found": true,
+    "queries": [
+     "opex (operating expenses)",
+     "opex operating expenses"
+    ],
+    "tokens": 9128
+   },
+   {
+    "id": "ABBR-04",
+    "status": "ok",
+    "covered": true,
+    "cited": [
+     "AMD_2025Q4_t004_p1",
+     "AMD_2025Q4_t005_p3"
+    ],
+    "cited_on_topic": [
+     "AMD_2025Q4_t004_p1"
+    ],
+    "found": true,
+    "queries": [
+     "What FCF did AMD report? (free cash flow)"
+    ],
+    "tokens": 5442
+   },
+   {
+    "id": "ABBR-05",
+    "status": "ok",
+    "covered": false,
+    "cited": [],
+    "cited_on_topic": [],
+    "found": false,
+    "queries": [
+     "EPS (earnings per share)"
+    ],
+    "tokens": 9135
+   },
+   {
+    "id": "ABBR-06",
+    "status": "ok",
+    "covered": true,
+    "cited": [
+     "ROOT_2026Q1_t044",
+     "ROOT_2026Q1_t020",
+     "ROOT_2026Q1_t005"
+    ],
+    "cited_on_topic": [
+     "ROOT_2026Q1_t044",
+     "ROOT_2026Q1_t020"
+    ],
+    "found": true,
+    "queries": [
+     "R&D (research and development)",
+     "investment phase R&D (research and development)"
+    ],
+    "tokens": 14284
+   },
+   {
+    "id": "ABBR-07",
+    "status": "ok",
+    "covered": true,
+    "cited": [
+     "NBIS_2026Q1_t003_p2"
+    ],
+    "cited_on_topic": [
+     "NBIS_2026Q1_t003_p2"
+    ],
+    "found": true,
+    "queries": [
+     "OCF (operating cash flow)"
+    ],
+    "tokens": 4936
+   },
+   {
+    "id": "ABBR-08",
+    "status": "ok",
+    "covered": true,
+    "cited": [
+     "ROOT_2025Q4_t006_p1"
+    ],
+    "cited_on_topic": [
+     "ROOT_2025Q4_t006_p1"
+    ],
+    "found": true,
+    "queries": [
+     "How did GWP develop? (gross written premium)"
+    ],
+    "tokens": 5376
+   },
+   {
+    "id": "ABBR-09",
+    "status": "ok",
+    "covered": true,
+    "cited": [
+     "META_2025Q4_t002_p1",
+     "META_2025Q4_t003_p4",
+     "META_2025Q4_t034",
+     "META_2025Q4_t023",
+     "META_2025Q4_t003_p8"
+    ],
+    "cited_on_topic": [
+     "META_2025Q4_t002_p1",
+     "META_2025Q4_t003_p4",
+     "META_2025Q4_t034"
+    ],
+    "found": true,
+    "queries": [
+     "How did DAP develop? (daily active people)"
+    ],
+    "tokens": 5513
+   },
+   {
+    "id": "ABBR-10",
+    "status": "ok",
+    "covered": true,
+    "cited": [
+     "RIVN_2026Q3_t072",
+     "RIVN_2026Q3_t072"
+    ],
+    "cited_on_topic": [
+     "RIVN_2026Q3_t072",
+     "RIVN_2026Q3_t072"
+    ],
+    "found": true,
+    "queries": [
+     "ASP (average selling price)",
+     "average selling price"
+    ],
+    "tokens": 14406
+   }
+  ],
+  "on-run2": [
+   {
+    "id": "ABBR-01",
+    "status": "ok",
+    "covered": true,
+    "cited": [
+     "META_2026Q3_t005_p1"
+    ],
+    "cited_on_topic": [
+     "META_2026Q3_t005_p1"
+    ],
+    "found": true,
+    "queries": [
+     "capex (capital expenditures)"
+    ],
+    "tokens": 5689
+   },
+   {
+    "id": "ABBR-02",
+    "status": "ok",
+    "covered": false,
+    "cited": [],
+    "cited_on_topic": [],
+    "found": false,
+    "queries": [
+     "capex (capital expenditures)",
+     "capital expenditures"
+    ],
+    "tokens": 13653
+   },
+   {
+    "id": "ABBR-03",
+    "status": "ok",
+    "covered": true,
+    "cited": [
+     "AMD_2025Q3_t003_p1"
+    ],
+    "cited_on_topic": [
+     "AMD_2025Q3_t003_p1"
+    ],
+    "found": true,
+    "queries": [
+     "opex (operating expenses)",
+     "operating expense opex (operating expenses)"
+    ],
+    "tokens": 9162
+   },
+   {
+    "id": "ABBR-04",
+    "status": "ok",
+    "covered": true,
+    "cited": [
+     "AMD_2025Q4_t004_p1"
+    ],
+    "cited_on_topic": [
+     "AMD_2025Q4_t004_p1"
+    ],
+    "found": true,
+    "queries": [
+     "What FCF did AMD report? (free cash flow)"
+    ],
+    "tokens": 5430
+   },
+   {
+    "id": "ABBR-05",
+    "status": "ok",
+    "covered": true,
+    "cited": [
+     "CRDO_2026Q4_t003_p1"
+    ],
+    "cited_on_topic": [
+     "CRDO_2026Q4_t003_p1"
+    ],
+    "found": true,
+    "queries": [
+     "EPS (earnings per share)",
+     "earnings per share"
+    ],
+    "tokens": 10958
+   },
+   {
+    "id": "ABBR-06",
+    "status": "ok",
+    "covered": true,
+    "cited": [
+     "ROOT_2026Q1_t044"
+    ],
+    "cited_on_topic": [
+     "ROOT_2026Q1_t044"
+    ],
+    "found": true,
+    "queries": [
+     "R&D (research and development)"
+    ],
+    "tokens": 4844
+   },
+   {
+    "id": "ABBR-07",
+    "status": "ok",
+    "covered": true,
+    "cited": [
+     "NBIS_2026Q1_t003_p2",
+     "NBIS_2026Q1_t022"
+    ],
+    "cited_on_topic": [
+     "NBIS_2026Q1_t003_p2",
+     "NBIS_2026Q1_t022"
+    ],
+    "found": true,
+    "queries": [
+     "OCF (operating cash flow)"
+    ],
+    "tokens": 4946
+   },
+   {
+    "id": "ABBR-08",
+    "status": "ok",
+    "covered": true,
+    "cited": [
+     "ROOT_2025Q4_t006_p1"
+    ],
+    "cited_on_topic": [
+     "ROOT_2025Q4_t006_p1"
+    ],
+    "found": true,
+    "queries": [
+     "How did GWP develop? (gross written premium)"
+    ],
+    "tokens": 5383
+   },
+   {
+    "id": "ABBR-09",
+    "status": "ok",
+    "covered": true,
+    "cited": [],
+    "cited_on_topic": [],
+    "found": false,
+    "queries": [
+     "How did DAP develop? (daily active people)"
+    ],
+    "tokens": 5447
+   },
+   {
+    "id": "ABBR-10",
+    "status": "ok",
+    "covered": true,
+    "cited": [
+     "RIVN_2026Q3_t072",
+     "RIVN_2026Q3_t072"
+    ],
+    "cited_on_topic": [
+     "RIVN_2026Q3_t072",
+     "RIVN_2026Q3_t072"
+    ],
+    "found": true,
+    "queries": [
+     "ASP (average selling price)",
+     "average selling price"
+    ],
+    "tokens": 14444
+   }
+  ]
+ },
+ "model_id": "eu.amazon.nova-2-lite-v1:0"
+}
