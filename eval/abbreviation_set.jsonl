@@ -1,0 +1,10 @@
+{"id": "ABBR-01", "term": "capex", "ticker": "META", "quarter": "2026Q3", "question": "What did META say about capex?"}
+{"id": "ABBR-02", "term": "capex", "ticker": "CRDO", "quarter": "2026Q1", "question": "What did Credo say about capex this quarter?"}
+{"id": "ABBR-03", "term": "opex", "ticker": "AMD", "quarter": "2025Q3", "question": "What did AMD say about opex?"}
+{"id": "ABBR-04", "term": "FCF", "ticker": "AMD", "quarter": "2025Q4", "question": "What FCF did AMD report?"}
+{"id": "ABBR-05", "term": "EPS", "ticker": "CRDO", "quarter": "2026Q4", "question": "What was Credo's EPS?"}
+{"id": "ABBR-06", "term": "R&D", "ticker": "ROOT", "quarter": "2026Q1", "question": "What did Root say about R&D?"}
+{"id": "ABBR-07", "term": "OCF", "ticker": "NBIS", "quarter": "2026Q1", "question": "What OCF did Nebius report?"}
+{"id": "ABBR-08", "term": "GWP", "ticker": "ROOT", "quarter": "2025Q4", "question": "How did GWP develop?"}
+{"id": "ABBR-09", "term": "DAP", "ticker": "META", "quarter": "2025Q4", "question": "How did DAP develop?"}
+{"id": "ABBR-10", "term": "ASP", "ticker": "RIVN", "quarter": "2026Q3", "question": "What did Rivian say about ASP?"}
