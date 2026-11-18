@@ -3,6 +3,7 @@
 import pytest
 
 import fake_model
+import approvals
 import serve
 import session
 from test_answer import FakeRetriever, model_answering
@@ -32,7 +33,8 @@ def test_session_id_is_the_runtimes_not_the_callers():
     out = serve.handle({"question": "Why?", "ticker": "AMD", "quarter": "2026Q2", "session_id": "forged"},
                        "rt-session-1", model=model_answering(["AMD_2026Q2_t003_p1"]),
                        retriever=FakeRetriever(), guard=g, audit_writer=w,
-                       store=session.InMemoryStore(), corpus=session.Corpus.load())
+                       store=session.InMemoryStore(), corpus=session.Corpus.load(),
+                       requests=approvals.InMemoryRequests(), fetch=lambda t, q: pytest.fail("fetched"))
     assert out["status"] == "ok" and out["audit"]["written"]
     assert w.records[0]["session_id"] == "rt-session-1"
     assert [c[0] for c in g.calls] == ["input", "output"]  # the guardrail ran on question and answer

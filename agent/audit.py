@@ -14,8 +14,9 @@ A record (schema_version 2) holds exactly these fields:
     context                                      how ticker and quarter were resolved (session.py): how, history_turns,
                                                  notes; null when the turn was not run through a session (v2 schema)
     status                                       ok | stopped | invalid_output | bad_request | blocked | guardrail_error
-                                                 | out_of_corpus (corpus check) | clarify (which company?);
-                                                 both fixed replies from session.py, no agent run
+                                                 | out_of_corpus (corpus check) | clarify (which company?)
+                                                 | approval_pending (fetch request sent): fixed replies, no agent
+                                                 run; decision:<approved|declined|...> for a reviewer's decision
     tool_calls                                   each search: query, as sent (abbreviations expanded), filter, IDs returned
     searches_refused                             searches the search limit refused
     cited, citation_check                        passage IDs the answer cited; {ok, problems, unreturned}
@@ -23,7 +24,8 @@ A record (schema_version 2) holds exactly these fields:
                                                  grounding and relevance scores, error, text units, latency;
                                                  input_in_context when a follow-up was checked again with the
                                                  previous question (answer.py)
-    approval                                     null: there is no approval gate yet (PROJECT_CONTEXT 8.11 item 2)
+    approval                                     fetch request (approvals.py): request_id, status (pending | declined
+                                                 on a turn; approved | declined | ... on a decision), decided_by
     covered, answer                              what the user was shown
     model_id, prompts                            model, and each prompt's source, id, version, sha256
     tokens_used, model_calls, latency_ms, final_answer, stopped_reason, error
@@ -100,7 +102,7 @@ def build(result: dict[str, Any], payload: dict[str, Any], *, turn_id: str | Non
                        **({"input_in_context": _guard_part(g["input_in_context"])} if g.get("input_in_context") else {})}
                       if g else None),
         "context": result.get("context"),
-        "approval": None,
+        "approval": result.get("approval"),
         "covered": answer.get("covered"),
         "answer": answer.get("answer"),
         "model_id": run.get("model_id"),

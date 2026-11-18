@@ -200,40 +200,49 @@ Expected:
 
 ### 6. Out-of-corpus ticker: ask for approval before fetching
 
-**Status: planned.** Approval is the one action that leaves the fixed corpus: an external API call, content
-nobody has checked, and a cost.
+**Status: built** (`agent/approvals.py`; reviewer actions in `agent/serve.py`). Approval is the one action that
+leaves the fixed corpus: an external API call, content nobody has checked, and a cost.
 
-> **User** *(viewer)*: What did NVDA say about data center demand last quarter?
-> **Assistant:** NVDA isn't in my corpus. I can fetch the transcript of its latest call from an external source,
-> for this question only, once a reviewer approves. I've sent the request.
+> **User** *(viewer)*: What did NVDA say about data center demand?
+> **Assistant:** NVDA isn't in my corpus. If you name a quarter (for example Q3 2026), I can ask a reviewer to
+> approve fetching that call from an external source. Or ask about AMD, RIVN, ROOT, META, CRDO, NBIS.
+> **User:** Q3 2026
+> **Assistant:** NVDA isn't in my corpus. I can fetch the transcript of its Q3 2026 call from an external
+> source, for this question only, once a reviewer approves. I've sent the request (b3f344e6).
 >
-> *Reviewer's view:* NVDA, latest call, requested by [user] for "[question]". **[Approve] [Decline]**
+> *Reviewer's list:* NVDA, 2026Q3, requested by [user] for "What did NVDA say about data center demand?
+> (Q3 2026)". **[Approve] [Decline]**
 >
-> *(after approval)* **Assistant:** [Answer from the fetched transcript, naming the call.] *Source: fetched
-> transcript, not part of the corpus.*
+> *(after approval, on the request's status)* [Answer from the fetched transcript, with a verbatim quote.]
+> *Source: fetched transcript, not part of the corpus.*
 
-On decline:
+On decline, and if the user asks again in the same session:
 
-> **Assistant:** A reviewer declined the request, so nothing was fetched. I can answer about AMD, RIVN, ROOT,
-> META, CRDO and NBIS.
+> **Assistant:** A reviewer declined fetching NVDA's Q3 2026 call, so nothing was fetched. I can answer about
+> AMD, RIVN, ROOT, META, CRDO, NBIS.
 
 Expected:
-- Nothing is fetched before approval. The agent proposes the fetch; a hook pauses the run (Strands interrupt)
-  and the UI shows approve / decline.
-- Approve → one fetch through the transcript tool, then the answer. Decline → the tool call is cancelled and
-  the reply above follows; the declined request is not proposed again in the same session unless asked.
-- The fetched text answers that turn only and is **never added** to the corpus or the Knowledge Base, so
+- **Code proposes the fetch, not the model** (decided 18 Nov): the corpus check already knows the ticker is
+  outside the corpus. A request is proposed only once a quarter is named, so one approval is one API attempt.
+  The guardrail runs first: an advice request about an unknown ticker is refused, not proposed, and the stored
+  question is masked.
+- A pending request is stored (DynamoDB, expires after 24 hours). Asking again returns the same request; a
+  declined one is not proposed again in the same session.
+- Nothing is fetched before approval: the fetch runs only after the conditional write to "approved" succeeds.
+  A request is decided once and not after it expires.
+- Approve → one fetch through the transcript Lambda, then one model call with no tools that answers from that
+  transcript with a verbatim quote, checked in code; the answer passes the output guardrail (grounded on the
+  quote). The answer is stored on the request and in the requester's session. Decline → nothing is fetched.
+- The fetched text answers that request only and is **never added** to the corpus or the Knowledge Base, so
   evaluation stays repeatable.
-- The audit record holds the proposal, the decision and who made it (the `approval` field, empty today).
-- Who approves: only a user in the `reviewer` group, checked server-side from the login's group claim, never
-  from the browser (decision 4). A `viewer` can request a fetch but not approve it, including their own.
+- The audit record holds the proposal (on the turn) and the decision with who made it (`approval` field).
+- Who decides: only the `reviewer` role, and never on their own request. Until a login exists, the role comes
+  from the caller; behind the UI it will come from the login's group claim, checked server-side (decision 4).
+- The requester sees the outcome through the request's status (`request_status`); the UI polls it.
 
-Design notes from the probe on Strands 1.63 (8 Nov):
-- The run budget resets at the start of each invocation, so resuming after approval would start a fresh
-  budget. The resume must keep the original budget.
-- The paused agent must survive between the two requests: kept per runtime session, or persisted with a
-  session manager. With a separate reviewer, the wait can be minutes, not seconds, which favours persisting
-  it and expiring an unanswered request.
+Design note: first planned with a Strands interrupt (the agent proposes, the run pauses, the paused agent is
+persisted until the reviewer answers). Replaced 18 Nov by the code-proposed request: no paused agent to keep
+alive for minutes, and no double run budget on resume (the 8 Nov probe's two open problems).
 
 ### 7. Not in the transcripts: say it wasn't discussed
 
@@ -280,5 +289,5 @@ Decided 17 Nov.
 3. **Corpus check (flows 5, 6):** in code, against `corpus/calls.json`, before the agent runs. Deterministic
    and testable. Mixed questions ("AMD and NVDA") are handled less gracefully; the check covers the ticker and
    quarter given or resolved from the session.
-4. **Approver (flow 6):** only the `reviewer` group. This needs a login with groups (Cognito: `viewer`,
+4. **Approver (flow 6):** only the `reviewer` group (built 18 Nov with the role from the caller until a login exists; a reviewer cannot decide their own request). This needs a login with groups (Cognito: `viewer`,
    `reviewer`) checked server-side, and a reviewer view in the UI listing pending requests.

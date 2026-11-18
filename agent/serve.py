@@ -25,11 +25,15 @@ from typing import Any
 
 from bedrock_agentcore.runtime import BedrockAgentCoreApp
 
+import approvals
 import audit
 import session
 from guard import BedrockGuard
 
-REQUIRED_ENV = ("MODEL_ID", "KNOWLEDGE_BASE_ID", "GUARDRAIL_ID", "GUARDRAIL_VERSION", "AUDIT_LOG_GROUP", "MEMORY_ID")
+REQUIRED_ENV = ("MODEL_ID", "KNOWLEDGE_BASE_ID", "GUARDRAIL_ID", "GUARDRAIL_VERSION", "AUDIT_LOG_GROUP", "MEMORY_ID",
+                "REQUESTS_TABLE", "TOOL_FUNCTION_NAME")
+REQUEST_FIELDS = ("request_id", "status", "ticker", "quarter", "question", "requested_by", "created_at", "expires_at",
+                  "decided_by", "decided_at")  # what a reviewer's list shows: no answers, no session ids
 
 
 def check_env(environ: dict[str, str] | None = None) -> None:
@@ -43,17 +47,73 @@ def check_env(environ: dict[str, str] | None = None) -> None:
 def _deployed() -> dict[str, Any]:
     """Built once per process: the audit writer keeps one log stream per process (audit.py)."""
     return {"guard": BedrockGuard(), "audit_writer": audit.CloudWatchWriter(),
-            "store": session.AgentCoreMemoryStore(), "corpus": session.Corpus.load()}
+            "store": session.AgentCoreMemoryStore(), "corpus": session.Corpus.load(),
+            "requests": approvals.DynamoRequests(), "fetch": approvals.lambda_fetcher()}
+
+
+DEPS = ("guard", "audit_writer", "store", "corpus", "requests", "fetch")
 
 
 def handle(payload: dict[str, Any], session_id: str | None, **deps: Any) -> dict[str, Any]:
-    """One turn. ``deps`` (model, retriever, guard, audit_writer, store, corpus) are for tests; deployed,
-    they come from the env. Earlier turns of the session come from AgentCore Memory (session.py)."""
+    """One request. ``deps`` (model, retriever, guard, audit_writer, store, corpus, requests, fetch) are for
+    tests; deployed, they come from the env.
+
+    payload.action:
+      (none)          a chat turn (session.run_turn); earlier turns come from AgentCore Memory
+      list_requests   reviewer only: pending fetch requests (approvals.py)
+      decide          reviewer only: {"request_id", "decision": "approve" | "decline"}; approval fetches and answers
+      request_status  the requester or a reviewer: status of one request, with the answer once there is one
+    user_id and role come from the caller; behind the UI they will come from the login, checked server-side.
+    """
     payload = {**payload, "session_id": session_id}  # the runtime's session id, never the caller's
-    if any(k not in deps for k in ("guard", "audit_writer", "store", "corpus")):
+    if any(k not in deps for k in DEPS):
         deps = {**_deployed(), **deps}
-    store, corpus = deps.pop("store"), deps.pop("corpus")
-    return session.run_turn(payload, session_id, store, corpus, **deps)
+    store, corpus, requests, fetch = (deps.pop(k) for k in ("store", "corpus", "requests", "fetch"))
+    action = payload.get("action")
+    if not action:
+        return session.run_turn(payload, session_id, store, corpus, requests=requests, **deps)
+    if action == "list_requests":
+        if payload.get("role") != approvals.REVIEWER:
+            return {"status": "refused", "error": "only a reviewer can list fetch requests"}
+        items = sorted(requests.pending(), key=lambda i: i["created_at"])
+        return {"status": "ok", "requests": [{k: i.get(k) for k in REQUEST_FIELDS} for i in items]}
+    if action == "decide":
+        return _decide(payload, store, requests, fetch, deps)
+    if action == "request_status":
+        item = requests.get(str(payload.get("request_id") or ""))
+        if not item or (payload.get("role") != approvals.REVIEWER
+                        and item["requested_by"] != (payload.get("user_id") or "anonymous")):
+            return {"status": "not_found"}  # the same reply whether it doesn't exist or isn't yours
+        return {"status": "ok", "request": {**{k: item.get(k) for k in REQUEST_FIELDS}, "result": item.get("result")}}
+    return {"status": "bad_request", "error": f"unknown action {action!r}"}
+
+
+def _decide(payload: dict[str, Any], store: Any, requests: Any, fetch: Any, deps: dict[str, Any]) -> dict[str, Any]:
+    request_id = str(payload.get("request_id") or "")
+    d = approvals.decide(requests, request_id, str(payload.get("decision") or ""), user_id=payload.get("user_id"),
+                         role=payload.get("role"), fetch=fetch, model=deps.get("model"), guard=deps.get("guard"))
+    item = d.request or {}
+    result = item.get("result") or {}
+    approval = {"request_id": request_id, "status": d.status, "decided_by": item.get("decided_by"),
+                "request_status": item.get("status"), "ticker": item.get("ticker"), "quarter": item.get("quarter")}
+    out = {"status": d.status, "message": d.message, "approval": approval,
+           "request": {k: item.get(k) for k in REQUEST_FIELDS} if item else None, "result": result or None}
+    # The requester's session gets the answer, so their follow-ups can build on it.
+    if store and result.get("answer") and item.get("session_id"):
+        try:
+            store.save(item["requested_by"], item["session_id"],
+                       {"question": item["question"], "answer": result["answer"], "covered": result.get("covered"),
+                        "ticker": item["ticker"], "quarter": item["quarter"], "citations": []})
+        except Exception as exc:  # noqa: BLE001
+            out["memory_error"] = f"{type(exc).__name__}: {str(exc)[:200]}"
+    if deps.get("audit_writer") is not None:
+        record = {"status": f"decision:{d.status}", "approval": approval, "question": item.get("question"),
+                  "answer": {"covered": result.get("covered"), "answer": result.get("answer"), "citations": []},
+                  "run": result.get("run") or {}, "error": None if d.status in ("approved", "declined") else d.message}
+        out["audit"] = audit.write(deps["audit_writer"], record,
+                                   {**payload, "question": item.get("question"), "ticker": item.get("ticker"),
+                                    "quarter": item.get("quarter")})
+    return out
 
 
 app = BedrockAgentCoreApp()

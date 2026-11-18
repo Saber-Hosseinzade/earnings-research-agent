@@ -8,7 +8,7 @@ ask.py and main.py are untouched, so the v1.0 and v1.1 baselines stay reproducib
     payload: {"question": "Why did gross margin expand?", "ticker": "AMD", "quarter": "2026Q2"}
              ticker and quarter are optional; when given they pin the search filter in code.
     returns: {"status": "ok" | "stopped" | "invalid_output" | "bad_request" | "blocked" | "guardrail_error"
-                        | "out_of_corpus" | "clarify",
+                        | "out_of_corpus" | "clarify" | "approval_pending",
               "answer": {"covered", "answer", "citations"} | null,
               "citation_check": {"ok", "problems", "verified", "unreturned"} | null,
               "retrieval": {"queries": [...], "returned": [passage ids]},
@@ -59,6 +59,7 @@ from retrieval import Ledger, Retriever, bedrock_retriever, make_retrieve_tool
 # (prompts.py, infra/prompt_stack.py). Deployed, the pinned version is loaded; offline, the file.
 
 ADVICE_TOPIC = "topic:InvestmentAdvice"  # infra/guardrail_stack.py
+FIXED_STATUS = {"clarify": "clarify", "approval_pending": "approval_pending"}  # other fixed replies: out_of_corpus
 FINAL_MAX_TOKENS = 15_000  # passages from at most two searches; a stopped run can use 40K + this
 
 
@@ -130,8 +131,12 @@ def _run(payload: dict[str, Any], model: Any | None, budget: RunBudget | None,
             question = gin.text
 
     reply = payload.get("fixed_reply")
-    if reply:  # call not in the corpus, or no company known (session.py): fixed reply, no search, no model call
-        return {"status": "clarify" if reply["kind"] == "clarify" else "out_of_corpus", "question": question,
+    if callable(reply):  # a fetch proposal (approvals.py): made only now, with the checked, masked question
+        reply = reply(question)
+    if reply:  # call not in the corpus, no company known, or a fetch request: fixed reply, no search, no model call
+        return {"status": FIXED_STATUS.get(reply["kind"], "out_of_corpus"), "question": question,
+                **({"approval": {"request_id": reply["request_id"], "status": reply["kind"].removeprefix("approval_"),
+                                 "new": reply.get("new")}} if reply.get("request_id") else {}),
                 "answer": {"covered": False, "answer": reply["message"], "citations": []},
                 "fixed_reply": reply, "citation_check": None, "retrieval": None, "run": {},
                 "guardrail": guard_info, "error": None}
