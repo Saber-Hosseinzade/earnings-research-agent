@@ -19,6 +19,10 @@ def test_set_is_well_formed():
     for c in convs:
         assert c["flow"] in {1, 2, 3, 4, 5, 6, 7} and c["turns"]
         for t in c["turns"]:
+            if "action" in t:
+                assert t["action"] in {"decide", "request_status", "list_requests"} and t.get("as", "user") in mt.ACTORS
+                assert set(t["expect"]) <= {"status", "request_status", "covered", "quote_ok", "fetches"}
+                continue
             assert t["user"].strip() and set(t["expect"]) <= KEYS
             for p in t["expect"].get("cites", []) + t["expect"].get("cites_only", []):
                 ticker = p.split("_")[0]
@@ -55,11 +59,28 @@ def test_a_clarifying_question_passes():
 
 
 def test_score_counts_goal_success_and_refusals():
-    convs = [{"id": "A", "flow": 4, "turns": [{"expect": {"status": "ok"}}, {"expect": {"status": "blocked"}}]},
-             {"id": "B", "flow": 4, "turns": [{"expect": {"status": "ok"}}]}]
+    convs = [{"id": "A", "flow": 4, "turns": [{"user": "q", "expect": {"status": "ok"}},
+                                              {"user": "buy?", "expect": {"status": "blocked"}}]},
+             {"id": "B", "flow": 4, "turns": [{"user": "q", "expect": {"status": "ok"}},
+                                              {"action": "decide", "expect": {"status": "refused"}}]}]
     runs = {"A": [{"failed": [], "status": "ok"}, {"failed": [], "status": "blocked"}],
-            "B": [{"failed": ["status"], "status": "blocked"}]}
+            "B": [{"failed": ["status"], "status": "blocked"}, {"failed": [], "status": "refused"}]}
     s = mt.score(convs, runs)
-    assert (s["goal_success"], s["turns_passed"], s["turns"]) == (1, 2, 3)
+    assert (s["goal_success"], s["turns_passed"], s["turns"]) == (1, 3, 4)
     assert s["refusal"] == {"expected_blocked": 1, "blocked": 1, "expected_not_blocked": 2, "wrongly_blocked": 1}
     assert s["by_flow"]["4"] == {"conversations": 2, "passed": 1}
+
+
+def test_flow6_conversation_runs_offline_with_the_fixture_fetch(monkeypatch):
+    """The reviewer steps, the single fetch and their checks, with a scripted model and no AWS."""
+    import fake_model
+    from fake_model import FakeModel
+    monkeypatch.setattr(fake_model, "VALID_BRIEF", {"covered_in_call": True, "answer": "Gross margin was 41%.",
+                                                    "quote": "Gross margin was 41%, down one point", "speaker": "Ben Kato"})
+    import approvals
+    real = approvals.answer_from_transcript
+    monkeypatch.setattr(approvals, "answer_from_transcript", lambda q, f, model=None: real(q, f, FakeModel("good", fetches=0)))
+    conv = next(c for c in mt.load() if c["id"] == "MT-16")
+    verdicts, _ = mt.run_conversation(conv, CORPUS, guard=None)
+    assert [v["failed"] for v in verdicts] == [[], [], [], [], []]
+    assert verdicts[-1]["fetches"] == 1 and verdicts[1]["fetches"] == 0

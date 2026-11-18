@@ -263,14 +263,14 @@ Expected:
 
 ## Evaluation
 
-| Flow | Single-turn (built) | Multi-turn (`eval/multiturn_set.json`; built except flow 6) |
+| Flow | Single-turn (built) | Multi-turn (`eval/multiturn_set.json`) |
 |---|---|---|
 | 1 Happy path | Golden set, 30 answerable: retrieval, grounding, task, citation check | One conversation |
 | 2 Missing slot | — | Asks once, answers after the reply |
 | 3 Follow-up | — | Pronoun and relative-quarter follow-ups, one switching company |
 | 4 Advice | Guardrail input screen (`eval/eval_guardrail.py`) | Refusal mid-conversation, conversation continues |
 | 5 Failure / unknown | — | Unknown ticker, quarter outside the corpus |
-| 6 Approval | — | One approve, one decline, and a viewer trying to approve their own request |
+| 6 Approval | — | Approve (nothing fetched before, one fetch after), decline (not proposed again), a viewer and the requester as "reviewer" both refused, advice about the unknown ticker refused. Fetch served from the invented DEMO call in `tests/fixtures` |
 | 7 Not discussed | Golden set, 4 unanswerable: abstention | One conversation |
 
 Scored per session: **goal success** (the user got the answer, or a correct "not discussed"), **refusal

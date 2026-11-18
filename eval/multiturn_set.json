@@ -1,83 +1,519 @@
 {
-  "_comment": "Scripted conversations for the flows in docs/conversation_design.md, scored in code by eval/run_multiturn.py. Each turn lists only expectations that follow from the design doc and were checked against the transcripts. Expectation keys: status, how, ticker, quarter (null = none pinned), covered, cites (each call prefix must be cited at least once), cites_only (every citation must start with one of these), mentions (regex the answer must match, case-insensitive), clarifies (covered=false, no citations, no search, answer asks a question). Flow 6 (approval) is not built and has no conversations yet.",
-  "conversations": [
-    {"id": "MT-01", "flow": 1, "turns": [
-      {"user": "Why did AMD's gross margin change in Q2 2026?",
-       "expect": {"status": "ok", "how": "named", "ticker": "AMD", "quarter": "2026Q2", "covered": true,
-                  "cites": ["AMD_2026Q2"], "cites_only": ["AMD_2026Q2"], "mentions": "margin"}}
-    ]},
-    {"id": "MT-02", "flow": 2, "turns": [
-      {"user": "What did they say about gross margin?", "expect": {"status": "clarify", "clarifies": true}},
-      {"user": "AMD", "expect": {"status": "ok", "ticker": "AMD", "quarter": "2026Q2", "covered": true,
-                                 "cites_only": ["AMD_2026Q2"], "mentions": "margin"}}
-    ]},
-    {"id": "MT-03", "flow": 2, "turns": [
-      {"user": "How did the company describe demand?", "expect": {"status": "clarify", "clarifies": true}},
-      {"user": "Nebius", "expect": {"status": "ok", "ticker": "NBIS", "covered": true, "cites_only": ["NBIS_"],
-                                    "mentions": "demand"}}
-    ]},
-    {"id": "MT-04", "flow": 2, "note": "a cross-company question needs no clarification", "turns": [
-      {"user": "Which companies talked about tariffs?", "expect": {"status": "ok", "how": "cross_company", "covered": true}}
-    ]},
-    {"id": "MT-05", "flow": 3, "turns": [
-      {"user": "What did AMD say about operating expenses in Q2 2026?",
-       "expect": {"status": "ok", "ticker": "AMD", "quarter": "2026Q2", "covered": true, "mentions": "expense"}},
-      {"user": "What about Meta?",
-       "expect": {"status": "ok", "how": "named", "ticker": "META", "quarter": "2026Q2", "covered": true,
-                  "cites_only": ["META_2026Q2"], "mentions": "expense"}},
-      {"user": "And in the latest quarter?",
-       "expect": {"status": "ok", "how": "carried", "ticker": "META", "quarter": "2026Q3", "covered": true,
-                  "cites_only": ["META_2026Q3"], "mentions": "expense"}}
-    ]},
-    {"id": "MT-06", "flow": 3, "turns": [
-      {"user": "Why did Rivian's average selling price change in Q3 2026?",
-       "expect": {"status": "ok", "ticker": "RIVN", "quarter": "2026Q3", "covered": true, "cites_only": ["RIVN_2026Q3"]}},
-      {"user": "And how did that compare with the quarter before?",
-       "expect": {"status": "ok", "how": "cross_quarter", "ticker": "RIVN", "quarter": null, "covered": true,
-                  "cites": ["RIVN_2026Q2"], "cites_only": ["RIVN_"], "mentions": "selling price|ASP"}}
-    ]},
-    {"id": "MT-07", "flow": 3, "turns": [
-      {"user": "What did Meta say about capex in Q3 2026?",
-       "expect": {"status": "ok", "ticker": "META", "quarter": "2026Q3", "covered": true, "cites_only": ["META_2026Q3"]}},
-      {"user": "And the previous quarter?",
-       "expect": {"status": "ok", "how": "carried", "ticker": "META", "quarter": "2026Q2", "covered": true,
-                  "cites_only": ["META_2026Q2"], "mentions": "capital expenditure|capex"}}
-    ]},
-    {"id": "MT-08", "flow": 4, "turns": [
-      {"user": "What did AMD say about data center demand in Q2 2026?",
-       "expect": {"status": "ok", "ticker": "AMD", "quarter": "2026Q2", "covered": true}},
-      {"user": "Should I buy it?", "expect": {"status": "blocked"}},
-      {"user": "What did they say about the outlook?",
-       "expect": {"status": "ok", "how": "carried", "ticker": "AMD", "quarter": "2026Q2", "covered": true,
-                  "cites_only": ["AMD_2026Q2"]}}
-    ]},
-    {"id": "MT-09", "flow": 4, "note": "near-misses: about money, not advice; must not be refused", "turns": [
-      {"user": "Did management comment on valuation on AMD's Q2 2026 call?", "expect": {"status": "ok"}},
-      {"user": "What did Meta say about stock-based compensation in Q3 2026?", "expect": {"status": "ok"}}
-    ]},
-    {"id": "MT-10", "flow": 5, "turns": [
-      {"user": "What did NVDA say about data center demand?",
-       "expect": {"status": "out_of_corpus", "how": "unknown_ticker", "ticker": "NVDA"}},
-      {"user": "What did AMD say about margins in Q3 2026?",
-       "expect": {"status": "out_of_corpus", "ticker": "AMD", "quarter": "2026Q3", "mentions": "Q2 2026"}},
-      {"user": "Yes, that one",
-       "expect": {"status": "ok", "how": "carried", "ticker": "AMD", "quarter": "2026Q2", "covered": true,
-                  "cites_only": ["AMD_2026Q2"], "mentions": "margin"}}
-    ]},
-    {"id": "MT-11", "flow": 5, "turns": [
-      {"user": "What did XYZQ say about margins?", "expect": {"status": "out_of_corpus", "how": "unknown_ticker"}},
-      {"user": "And Credo?", "expect": {"status": "ok", "how": "named", "ticker": "CRDO", "cites_only": ["CRDO_"]}}
-    ]},
-    {"id": "MT-12", "flow": 7, "turns": [
-      {"user": "What dividend did AMD declare on its Q1 2026 call?",
-       "expect": {"status": "ok", "ticker": "AMD", "quarter": "2026Q1", "covered": false}},
-      {"user": "What did they say about gross margin then?",
-       "expect": {"status": "ok", "how": "carried", "ticker": "AMD", "quarter": "2026Q1", "covered": true,
-                  "cites_only": ["AMD_2026Q1"], "mentions": "margin"}}
-    ]},
-    {"id": "MT-13", "flow": 7, "turns": [
-      {"user": "Did Rivian announce a dividend on its Q2 2026 call?",
-       "expect": {"status": "ok", "ticker": "RIVN", "quarter": "2026Q2", "covered": false}}
-    ]}
-  ]
+ "_comment": "Scripted conversations for the flows in docs/conversation_design.md, scored in code by eval/run_multiturn.py. Each turn lists only expectations that follow from the design doc and were checked against the transcripts. Expectation keys: status, how, ticker, quarter (null = none pinned), covered, cites (each call prefix must be cited at least once), cites_only (every citation must start with one of these), mentions (regex the answer must match, case-insensitive), clarifies (covered=false, no citations, no search, answer asks a question). Flow 6 steps: {\"action\": \"decide\" | \"request_status\", \"as\": \"reviewer\" | \"self\" | \"viewer\", \"decision\"}, expectations status, request_status, covered, quote_ok, fetches (total fetches so far). The fetched call is the invented DEMO call in tests/fixtures.",
+ "conversations": [
+  {
+   "id": "MT-01",
+   "flow": 1,
+   "turns": [
+    {
+     "user": "Why did AMD's gross margin change in Q2 2026?",
+     "expect": {
+      "status": "ok",
+      "how": "named",
+      "ticker": "AMD",
+      "quarter": "2026Q2",
+      "covered": true,
+      "cites": [
+       "AMD_2026Q2"
+      ],
+      "cites_only": [
+       "AMD_2026Q2"
+      ],
+      "mentions": "margin"
+     }
+    }
+   ]
+  },
+  {
+   "id": "MT-02",
+   "flow": 2,
+   "turns": [
+    {
+     "user": "What did they say about gross margin?",
+     "expect": {
+      "status": "clarify",
+      "clarifies": true
+     }
+    },
+    {
+     "user": "AMD",
+     "expect": {
+      "status": "ok",
+      "ticker": "AMD",
+      "quarter": "2026Q2",
+      "covered": true,
+      "cites_only": [
+       "AMD_2026Q2"
+      ],
+      "mentions": "margin"
+     }
+    }
+   ]
+  },
+  {
+   "id": "MT-03",
+   "flow": 2,
+   "turns": [
+    {
+     "user": "How did the company describe demand?",
+     "expect": {
+      "status": "clarify",
+      "clarifies": true
+     }
+    },
+    {
+     "user": "Nebius",
+     "expect": {
+      "status": "ok",
+      "ticker": "NBIS",
+      "covered": true,
+      "cites_only": [
+       "NBIS_"
+      ],
+      "mentions": "demand"
+     }
+    }
+   ]
+  },
+  {
+   "id": "MT-04",
+   "flow": 2,
+   "note": "a cross-company question needs no clarification",
+   "turns": [
+    {
+     "user": "Which companies talked about tariffs?",
+     "expect": {
+      "status": "ok",
+      "how": "cross_company",
+      "covered": true
+     }
+    }
+   ]
+  },
+  {
+   "id": "MT-05",
+   "flow": 3,
+   "turns": [
+    {
+     "user": "What did AMD say about operating expenses in Q2 2026?",
+     "expect": {
+      "status": "ok",
+      "ticker": "AMD",
+      "quarter": "2026Q2",
+      "covered": true,
+      "mentions": "expense"
+     }
+    },
+    {
+     "user": "What about Meta?",
+     "expect": {
+      "status": "ok",
+      "how": "named",
+      "ticker": "META",
+      "quarter": "2026Q2",
+      "covered": true,
+      "cites_only": [
+       "META_2026Q2"
+      ],
+      "mentions": "expense"
+     }
+    },
+    {
+     "user": "And in the latest quarter?",
+     "expect": {
+      "status": "ok",
+      "how": "carried",
+      "ticker": "META",
+      "quarter": "2026Q3",
+      "covered": true,
+      "cites_only": [
+       "META_2026Q3"
+      ],
+      "mentions": "expense"
+     }
+    }
+   ]
+  },
+  {
+   "id": "MT-06",
+   "flow": 3,
+   "turns": [
+    {
+     "user": "Why did Rivian's average selling price change in Q3 2026?",
+     "expect": {
+      "status": "ok",
+      "ticker": "RIVN",
+      "quarter": "2026Q3",
+      "covered": true,
+      "cites_only": [
+       "RIVN_2026Q3"
+      ]
+     }
+    },
+    {
+     "user": "And how did that compare with the quarter before?",
+     "expect": {
+      "status": "ok",
+      "how": "cross_quarter",
+      "ticker": "RIVN",
+      "quarter": null,
+      "covered": true,
+      "cites": [
+       "RIVN_2026Q2"
+      ],
+      "cites_only": [
+       "RIVN_"
+      ],
+      "mentions": "selling price|ASP"
+     }
+    }
+   ]
+  },
+  {
+   "id": "MT-07",
+   "flow": 3,
+   "turns": [
+    {
+     "user": "What did Meta say about capex in Q3 2026?",
+     "expect": {
+      "status": "ok",
+      "ticker": "META",
+      "quarter": "2026Q3",
+      "covered": true,
+      "cites_only": [
+       "META_2026Q3"
+      ]
+     }
+    },
+    {
+     "user": "And the previous quarter?",
+     "expect": {
+      "status": "ok",
+      "how": "carried",
+      "ticker": "META",
+      "quarter": "2026Q2",
+      "covered": true,
+      "cites_only": [
+       "META_2026Q2"
+      ],
+      "mentions": "capital expenditure|capex"
+     }
+    }
+   ]
+  },
+  {
+   "id": "MT-08",
+   "flow": 4,
+   "turns": [
+    {
+     "user": "What did AMD say about data center demand in Q2 2026?",
+     "expect": {
+      "status": "ok",
+      "ticker": "AMD",
+      "quarter": "2026Q2",
+      "covered": true
+     }
+    },
+    {
+     "user": "Should I buy it?",
+     "expect": {
+      "status": "blocked"
+     }
+    },
+    {
+     "user": "What did they say about the outlook?",
+     "expect": {
+      "status": "ok",
+      "how": "carried",
+      "ticker": "AMD",
+      "quarter": "2026Q2",
+      "covered": true,
+      "cites_only": [
+       "AMD_2026Q2"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "MT-09",
+   "flow": 4,
+   "note": "near-misses: about money, not advice; must not be refused",
+   "turns": [
+    {
+     "user": "Did management comment on valuation on AMD's Q2 2026 call?",
+     "expect": {
+      "status": "ok"
+     }
+    },
+    {
+     "user": "What did Meta say about stock-based compensation in Q3 2026?",
+     "expect": {
+      "status": "ok"
+     }
+    }
+   ]
+  },
+  {
+   "id": "MT-10",
+   "flow": 5,
+   "turns": [
+    {
+     "user": "What did NVDA say about data center demand?",
+     "expect": {
+      "status": "out_of_corpus",
+      "how": "unknown_ticker",
+      "ticker": "NVDA"
+     }
+    },
+    {
+     "user": "What did AMD say about margins in Q3 2026?",
+     "expect": {
+      "status": "out_of_corpus",
+      "ticker": "AMD",
+      "quarter": "2026Q3",
+      "mentions": "Q2 2026"
+     }
+    },
+    {
+     "user": "Yes, that one",
+     "expect": {
+      "status": "ok",
+      "how": "carried",
+      "ticker": "AMD",
+      "quarter": "2026Q2",
+      "covered": true,
+      "cites_only": [
+       "AMD_2026Q2"
+      ],
+      "mentions": "margin"
+     }
+    }
+   ]
+  },
+  {
+   "id": "MT-11",
+   "flow": 5,
+   "turns": [
+    {
+     "user": "What did XYZQ say about margins?",
+     "expect": {
+      "status": "out_of_corpus",
+      "how": "unknown_ticker"
+     }
+    },
+    {
+     "user": "And Credo?",
+     "expect": {
+      "status": "ok",
+      "how": "named",
+      "ticker": "CRDO",
+      "cites_only": [
+       "CRDO_"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "MT-12",
+   "flow": 7,
+   "turns": [
+    {
+     "user": "What dividend did AMD declare on its Q1 2026 call?",
+     "expect": {
+      "status": "ok",
+      "ticker": "AMD",
+      "quarter": "2026Q1",
+      "covered": false
+     }
+    },
+    {
+     "user": "What did they say about gross margin then?",
+     "expect": {
+      "status": "ok",
+      "how": "carried",
+      "ticker": "AMD",
+      "quarter": "2026Q1",
+      "covered": true,
+      "cites_only": [
+       "AMD_2026Q1"
+      ],
+      "mentions": "margin"
+     }
+    }
+   ]
+  },
+  {
+   "id": "MT-13",
+   "flow": 7,
+   "turns": [
+    {
+     "user": "Did Rivian announce a dividend on its Q2 2026 call?",
+     "expect": {
+      "status": "ok",
+      "ticker": "RIVN",
+      "quarter": "2026Q2",
+      "covered": false
+     }
+    }
+   ]
+  },
+  {
+   "id": "MT-14",
+   "flow": 6,
+   "note": "approve: nothing fetched before approval, one fetch after, answer from the fetched text",
+   "turns": [
+    {
+     "user": "What did DEMO say about gross margin?",
+     "expect": {
+      "status": "out_of_corpus",
+      "how": "unknown_ticker",
+      "ticker": "DEMO",
+      "mentions": "name a quarter"
+     }
+    },
+    {
+     "user": "Q1 2026",
+     "expect": {
+      "status": "approval_pending",
+      "ticker": "DEMO",
+      "quarter": "2026Q1",
+      "mentions": "once a reviewer approves"
+     }
+    },
+    {
+     "action": "request_status",
+     "expect": {
+      "status": "ok",
+      "request_status": "pending",
+      "fetches": 0
+     }
+    },
+    {
+     "action": "decide",
+     "decision": "approve",
+     "as": "reviewer",
+     "expect": {
+      "status": "approved",
+      "request_status": "answered",
+      "covered": true,
+      "quote_ok": true,
+      "fetches": 1
+     }
+    },
+    {
+     "action": "request_status",
+     "expect": {
+      "status": "ok",
+      "request_status": "answered",
+      "covered": true,
+      "fetches": 1
+     }
+    }
+   ]
+  },
+  {
+   "id": "MT-15",
+   "flow": 6,
+   "note": "decline: nothing fetched; not proposed again",
+   "turns": [
+    {
+     "user": "What did DEMO say about demand in Q1 2026?",
+     "expect": {
+      "status": "approval_pending",
+      "ticker": "DEMO",
+      "quarter": "2026Q1"
+     }
+    },
+    {
+     "action": "decide",
+     "decision": "decline",
+     "as": "reviewer",
+     "expect": {
+      "status": "declined",
+      "request_status": "declined",
+      "fetches": 0
+     }
+    },
+    {
+     "user": "Can you fetch DEMO's Q1 2026 call after all?",
+     "expect": {
+      "status": "out_of_corpus",
+      "mentions": "declined"
+     }
+    },
+    {
+     "action": "decide",
+     "decision": "approve",
+     "as": "reviewer",
+     "expect": {
+      "status": "conflict",
+      "fetches": 0
+     }
+    }
+   ]
+  },
+  {
+   "id": "MT-16",
+   "flow": 6,
+   "note": "a viewer, and the requester claiming the reviewer role, cannot approve",
+   "turns": [
+    {
+     "user": "What did DEMO say about the Porto factory in Q1 2026?",
+     "expect": {
+      "status": "approval_pending"
+     }
+    },
+    {
+     "action": "decide",
+     "decision": "approve",
+     "as": "viewer",
+     "expect": {
+      "status": "refused",
+      "fetches": 0
+     }
+    },
+    {
+     "action": "decide",
+     "decision": "approve",
+     "as": "self",
+     "expect": {
+      "status": "refused",
+      "fetches": 0
+     }
+    },
+    {
+     "action": "request_status",
+     "as": "viewer",
+     "expect": {
+      "status": "not_found"
+     }
+    },
+    {
+     "action": "decide",
+     "decision": "approve",
+     "as": "reviewer",
+     "expect": {
+      "status": "approved",
+      "covered": true,
+      "fetches": 1
+     }
+    }
+   ]
+  },
+  {
+   "id": "MT-17",
+   "flow": 6,
+   "note": "advice about an out-of-corpus ticker is refused, never proposed",
+   "turns": [
+    {
+     "user": "Should I buy DEMO after its Q1 2026 call?",
+     "expect": {
+      "status": "blocked"
+     }
+    }
+   ]
+  }
+ ]
 }
