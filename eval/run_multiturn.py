@@ -8,10 +8,15 @@
 Each conversation runs through session.run_turn, the same path as the deployed runtime (serve.py),
 with a fresh in-memory session, the Knowledge Base and, unless --no-guardrail, the Bedrock Guardrail.
 
+Flow 6 conversations mix user turns with reviewer steps ({"action": "decide" | "request_status" | "list_requests",
+"as": "reviewer" | "self" | "viewer"}). The fetch is served from the invented call in tests/fixtures (ticker
+DEMO), formatted by the Lambda's own code; the answer is a real model call.
+
 Scores (docs/conversation_design.md, Evaluation):
   turn          passes when every expectation listed for it holds (keys in multiturn_set.json)
   goal success  a conversation passes when all its turns pass
-  refusal       turns expecting "blocked" that were blocked, and turns expecting no refusal that were not
+  refusal       user turns expecting "blocked" that were blocked, and user turns expecting no refusal that were not
+  approval      flow 6: reviewer steps passed (who may decide, nothing fetched without approval, decline handled)
   by flow       conversations passed per flow
 The scores file holds verdicts, IDs and counts; answer text goes to <label>-<date>.outputs.json (git-ignored).
 Expectation checks are literal (a regex for a topic, call prefixes for citations): they show behaviour on a
@@ -75,6 +80,7 @@ def score(conversations: list[dict[str, Any]], runs: dict[str, list[dict[str, An
     turns = passed = 0
     by_flow: dict[str, dict[str, int]] = defaultdict(lambda: {"conversations": 0, "passed": 0})
     refusal = {"expected_blocked": 0, "blocked": 0, "expected_not_blocked": 0, "wrongly_blocked": 0}
+    approval = {"steps": 0, "passed": 0}
     failures: dict[str, int] = defaultdict(int)
     goal = 0
     for conv in conversations:
@@ -89,6 +95,10 @@ def score(conversations: list[dict[str, Any]], runs: dict[str, list[dict[str, An
             passed += not v["failed"]
             for name in v["failed"]:
                 failures[name.split(":")[0]] += 1
+            if "user" not in turn:  # reviewer steps are scored by their own checks, not as refusals
+                approval["steps"] += 1
+                approval["passed"] += not v["failed"]
+                continue
             want = turn["expect"].get("status")
             if want == "blocked":
                 refusal["expected_blocked"] += 1
@@ -97,27 +107,79 @@ def score(conversations: list[dict[str, Any]], runs: dict[str, list[dict[str, An
                 refusal["expected_not_blocked"] += 1
                 refusal["wrongly_blocked"] += v["status"] == "blocked"
     return {"conversations": len(conversations), "goal_success": goal, "turns": turns, "turns_passed": passed,
-            "by_flow": dict(sorted(by_flow.items())), "refusal": refusal,
+            "by_flow": dict(sorted(by_flow.items())), "refusal": refusal, "approval": approval,
             "failed_checks": dict(sorted(failures.items()))}
 
 
+# Flow 6: who takes a step. The requester is a viewer; "self" is the requester claiming the reviewer role.
+ACTORS = {"user": ("u-viewer", "viewer"), "reviewer": ("u-reviewer", "reviewer"), "self": ("u-viewer", "reviewer"),
+          "viewer": ("u-viewer2", "viewer")}
+FIXTURE_CALL = ROOT / "tests" / "fixtures" / "corpus" / "DEMO_2026Q1.json"
+
+
+def fixture_fetcher(calls: list) -> Any:
+    """Stands in for the transcript Lambda in evaluation: serves the invented DEMO call, formatted by the
+    Lambda's own code, so the model sees what a real fetch returns. The live Lambda is checked separately."""
+    sys.path.insert(0, str(ROOT / "tool_lambda"))
+    import handler
+
+    def fetch(ticker: str, quarter: str) -> dict[str, Any]:
+        calls.append((ticker, quarter))
+        if (ticker, quarter) != ("DEMO", "2026Q1"):
+            return handler.error("not_found", f"no transcript for {ticker} {quarter}")
+        call = json.loads(FIXTURE_CALL.read_text())
+        return handler.to_result(call["data"], call, ticker, quarter)
+    return fetch
+
+
+def check_action(expect: dict[str, Any], out: dict[str, Any], fetches: int) -> list[str]:
+    """Expectations for a reviewer step: status, request_status, covered, quote_ok, fetches (total so far)."""
+    result = out.get("result") or (out.get("request") or {}).get("result") or {}
+    got = {"status": out.get("status"), "request_status": (out.get("request") or {}).get("status"),
+           "covered": result.get("covered"), "quote_ok": result.get("quote_in_transcript"), "fetches": fetches}
+    return [k for k, v in expect.items() if got.get(k) != v]
+
+
 def run_conversation(conv: dict[str, Any], corpus: Any, guard: Any) -> tuple[list[dict], list[dict]]:
+    import approvals
+    import serve
     import session
 
-    store, sid = session.InMemoryStore(), f"eval-{conv['id']}"
+    fetches: list = []
+    deps = {"guard": guard, "audit_writer": None, "store": session.InMemoryStore(), "corpus": corpus,
+            "requests": approvals.InMemoryRequests(), "fetch": fixture_fetcher(fetches)}
+    sid = f"eval-{conv['id']}"
+    request_id = None
     verdicts, outputs = [], []
     for turn in conv["turns"]:
-        out = session.run_turn({"question": turn["user"]}, sid, store, corpus, guard=guard)
-        answer = out.get("answer") or {}
-        verdicts.append({
-            "user": turn["user"], "failed": check(turn["expect"], out), "status": out.get("status"),
-            "context": {k: (out.get("context") or {}).get(k) for k in CONTEXT_KEYS},
-            "covered": answer.get("covered"), "cited": answer.get("citations") or [],
-            "queries": [q.get("sent", q["query"]) for q in (out.get("retrieval") or {}).get("queries", [])],
-            "tokens": (out.get("run") or {}).get("tokens_used"),
-        })
-        outputs.append({"user": turn["user"], "answer": answer.get("answer"), "status": out.get("status")})
-        print(conv["id"], f"{turn['user'][:50]:50}", out.get("status"), verdicts[-1]["failed"] or "pass", flush=True)
+        user_id, role = ACTORS[turn.get("as", "user")]
+        if "user" in turn:
+            out = serve.handle({"question": turn["user"], "user_id": user_id, "role": role}, sid, **deps)
+            request_id = (out.get("approval") or {}).get("request_id") or request_id
+            answer = out.get("answer") or {}
+            verdicts.append({
+                "user": turn["user"], "failed": check(turn["expect"], out), "status": out.get("status"),
+                "context": {k: (out.get("context") or {}).get(k) for k in CONTEXT_KEYS},
+                "covered": answer.get("covered"), "cited": answer.get("citations") or [],
+                "queries": [q.get("sent", q["query"]) for q in (out.get("retrieval") or {}).get("queries", [])],
+                "tokens": (out.get("run") or {}).get("tokens_used"),
+            })
+            outputs.append({"user": turn["user"], "answer": answer.get("answer"), "status": out.get("status")})
+            label = turn["user"]
+        else:
+            payload = {"action": turn["action"], "request_id": request_id, "user_id": user_id, "role": role,
+                       **({"decision": turn["decision"]} if "decision" in turn else {})}
+            out = serve.handle(payload, f"{sid}-{turn.get('as', 'user')}", **deps)
+            result = out.get("result") or (out.get("request") or {}).get("result") or {}
+            verdicts.append({"action": turn["action"], "as": turn.get("as", "user"), "decision": turn.get("decision"),
+                             "failed": check_action(turn["expect"], out, len(fetches)), "status": out.get("status"),
+                             "request_status": (out.get("request") or {}).get("status"),
+                             "covered": result.get("covered"), "quote_ok": result.get("quote_in_transcript"),
+                             "fetches": len(fetches), "tokens": (result.get("run") or {}).get("tokens_used")})
+            outputs.append({"action": turn["action"], "as": turn.get("as"), "answer": result.get("answer"),
+                            "status": out.get("status")})
+            label = f"[{turn.get('as', 'user')}] {turn['action']} {turn.get('decision', '')}"
+        print(conv["id"], f"{label[:50]:50}", verdicts[-1]["status"], verdicts[-1]["failed"] or "pass", flush=True)
     return verdicts, outputs
 
 
