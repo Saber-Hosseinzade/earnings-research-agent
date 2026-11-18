@@ -4,19 +4,23 @@ Written by answer.run when an audit writer is passed. Deployed, records go to th
 log group in AUDIT_LOG_GROUP (infra/audit_stack.py: own group, 30-day retention). Locally,
 JsonlWriter appends to a file. Without a writer, nothing is recorded.
 
-A record (schema_version 1) holds exactly these fields:
+A record (schema_version 2) holds exactly these fields:
 
     schema_version, turn_id, ts                  record id and UTC time
     session_id, user_id, role                    who; session_id is the runtime's session id when deployed
                                                  (serve.py); user_id and role null until a login exists
     question                                     as the agent saw it: masked if the guardrail masked PII
-    ticker, quarter                              the search filter pinned by the caller, if any
+    ticker, quarter                              the search filter: given by the caller or resolved from the session
+    context                                      how ticker and quarter were resolved (session.py): how, history_turns,
+                                                 notes; null when the turn was not run through a session (v2 schema)
     status                                       ok | stopped | invalid_output | bad_request | blocked | guardrail_error
     tool_calls                                   each search: query, as sent (abbreviations expanded), filter, IDs returned
     searches_refused                             searches the search limit refused
     cited, citation_check                        passage IDs the answer cited; {ok, problems, unreturned}
     guardrail                                    per check (input, output): blocked_by, masked types,
-                                                 grounding and relevance scores, error, text units, latency
+                                                 grounding and relevance scores, error, text units, latency;
+                                                 input_in_context when a follow-up was checked again with the
+                                                 previous question (answer.py)
     approval                                     null: there is no approval gate yet (PROJECT_CONTEXT 8.11 item 2)
     covered, answer                              what the user was shown
     model_id, prompts                            model, and each prompt's source, id, version, sha256
@@ -38,7 +42,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Protocol
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2  # 2: context added (session memory)
 
 
 class Writer(Protocol):
@@ -90,7 +94,10 @@ def build(result: dict[str, Any], payload: dict[str, Any], *, turn_id: str | Non
         "searches_refused": run.get("searches_refused", 0),
         "cited": answer.get("citations", []),
         "citation_check": ({k: check.get(k) for k in ("ok", "problems", "unreturned")} if check else None),
-        "guardrail": ({"input": _guard_part(g.get("input")), "output": _guard_part(g.get("output"))} if g else None),
+        "guardrail": ({"input": _guard_part(g.get("input")), "output": _guard_part(g.get("output")),
+                       **({"input_in_context": _guard_part(g["input_in_context"])} if g.get("input_in_context") else {})}
+                      if g else None),
+        "context": result.get("context"),
         "approval": None,
         "covered": answer.get("covered"),
         "answer": answer.get("answer"),

@@ -12,13 +12,15 @@ exports), so destroy the runtime before replacing any of them, e.g. switching th
 
 from pathlib import Path
 
-from aws_cdk import CfnOutput, Stack
+from aws_cdk import CfnOutput, Duration, Stack
 from aws_cdk import aws_bedrock as bedrock
 from aws_cdk import aws_bedrockagentcore as agentcore
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_lambda as lambda_
 from aws_cdk import aws_logs as logs
 from constructs import Construct
+
+MEMORY_EXPIRY_DAYS = 7
 
 
 class EarningsRuntimeStack(Stack):
@@ -38,6 +40,17 @@ class EarningsRuntimeStack(Stack):
         **kwargs,
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
+
+        # Session memory (agent/session.py): short-term events only, no extraction strategies, so nothing
+        # outlives the session's events. Kept for the minimum period AgentCore allows. Part of this stack,
+        # so destroying the runtime also deletes every stored conversation.
+        memory = agentcore.Memory(
+            self,
+            "SessionMemory",
+            memory_name="earnings_research_agent_sessions",
+            description="Earlier turns of a chat session: question, answer, ticker, quarter, cited IDs",
+            expiration_duration=Duration.days(MEMORY_EXPIRY_DAYS),
+        )
 
         runtime = agentcore.Runtime(
             self,
@@ -59,6 +72,7 @@ class EarningsRuntimeStack(Stack):
                 "GUARDRAIL_VERSION": guardrail_version.attr_version,
                 # agent/prompts.py loads these pinned versions and fails rather than fall back to a file.
                 "AUDIT_LOG_GROUP": audit_log.log_group_name,
+                "MEMORY_ID": memory.memory_id,
                 "PROMPT_SOURCE": "bedrock",
                 **{
                     f"{name.upper()}_PROMPT_{key}": value
@@ -119,6 +133,14 @@ class EarningsRuntimeStack(Stack):
             )
         )
 
+        # agent/session.py reads and appends this memory's short-term events, and nothing else on it.
+        runtime.add_to_role_policy(
+            iam.PolicyStatement(
+                actions=["bedrock-agentcore:CreateEvent", "bedrock-agentcore:ListEvents"],
+                resources=[memory.memory_arn],
+            )
+        )
+
         # AgentCore uses this to let X-Ray deliver spans to the runtime's log group.
         runtime.add_to_role_policy(
             iam.PolicyStatement(
@@ -131,3 +153,4 @@ class EarningsRuntimeStack(Stack):
         )
 
         CfnOutput(self, "RuntimeArn", value=runtime.agent_runtime_arn)
+        CfnOutput(self, "MemoryId", value=memory.memory_id)
