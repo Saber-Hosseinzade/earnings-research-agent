@@ -6,6 +6,31 @@
     "ROOT": "2026Q3 not available on 5 Nov; next-older quarter used",
     "CRDO": "Fiscal year ends early May; labels are fiscal. Q1 FY2027 not available on 5 Nov, so Q1 FY2026 is used"
   },
+  "companies": {
+    "_comment": "Names a user may type for each ticker; agent/session.py matches them case-sensitively as whole words, plus the ticker itself in capitals. \"Root\" also matches a sentence starting with the word Root.",
+    "AMD": [
+      "Advanced Micro Devices"
+    ],
+    "RIVN": [
+      "Rivian"
+    ],
+    "ROOT": [
+      "Root",
+      "Root Insurance",
+      "Root Inc"
+    ],
+    "META": [
+      "Meta",
+      "Meta Platforms",
+      "Facebook"
+    ],
+    "CRDO": [
+      "Credo"
+    ],
+    "NBIS": [
+      "Nebius"
+    ]
+  },
   "calls": [
     {
       "ticker": "AMD",

@@ -1,11 +1,12 @@
 """AgentCore Runtime entrypoint for v2: one question per invocation, answered by answer.run.
 
     payload: {"question": "...", "ticker": "AMD", "quarter": "2026Q2", "user_id": ..., "role": ...}
-             ticker, quarter, user_id and role are optional (see answer.py)
-    returns: answer.run's result, with the audit outcome
+             ticker, quarter, user_id and role are optional (see answer.py); follow-ups in the same
+             runtime session resolve against earlier turns (session.py)
+    returns: answer.run's result, with context (how the call was resolved), memory and the audit outcome
 
 Deployed, the guardrail and the audit log are required, not optional: the process refuses to
-start without GUARDRAIL_ID, GUARDRAIL_VERSION and AUDIT_LOG_GROUP, so a misconfigured runtime
+start without GUARDRAIL_ID, GUARDRAIL_VERSION, AUDIT_LOG_GROUP and MEMORY_ID, so a misconfigured runtime
 cannot answer unchecked or unlogged. Prompts come from Bedrock Prompt Management (prompts.py
 fails rather than fall back to a file when PROMPT_SOURCE=bedrock).
 
@@ -24,11 +25,11 @@ from typing import Any
 
 from bedrock_agentcore.runtime import BedrockAgentCoreApp
 
-import answer
 import audit
+import session
 from guard import BedrockGuard
 
-REQUIRED_ENV = ("MODEL_ID", "KNOWLEDGE_BASE_ID", "GUARDRAIL_ID", "GUARDRAIL_VERSION", "AUDIT_LOG_GROUP")
+REQUIRED_ENV = ("MODEL_ID", "KNOWLEDGE_BASE_ID", "GUARDRAIL_ID", "GUARDRAIL_VERSION", "AUDIT_LOG_GROUP", "MEMORY_ID")
 
 
 def check_env(environ: dict[str, str] | None = None) -> None:
@@ -41,15 +42,18 @@ def check_env(environ: dict[str, str] | None = None) -> None:
 @lru_cache(maxsize=1)
 def _deployed() -> dict[str, Any]:
     """Built once per process: the audit writer keeps one log stream per process (audit.py)."""
-    return {"guard": BedrockGuard(), "audit_writer": audit.CloudWatchWriter()}
+    return {"guard": BedrockGuard(), "audit_writer": audit.CloudWatchWriter(),
+            "store": session.AgentCoreMemoryStore(), "corpus": session.Corpus.load()}
 
 
 def handle(payload: dict[str, Any], session_id: str | None, **deps: Any) -> dict[str, Any]:
-    """One turn. ``deps`` (model, retriever, guard, audit_writer) are for tests; deployed, they come from the env."""
+    """One turn. ``deps`` (model, retriever, guard, audit_writer, store, corpus) are for tests; deployed,
+    they come from the env. Earlier turns of the session come from AgentCore Memory (session.py)."""
     payload = {**payload, "session_id": session_id}  # the runtime's session id, never the caller's
-    if "guard" not in deps or "audit_writer" not in deps:
+    if any(k not in deps for k in ("guard", "audit_writer", "store", "corpus")):
         deps = {**_deployed(), **deps}
-    return answer.run(payload, **deps)
+    store, corpus = deps.pop("store"), deps.pop("corpus")
+    return session.run_turn(payload, session_id, store, corpus, **deps)
 
 
 app = BedrockAgentCoreApp()

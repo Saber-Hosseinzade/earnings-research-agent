@@ -57,8 +57,9 @@ What runs for every message, in order (`agent/answer.py`):
    in the cited passages scored, and a low score flagged (answer kept).
 6. **Audit record** (`agent/audit.py`): one JSON record per turn, kept 30 days.
 
-Planned additions: session memory (AgentCore Memory) before step 3, and the approval pause inside step 3
-(flow 6).
+Session memory (`agent/session.py`, AgentCore Memory) runs around these steps: before step 1 the session's
+last turns are loaded and the message is resolved to a company and quarter (context rules below); after
+step 6 the turn is stored. Planned: the approval pause inside step 3 (flow 6).
 
 ## Messages
 
@@ -74,8 +75,8 @@ Fixed texts, so that tests and the UI can rely on them.
 
 ## Context rules
 
-How a message is resolved to a company and quarter. These rules apply from flow 3 on; until session memory
-exists, every message stands alone.
+How a message is resolved to a company and quarter, in code (`agent/session.py`), before the agent runs. The
+resolved company and quarter pin the search filter. The audit record says which rule applied (`context.how`).
 
 1. A ticker or company name in the message wins. "And META?" switches company.
 2. Otherwise the ticker and quarter of the previous turn carry over. "And margins?" after a question about
@@ -83,7 +84,9 @@ exists, every message stands alone.
 3. Relative quarters resolve against the corpus, not the calendar. "Last quarter" means the latest quarter
    in the corpus for that ticker, which is not the same quarter for every company.
 4. Cross-company questions are allowed without a ticker ("which companies talked about tariffs?"); they
-   search all calls and the answer names each company it cites.
+   search all calls and the answer names each company it cites. Two companies named, or a comparison with a
+   company other than the previous one, counts as cross-company. A comparison about one company ("how did
+   that compare with the quarter before?") keeps the company and searches all its quarters.
 5. A clarifying question is asked only when the question needs one specific company or quarter and neither
    the message nor the session supplies it (flow 2). At most one clarifying question per turn.
 
@@ -123,7 +126,8 @@ code. The multi-turn set checks it.
 
 ### 3. Follow-up: resolved against the session
 
-**Status: planned** (AgentCore Memory, short-term).
+**Status: built** (AgentCore Memory, short-term; `agent/session.py`). Tested live in one scripted
+conversation; the multi-turn set is still to come.
 
 > **User:** Why did RIVN's average selling price change in Q3 2026?
 > **Assistant:** [Answer.] *Cited: RIVN_2026Q3_t…*
@@ -134,6 +138,14 @@ Expected:
 - "That" and "the quarter before" resolve against the previous turn (context rules 2 and 3).
 - The search filter follows the resolved ticker and quarter; a cross-quarter question searches both calls.
 - Earlier answers are context only: new claims still need passages returned in this turn.
+
+What is stored per turn: the question as the agent saw it (masked if it held personal data), the answer,
+covered, ticker, quarter and cited passage IDs. No passage text. Blocked and failed turns are not stored, so
+they don't steer later turns. Events expire after 7 days, and destroying the runtime stack deletes them all.
+
+A short follow-up can read as an advice request on its own ("What about Meta?"). When the guardrail blocks a
+follow-up only as advice, it is checked once more with the previous question in front of it; a real advice
+request ("Should I buy it?") is still blocked there. Both checks are in the audit record.
 
 ### 4. Advice request: refuse in one sentence, redirect
 

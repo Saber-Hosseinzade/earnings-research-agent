@@ -24,7 +24,9 @@ uv pip install \
 
 # Only the modules the runtime imports; run_local.py, ask.py and the eval code are for local use.
 # serve.py (v2) is the deployed entrypoint; main.py and its modules (v1) are kept so it can be redeployed.
-cp "$ROOT"/agent/{serve,answer,audit,budget,citations,guard,prompts,retrieval,main,schema,tools}.py "$OUT"/
+cp "$ROOT"/agent/{serve,answer,audit,budget,citations,guard,prompts,retrieval,session,main,schema,tools}.py "$OUT"/
+# session.py resolves follow-ups against the corpus call list and company names.
+cp "$ROOT"/corpus/calls.json "$OUT"/calls.json
 # prompts.py reads these files only when PROMPT_SOURCE=file; deployed, it loads the pinned
 # Bedrock versions. Shipped so the sha256 in run.prompts can be compared with the repo.
 cp -r "$ROOT"/agent/prompts "$OUT"/prompts

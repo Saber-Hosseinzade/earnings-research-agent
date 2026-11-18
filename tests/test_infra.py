@@ -195,3 +195,23 @@ def test_runtime_runs_the_v2_entrypoint_with_tracing(tmp_path):
     res = Template.from_stack(runtime(tmp_path)).find_resources("AWS::BedrockAgentCore::Runtime")
     code = next(iter(res.values()))["Properties"]["AgentRuntimeArtifact"]["CodeConfiguration"]
     assert code["EntryPoint"] == ["opentelemetry-instrument", "serve.py"]
+
+
+# --- session memory ------------------------------------------------------------------------------------------
+
+def test_session_memory_is_short_term_and_expires_after_a_week(tmp_path):
+    (memory,) = Template.from_stack(runtime(tmp_path)).find_resources("AWS::BedrockAgentCore::Memory").values()
+    assert memory["Properties"]["EventExpiryDuration"] == 7
+    assert not memory["Properties"].get("MemoryStrategies")  # no long-term extraction
+
+
+def test_role_may_only_read_and_append_session_events(tmp_path):
+    found = by_action(statements(tmp_path), "bedrock-agentcore:CreateEvent")
+    assert len(found) == 1
+    assert sorted(found[0]["Action"]) == ["bedrock-agentcore:CreateEvent", "bedrock-agentcore:ListEvents"]
+    assert "SessionMemory" in json.dumps(found[0]["Resource"]) and '"*"' not in json.dumps(found[0]["Resource"])
+
+
+def test_runtime_gets_the_memory_id(tmp_path):
+    res = Template.from_stack(runtime(tmp_path)).find_resources("AWS::BedrockAgentCore::Runtime")
+    assert "MEMORY_ID" in next(iter(res.values()))["Properties"]["EnvironmentVariables"]

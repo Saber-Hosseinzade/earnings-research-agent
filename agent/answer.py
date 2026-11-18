@@ -15,6 +15,8 @@ ask.py and main.py are untouched, so the v1.0 and v1.1 baselines stay reproducib
               "guardrail": {"input": check, "output": check | null} | null,
               "audit": {"turn_id", "written", "error"}}   (only with an audit writer)
     payload may also carry session_id, user_id and role; they go to the audit record only.
+    From session.run_turn: history (earlier turns, shown to the model before the question) and
+    context (how ticker and quarter were resolved; copied to the result and the audit record).
 
 Guardrail (``guard.py``), when a guard is passed: the question is checked before the
 agent runs (advice or prompt attack -> "blocked", no agent run; PII masked), and the
@@ -46,14 +48,16 @@ from strands.types.exceptions import StructuredOutputException
 
 import audit
 import prompts
+import session
 from budget import RunBudget
 from citations import check_citations
-from guard import GUARD_ERROR_MESSAGE, PROMPT_ATTACK_MESSAGE, Guard
+from guard import GUARD_ERROR_MESSAGE, PROMPT_ATTACK_MESSAGE, Check, Guard
 from retrieval import Ledger, Retriever, bedrock_retriever, make_retrieve_tool
 
 # Prompts live in agent/prompts/*.txt and are published to Bedrock Prompt Management
 # (prompts.py, infra/prompt_stack.py). Deployed, the pinned version is loaded; offline, the file.
 
+ADVICE_TOPIC = "topic:InvestmentAdvice"  # infra/guardrail_stack.py
 FINAL_MAX_TOKENS = 15_000  # passages from at most two searches; a stopped run can use 40K + this
 
 
@@ -87,7 +91,7 @@ def run(payload: dict[str, Any], model: Any | None = None, budget: RunBudget | N
         audit_writer: audit.Writer | None = None) -> dict[str, Any]:
     """One turn. With an audit writer, every turn (rejected and blocked ones too) gets one record
     (audit.py); result["audit"] says whether it was written."""
-    result = _run(payload, model, budget, retriever, guard)
+    result = _with_context(_run(payload, model, budget, retriever, guard), payload)
     if audit_writer is not None:
         result["audit"] = audit.write(audit_writer, result, payload)
     return result
@@ -106,6 +110,14 @@ def _run(payload: dict[str, Any], model: Any | None, budget: RunBudget | None,
     if guard is not None:
         gin = guard.check_input(question)
         guard_info = {"input": gin.to_dict(), "output": None}
+        history = payload.get("history") or []
+        if gin.blocked and gin.blocked_by == [ADVICE_TOPIC] and history:
+            # A bare follow-up ("What about Meta?") can read as an advice request on its own. Checked again
+            # with the previous question in front of it; real advice ("Should I buy it?") stays advice there.
+            retry = guard.check_input(session.follow_up_text(question, history))
+            guard_info["input_in_context"] = retry.to_dict()
+            if not retry.blocked and not retry.error:
+                gin = retry if retry.text else Check()  # masked: the agent sees the masked text in context
         if gin.blocked or gin.error:
             message = (GUARD_ERROR_MESSAGE if not gin.blocked
                        else PROMPT_ATTACK_MESSAGE if "content:PROMPT_ATTACK" in gin.blocked_by else gin.text)
@@ -121,7 +133,9 @@ def _run(payload: dict[str, Any], model: Any | None, budget: RunBudget | None,
     budget = budget or RunBudget()
     agent = build_agent(budget, retrieve_tool, model)
 
-    prompt = "".join([f"Ticker: {ticker}\n" if ticker else "", f"Quarter: {quarter}\n" if quarter else "",
+    # Earlier turns (session.py) go before the question; a turn without history gets the same prompt as before.
+    prompt = "".join([session.history_block(payload.get("history") or []),
+                      f"Ticker: {ticker}\n" if ticker else "", f"Quarter: {quarter}\n" if quarter else "",
                       f"Question: {question}"])
     started = time.perf_counter()
     status, answer, check, error = "ok", None, None, None
@@ -163,6 +177,12 @@ def _run(payload: dict[str, Any], model: Any | None, budget: RunBudget | None,
         elif gout.text:  # PII masked
             answer = {**answer, "answer": gout.text}
 
-    return {"status": status, "answer": answer, "citation_check": check,
+    return {"status": status, "question": question, "answer": answer, "citation_check": check,
             "retrieval": {"queries": ledger.queries, "returned": list(ledger.returned)},
             "run": run_info, "guardrail": guard_info, "error": error}
+
+
+def _with_context(result: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]:
+    if payload.get("context") is not None:
+        result["context"] = payload["context"]
+    return result

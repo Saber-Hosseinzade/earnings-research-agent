@@ -37,7 +37,7 @@ def test_record_has_exactly_the_documented_fields():
     (r,) = w.records
     assert set(r) == {
         "schema_version", "turn_id", "ts", "session_id", "user_id", "role", "question", "ticker", "quarter",
-        "status", "tool_calls", "searches_refused", "cited", "citation_check", "guardrail", "approval",
+        "status", "tool_calls", "searches_refused", "cited", "citation_check", "guardrail", "context", "approval",
         "covered", "answer", "model_id", "prompts", "tokens_used", "model_calls", "latency_ms", "final_answer",
         "stopped_reason", "error"}
     for name in r:  # the module docstring lists every field
