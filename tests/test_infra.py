@@ -189,3 +189,9 @@ def test_role_may_only_append_to_the_audit_log(tmp_path):
 def test_runtime_gets_the_audit_log_group(tmp_path):
     res = Template.from_stack(runtime(tmp_path)).find_resources("AWS::BedrockAgentCore::Runtime")
     assert "AUDIT_LOG_GROUP" in next(iter(res.values()))["Properties"]["EnvironmentVariables"]
+
+
+def test_runtime_runs_the_v2_entrypoint_with_tracing(tmp_path):
+    res = Template.from_stack(runtime(tmp_path)).find_resources("AWS::BedrockAgentCore::Runtime")
+    code = next(iter(res.values()))["Properties"]["AgentRuntimeArtifact"]["CodeConfiguration"]
+    assert code["EntryPoint"] == ["opentelemetry-instrument", "serve.py"]
