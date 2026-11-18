@@ -43,12 +43,13 @@ class EarningsRuntimeStack(Stack):
             self,
             "AgentRuntime",
             runtime_name="earnings_research_agent",
-            description="Summarises earnings calls. Research aid, not investment advice.",
+            description="Answers questions about earnings calls with cited passages. Research aid, not investment advice.",
             agent_runtime_artifact=agentcore.AgentRuntimeArtifact.from_code_asset(
                 path=str(code_path),
                 runtime=agentcore.AgentCoreRuntime.PYTHON_3_12,
-                # opentelemetry-instrument wraps main.py so that runs produce traces.
-                entrypoint=["opentelemetry-instrument", "main.py"],
+                # serve.py: v2, one question per invocation (main.py, v1, stays in the bundle).
+                # opentelemetry-instrument wraps it so that runs produce traces.
+                entrypoint=["opentelemetry-instrument", "serve.py"],
             ),
             environment_variables={
                 "MODEL_ID": model_id,

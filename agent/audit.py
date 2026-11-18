@@ -7,7 +7,8 @@ JsonlWriter appends to a file. Without a writer, nothing is recorded.
 A record (schema_version 1) holds exactly these fields:
 
     schema_version, turn_id, ts                  record id and UTC time
-    session_id, user_id, role                    who; null until a login exists (no auth yet)
+    session_id, user_id, role                    who; session_id is the runtime's session id when deployed
+                                                 (serve.py); user_id and role null until a login exists
     question                                     as the agent saw it: masked if the guardrail masked PII
     ticker, quarter                              the search filter pinned by the caller, if any
     status                                       ok | stopped | invalid_output | bad_request | blocked | guardrail_error
