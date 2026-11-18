@@ -247,7 +247,7 @@ Expected:
 
 ## Evaluation
 
-| Flow | Single-turn (built) | Multi-turn (planned) |
+| Flow | Single-turn (built) | Multi-turn (`eval/multiturn_set.json`; built except flow 6) |
 |---|---|---|
 | 1 Happy path | Golden set, 30 answerable: retrieval, grounding, task, citation check | One conversation |
 | 2 Missing slot | — | Asks once, answers after the reply |
