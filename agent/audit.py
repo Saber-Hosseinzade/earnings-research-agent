@@ -14,6 +14,7 @@ A record (schema_version 2) holds exactly these fields:
     context                                      how ticker and quarter were resolved (session.py): how, history_turns,
                                                  notes; null when the turn was not run through a session (v2 schema)
     status                                       ok | stopped | invalid_output | bad_request | blocked | guardrail_error
+                                                 | out_of_corpus (corpus check, session.py: no agent run)
     tool_calls                                   each search: query, as sent (abbreviations expanded), filter, IDs returned
     searches_refused                             searches the search limit refused
     cited, citation_check                        passage IDs the answer cited; {ok, problems, unreturned}

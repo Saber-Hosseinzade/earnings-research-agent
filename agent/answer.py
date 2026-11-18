@@ -7,7 +7,8 @@ ask.py and main.py are untouched, so the v1.0 and v1.1 baselines stay reproducib
 
     payload: {"question": "Why did gross margin expand?", "ticker": "AMD", "quarter": "2026Q2"}
              ticker and quarter are optional; when given they pin the search filter in code.
-    returns: {"status": "ok" | "stopped" | "invalid_output" | "bad_request" | "blocked" | "guardrail_error",
+    returns: {"status": "ok" | "stopped" | "invalid_output" | "bad_request" | "blocked" | "guardrail_error"
+                        | "out_of_corpus",
               "answer": {"covered", "answer", "citations"} | null,
               "citation_check": {"ok", "problems", "verified", "unreturned"} | null,
               "retrieval": {"queries": [...], "returned": [passage ids]},
@@ -127,6 +128,13 @@ def _run(payload: dict[str, Any], model: Any | None, budget: RunBudget | None,
                     "error": gin.error}
         if gin.text:  # PII masked: the agent only ever sees the masked question
             question = gin.text
+
+    reply = payload.get("corpus_reply")
+    if reply:  # the call is not in the corpus (session.corpus_reply): fixed reply, no search, no model call
+        return {"status": "out_of_corpus", "question": question,
+                "answer": {"covered": False, "answer": reply["message"], "citations": []},
+                "corpus_check": reply, "citation_check": None, "retrieval": None, "run": {},
+                "guardrail": guard_info, "error": None}
 
     ledger = Ledger()
     retrieve_tool = make_retrieve_tool(retriever or bedrock_retriever(), ledger, ticker, quarter)

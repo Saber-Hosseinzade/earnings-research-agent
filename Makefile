@@ -3,7 +3,7 @@
 
 PROFILE ?= sandbox
 
-.PHONY: help sso-login sso-whoami test kb-docs kb-sync
+.PHONY: help sso-login sso-whoami test kb-docs kb-sync corpus-terms
 
 help:  ## List the targets
 	@grep -E '^[a-z-]+:.*##' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-20s %s\n", $$1, $$2}'
@@ -22,3 +22,6 @@ kb-docs:  ## Build Knowledge Base passages from corpus/v2/raw into build/kb_docs
 
 kb-sync: kb-docs  ## Upload passages to the KB bucket and run an ingestion job
 	AWS_PROFILE=$(PROFILE) python scripts/sync_kb.py
+
+corpus-terms:  ## Rebuild corpus/terms.json (words that are not tickers) from corpus/v2/raw (offline)
+	python scripts/corpus_terms.py

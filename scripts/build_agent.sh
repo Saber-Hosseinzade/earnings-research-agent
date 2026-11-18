@@ -27,6 +27,7 @@ uv pip install \
 cp "$ROOT"/agent/{serve,answer,audit,budget,citations,guard,prompts,retrieval,session,main,schema,tools}.py "$OUT"/
 # session.py resolves follow-ups against the corpus call list and company names.
 cp "$ROOT"/corpus/calls.json "$OUT"/calls.json
+cp "$ROOT"/corpus/terms.json "$OUT"/terms.json   # capitalised words that are not tickers (scripts/corpus_terms.py)
 # prompts.py reads these files only when PROMPT_SOURCE=file; deployed, it loads the pinned
 # Bedrock versions. Shipped so the sha256 in run.prompts can be compared with the repo.
 cp -r "$ROOT"/agent/prompts "$OUT"/prompts

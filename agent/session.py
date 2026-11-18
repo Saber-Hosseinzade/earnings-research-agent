@@ -15,7 +15,12 @@ resolve()   Decides the ticker and quarter a message is about, in code, from the
             "Latest quarter" means the latest quarter in the corpus for that company; "previous
             quarter" the one before the quarter in context. A carried quarter is dropped when the
             company changes and the new company has no call for it.
-            Companies outside the corpus are not recognised here; the corpus check handles them.
+            A ticker outside the corpus (a cashtag, or a capitalised word that is not a common
+            abbreviation) resolves as "unknown_ticker" and never falls back to the previous company.
+
+corpus_reply()  The corpus check (flow 5), in code, before the agent runs: an unknown ticker, or a quarter
+            the corpus lacks for a known ticker, gets a fixed reply instead of a search ("not discussed"
+            would be wrong: the call was never in the corpus). The guardrail still runs first.
 
 Store       Keeps one compact record per answered turn: question, answer, covered, ticker, quarter,
             citations. Never passage text, so a follow-up costs a few hundred tokens of history, not
@@ -61,6 +66,7 @@ _Q_FORMS = [
 class Corpus:
     quarters: dict[str, list[str]]          # ticker -> labels, oldest first
     names: dict[str, list[str]]             # ticker -> names a user may type
+    terms: set[str] = field(default_factory=set)   # capitalised words the transcripts use (corpus/terms.json)
 
     @classmethod
     def load(cls, path: Path = CALLS_FILE) -> "Corpus":
@@ -69,7 +75,9 @@ class Corpus:
         for call in data["calls"]:
             quarters[call["ticker"]].append(call["label"])
         names = {t: v for t, v in data.get("companies", {}).items() if not t.startswith("_")}
-        return cls({t: sorted(qs) for t, qs in quarters.items()}, names)
+        terms_file = Path(path).with_name("terms.json")
+        terms = set(json.loads(terms_file.read_text())["terms"]) if terms_file.exists() else set()
+        return cls({t: sorted(qs) for t, qs in quarters.items()}, names, terms)
 
     def named_tickers(self, text: str) -> list[str]:
         """Corpus tickers named in the text, in order of first mention."""
@@ -81,6 +89,60 @@ class Corpus:
                     hits.append((m.start(), ticker))
                     break
         return [t for _, t in sorted(hits)]
+
+
+# Capitalised words that are not tickers. A capitalised 2-5 letter word not on this list, and not a corpus
+# ticker, is taken as a ticker outside the corpus; so is any cashtag ($NVDA). Lowercase company names
+# ("nvidia") are not recognised: the question then goes to the agent like any other.
+NOT_TICKERS = {
+    "AI", "AGI", "API", "APIS", "ASIC", "AWS", "CEO", "CFO", "COO", "CTO", "CPU", "CPUS", "DC", "EBIT", "EBITDA",
+    "ESG", "ETF", "EU", "EV", "EVS", "FX", "FY", "GAAP", "GPU", "GPUS", "HBM", "IPO", "IR", "IT", "KPI", "LLM",
+    "LLMS", "ML", "OEM", "OEMS", "PC", "PCS", "QOQ", "ROI", "ROE", "SEC", "SKU", "SKUS", "UK", "US", "USA", "USD",
+    "YOY", "AND", "OR", "THE", "NOT", "OK", "ARPU", "NPS", "NOI", "EMAIL", "PHONE",
+}
+
+
+def unknown_tickers(text: str, corpus: "Corpus") -> list[str]:
+    """Ticker-like words in the text that are not corpus tickers, in order of mention: cashtags, and
+    capitalised 2-5 letter words that are not common abbreviations or terms the transcripts use
+    (corpus/terms.json: AEC, EDV, EPYC...). A cashtag of a corpus term still counts ($ARM)."""
+    from retrieval import ABBREVIATIONS
+    skip = NOT_TICKERS | {a.upper() for a in ABBREVIATIONS} | set(corpus.quarters) | corpus.terms
+    found: list[str] = []
+    for m in re.finditer(r"(?<![A-Za-z0-9&$])(\$)?([A-Za-z]{1,5})(?![A-Za-z0-9&])", text):
+        cash, word = m.group(1), m.group(2)
+        symbol = word.upper()
+        flagged = (symbol not in corpus.quarters) if cash else (word.isupper() and len(word) >= 2 and symbol not in skip)
+        if flagged and symbol not in found:
+            found.append(symbol)
+    return found
+
+
+def quarter_label(label: str) -> str:
+    """'2026Q2' -> 'Q2 2026' (the company's own fiscal quarter, as in corpus/calls.json)."""
+    return f"Q{label[-1]} {label[:4]}"
+
+
+def _ordinal(label: str) -> int:
+    return int(label[:4]) * 4 + int(label[-1])
+
+
+def corpus_reply(context: "Context", corpus: "Corpus") -> dict[str, Any] | None:
+    """The fixed reply when the resolved call is not in the corpus, or None when it is (flow 5).
+    offer = the quarter offered instead; it is remembered, so a "yes" next resolves to it."""
+    if context.ticker and context.ticker not in corpus.quarters:
+        return {"kind": "unknown_ticker", "offer": None,
+                "message": f"I don't have earnings calls for {context.ticker}. "
+                           f"I can answer about {', '.join(corpus.quarters)}."}
+    labels = corpus.quarters.get(context.ticker or "", [])
+    if context.quarter and labels and context.quarter not in labels:
+        target = _ordinal(context.quarter)
+        nearest = min(labels, key=lambda q: (abs(_ordinal(q) - target), -_ordinal(q)))
+        return {"kind": "quarter_not_in_corpus", "offer": nearest,
+                "message": (f"The corpus has {context.ticker}'s calls for {quarter_label(labels[0])} to "
+                            f"{quarter_label(labels[-1])}, not {quarter_label(context.quarter)}. "
+                            f"Do you want the {quarter_label(nearest)} call?")}
+    return None
 
 
 def quarter_in(text: str) -> str | None:
@@ -97,7 +159,7 @@ def quarter_in(text: str) -> str | None:
 class Context:
     ticker: str | None
     quarter: str | None
-    how: str                                  # payload | named | carried | cross_company | cross_quarter | none
+    how: str                                  # payload | named | unknown_ticker | carried | cross_company | cross_quarter | none
     history_turns: int = 0
     notes: list[str] = field(default_factory=list)
 
@@ -115,6 +177,11 @@ def resolve(question: str, payload: dict[str, Any], history: list[dict[str, Any]
         ticker, quarter, how = p_ticker, p_quarter, "payload"
     else:
         named = corpus.named_tickers(question)
+        unknown = unknown_tickers(question, corpus)
+        if unknown and not named:   # "What about NVDA?" must not carry the previous company over
+            return Context(unknown[0], quarter_in(question), "unknown_ticker", len(history))
+        if unknown:
+            notes.append(f"not in the corpus: {', '.join(unknown)}")
         compare = bool(COMPARE.search(question))
         other = prev.get("ticker") if named and prev.get("ticker") not in (None, *named) else None
         if len(named) > 1 or (not named and CROSS_COMPANY.search(question)) or (compare and other):
@@ -173,10 +240,16 @@ def turn_record(question: str, result: dict[str, Any], context: Context) -> dict
     (blocked, rejected, failed). The question is stored as the agent saw it: masked if the guardrail
     masked personal data, never the raw text."""
     answer = result.get("answer") or {}
-    if result.get("status") != "ok" or not answer:
+    if result.get("status") not in ("ok", "out_of_corpus") or not answer:
         return None
-    return {"question": result.get("question") or question, "answer": answer.get("answer", ""), "covered": bool(answer.get("covered")),
-            "ticker": context.ticker, "quarter": context.quarter, "citations": list(answer.get("citations") or [])}
+    reply = result.get("corpus_check") or {}
+    known = reply.get("kind") != "unknown_ticker"
+    return {"question": result.get("question") or question, "answer": answer.get("answer", ""),
+            "covered": bool(answer.get("covered")),
+            # an out-of-corpus quarter remembers the quarter offered instead, so "yes" resolves to it
+            "ticker": context.ticker if known else None,
+            "quarter": reply.get("offer") or context.quarter if known else None,
+            "citations": list(answer.get("citations") or [])}
 
 
 class Store(Protocol):
@@ -239,8 +312,9 @@ def run_turn(payload: dict[str, Any], session_id: str | None, store: Store | Non
     actor_id = str(payload.get("user_id") or "anonymous")
     history = store.load(actor_id, session_id, HISTORY_TURNS) if (store and session_id) else []
     context = resolve(question, payload, history, corpus)
+    reply = corpus_reply(context, corpus)
     result = answer.run({**payload, "ticker": context.ticker, "quarter": context.quarter,
-                         "history": history, "context": context.to_dict()}, **deps)
+                         "history": history, "context": context.to_dict(), "corpus_reply": reply}, **deps)
     record = turn_record(question, result, context)
     result["memory"] = {"loaded": len(history), "saved": False, "error": None}
     if store and session_id and record:
