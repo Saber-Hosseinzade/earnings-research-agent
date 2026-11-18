@@ -212,3 +212,83 @@ def test_memory_keeps_the_masked_question_never_the_raw_one():
     guarded(store, "Mail me at a@b.com: why did AMD's margin expand in Q2 2026?", ContextGuard(mask="a@b.com"))
     (saved,) = store.load("anonymous", "s-1", 5)
     assert "a@b.com" not in json.dumps(saved) and "{EMAIL}" in saved["question"]
+
+
+# --- corpus check (flow 5) ------------------------------------------------------------------------------------
+
+@pytest.mark.parametrize("text, expected", [
+    ("What did NVDA say about margins?", ["NVDA"]),
+    ("What did XYZQ say?", ["XYZQ"]),
+    ("What about $ARM?", ["ARM"]),                       # a cashtag counts even for a word the calls use
+    ("And ARM?", []),                                    # ARM is spoken on the calls: not flagged without $
+    ("How is EPYC doing?", []),                          # product names the transcripts use
+    ("What did the CEO say about AEC demand and GPU supply?", []),
+    ("What did AMD say about FCF and R&D in Q2 2026?", []),
+    ("What about Nvidia?", []),                          # lowercase names are not recognised (known limit)
+    ("Mail me at {EMAIL}", []),
+])
+def test_unknown_tickers(text, expected):
+    assert session.unknown_tickers(text, CORPUS) == expected
+
+
+def test_no_golden_question_is_taken_for_an_unknown_ticker():
+    from pathlib import Path
+    rows = [json.loads(line) for line in (Path(__file__).resolve().parents[1] / "eval" / "golden_set.jsonl").open()]
+    assert [r["id"] for r in rows if session.unknown_tickers(r["question"], CORPUS)] == []
+
+
+def test_an_unknown_ticker_is_not_replaced_by_the_previous_company():
+    c = resolve("What about NVDA?", {}, prev(), CORPUS)
+    assert (c.ticker, c.how) == ("NVDA", "unknown_ticker")
+
+
+def test_a_known_company_next_to_an_unknown_one_wins_with_a_note():
+    c = resolve("Did AMD mention NVDA?", {}, [], CORPUS)
+    assert (c.ticker, c.how) == ("AMD", "named") and c.notes == ["not in the corpus: NVDA"]
+
+
+def test_corpus_reply_for_an_unknown_ticker():
+    r = session.corpus_reply(session.Context("XYZQ", None, "unknown_ticker"), CORPUS)
+    assert r["kind"] == "unknown_ticker" and r["message"] == (
+        "I don't have earnings calls for XYZQ. I can answer about AMD, RIVN, ROOT, META, CRDO, NBIS.")
+
+
+def test_corpus_reply_offers_the_nearest_quarter():
+    r = session.corpus_reply(session.Context("AMD", "2026Q3", "named"), CORPUS)
+    assert r["offer"] == "2026Q2" and r["message"] == (
+        "The corpus has AMD's calls for Q3 2025 to Q2 2026, not Q3 2026. Do you want the Q2 2026 call?")
+    assert session.corpus_reply(session.Context("AMD", "2024Q1", "named"), CORPUS)["offer"] == "2025Q3"
+    assert session.corpus_reply(session.Context("AMD", "2026Q2", "named"), CORPUS) is None
+    assert session.corpus_reply(session.Context(None, None, "cross_company"), CORPUS) is None
+
+
+class NoModel:
+    """Fails the test if the agent is run."""
+    def __getattr__(self, name):
+        raise AssertionError("the agent must not run for an out-of-corpus call")
+
+
+def test_out_of_corpus_turns_skip_the_agent_but_not_the_guardrail():
+    store, g, r = InMemoryStore(), ContextGuard(mask="a@b.com"), FakeRetriever()
+    out = session.run_turn({"question": "Mail a@b.com: what did NVDA say about margins?"}, "s-1", store, CORPUS,
+                           guard=g, model=NoModel(), retriever=r)
+    assert out["status"] == "out_of_corpus" and out["answer"]["answer"].startswith("I don't have earnings calls for NVDA")
+    assert r.calls == [] and g.inputs == ["Mail a@b.com: what did NVDA say about margins?"]
+    (saved,) = store.load("anonymous", "s-1", 5)
+    assert "a@b.com" not in json.dumps(saved) and saved["ticker"] is None   # masked; NVDA not carried over
+
+
+def test_yes_after_an_offered_quarter_resolves_to_it():
+    store = InMemoryStore()
+    out = session.run_turn({"question": "What did AMD say about margins in Q3 2026?"}, "s-1", store, CORPUS,
+                           model=NoModel(), retriever=FakeRetriever())
+    assert out["status"] == "out_of_corpus" and out["corpus_check"]["offer"] == "2026Q2"
+    second, r = run(store, "Yes, that one")
+    assert second["context"]["how"] == "carried" and (r.calls[0]["ticker"], r.calls[0]["quarter"]) == ("AMD", "2026Q2")
+
+
+def test_the_audit_record_says_out_of_corpus():
+    from test_audit import ListWriter
+    w = ListWriter()
+    session.run_turn({"question": "What did XYZQ say?"}, "s-1", None, CORPUS, model=NoModel(), audit_writer=w)
+    assert w.records[0]["status"] == "out_of_corpus" and w.records[0]["context"]["how"] == "unknown_ticker"

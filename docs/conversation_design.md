@@ -167,8 +167,7 @@ management said about a topic") rather than one tailored to the question.
 
 ### 5. Tool failure or unknown ticker: say so, offer what is possible
 
-**Status: partly built.** Search failures are handled; unknown tickers are not yet told apart from "not
-discussed".
+**Status: built** (corpus check in code, `agent/session.py`). Search failures are handled by the tool contract.
 
 > **User:** What did XYZQ say about margins?
 > **Assistant:** I don't have earnings calls for XYZQ. I can answer about AMD, RIVN, ROOT, META, CRDO and NBIS.
@@ -180,10 +179,16 @@ Expected:
 - Search failure (`retrieve_failed`, not retryable): the assistant says the search failed and does not answer
   from memory. Built: tool contract and prompt.
 - Ticker not in the corpus: checked **in code** against `corpus/calls.json` before the agent runs (decision 3),
-  and answered as above, or handled by flow 6 once the approval gate exists. Planned. Today the filtered search returns no
-  passages and the answer is "not discussed", which is wrong: the call was never in the corpus.
-- Quarter not in the corpus for a known ticker: say which quarters exist and offer the nearest. Planned, same
-  check.
+  and answered with the fixed reply above, with no search and no model call (status `out_of_corpus`). Flow 6
+  will turn this into an approval request. Built. A ticker counts as outside the corpus when it is a cashtag
+  (`$NVDA`) or a capitalised 2–5 letter word that is not a common abbreviation and not a word the transcripts
+  themselves use (`corpus/terms.json`: product names such as EPYC or AEC). Limits: lowercase company names
+  ("Nvidia") are not recognised, and a real ticker spoken on a call (ARM) is only recognised as a cashtag;
+  both go to the agent like any other question.
+- Quarter not in the corpus for a known ticker: say which quarters exist and offer the nearest. Built. The
+  offered quarter is remembered, so "yes" next resolves to it.
+- The guardrail runs before the check: an advice request about an unknown ticker is refused as advice, and
+  personal data is masked before the turn is stored.
 - Guardrail unavailable: the question is not answered (fixed message). Built.
 
 ### 6. Out-of-corpus ticker: ask for approval before fetching
