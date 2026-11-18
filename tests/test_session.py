@@ -29,8 +29,8 @@ def prev(ticker="AMD", quarter="2026Q2"):
     ("What about Meta?", prev(), ("META", "2026Q2", "named")),            # company switches, quarter kept
     ("What did META say in Q3 2026?", prev(), ("META", "2026Q3", "named")),
     ("And in Q1 2026?", prev(), ("AMD", "2026Q1", "carried")),
-    ("What about Rivian?", prev("AMD", "2025Q3"), ("RIVN", None, "named")),  # RIVN has no 2025Q3 call
-    ("How did Nebius describe demand?", [], ("NBIS", None, "named")),
+    ("What about Rivian?", prev("AMD", "2025Q3"), ("RIVN", "2026Q3", "named")),  # no 2025Q3 call: latest
+    ("How did Nebius describe demand?", [], ("NBIS", "2026Q2", "named")),         # no quarter: latest
     ("Why did gross margin expand?", [], (None, None, "none")),
     ("Which companies talked about tariffs?", prev(), (None, None, "cross_company")),
     ("Compare AMD and Credo on gross margin", prev(), (None, None, "cross_company")),
@@ -244,7 +244,7 @@ def test_an_unknown_ticker_is_not_replaced_by_the_previous_company():
 
 def test_a_known_company_next_to_an_unknown_one_wins_with_a_note():
     c = resolve("Did AMD mention NVDA?", {}, [], CORPUS)
-    assert (c.ticker, c.how) == ("AMD", "named") and c.notes == ["not in the corpus: NVDA"]
+    assert (c.ticker, c.how) == ("AMD", "named") and c.notes[0] == "not in the corpus: NVDA"
 
 
 def test_corpus_reply_for_an_unknown_ticker():
@@ -282,7 +282,7 @@ def test_yes_after_an_offered_quarter_resolves_to_it():
     store = InMemoryStore()
     out = session.run_turn({"question": "What did AMD say about margins in Q3 2026?"}, "s-1", store, CORPUS,
                            model=NoModel(), retriever=FakeRetriever())
-    assert out["status"] == "out_of_corpus" and out["corpus_check"]["offer"] == "2026Q2"
+    assert out["status"] == "out_of_corpus" and out["fixed_reply"]["offer"] == "2026Q2"
     second, r = run(store, "Yes, that one")
     assert second["context"]["how"] == "carried" and (r.calls[0]["ticker"], r.calls[0]["quarter"]) == ("AMD", "2026Q2")
 
@@ -292,3 +292,30 @@ def test_the_audit_record_says_out_of_corpus():
     w = ListWriter()
     session.run_turn({"question": "What did XYZQ say?"}, "s-1", None, CORPUS, model=NoModel(), audit_writer=w)
     assert w.records[0]["status"] == "out_of_corpus" and w.records[0]["context"]["how"] == "unknown_ticker"
+
+
+# --- clarifying question (flow 2) ------------------------------------------------------------------------------
+
+@pytest.mark.parametrize("question, history, asks", [
+    ("What did they say about gross margin?", [], True),
+    ("How did the company describe demand?", [], True),
+    ("What did management say about pricing?", [], True),
+    ("What did they say about gross margin?", prev(), False),        # the session supplies AMD
+    ("Which companies talked about tariffs?", [], False),           # cross-company
+    ("What did AMD say about margins?", [], False),                 # named
+    ("What was said about tariffs?", [], False),                    # no pointer at one company: search all
+])
+def test_clarify_only_when_one_company_is_meant_and_none_is_known(question, history, asks):
+    c = resolve(question, {}, history, CORPUS)
+    assert (session.clarify_reply(c, question, CORPUS) is not None) == asks
+
+
+def test_clarify_then_answer_resolves_to_the_named_company_and_its_latest_quarter():
+    store = InMemoryStore()
+    out = session.run_turn({"question": "What did they say about gross margin?"}, "s-1", store, CORPUS,
+                           model=NoModel(), retriever=FakeRetriever())
+    assert out["status"] == "clarify" and out["answer"]["answer"] == (
+        "Which company do you mean? I have calls for AMD, RIVN, ROOT, META, CRDO and NBIS.")
+    second, r = run(store, "AMD")
+    assert second["context"]["how"] == "named" and (r.calls[0]["ticker"], r.calls[0]["quarter"]) == ("AMD", "2026Q2")
+    assert second["context"]["history_turns"] == 1 and second["memory"]["loaded"] == 1   # the topic comes with it

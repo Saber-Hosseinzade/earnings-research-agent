@@ -11,12 +11,18 @@ resolve()   Decides the ticker and quarter a message is about, in code, from the
                  pins the company and no quarter, so all its calls are searched ("cross_quarter");
               3. otherwise the previous turn's ticker and quarter carry over ("carried");
               4. otherwise nothing is pinned ("none").
-            A quarter in the message ("Q2 2026", "2026Q2", "Q1 FY2026") overrides a carried one.
+            A quarter in the message ("Q2 2026", "2026Q2", "Q1 FY2026") overrides a carried one. A company
+            named with no quarter in the message or the context gets its latest quarter in the corpus.
             "Latest quarter" means the latest quarter in the corpus for that company; "previous
             quarter" the one before the quarter in context. A carried quarter is dropped when the
             company changes and the new company has no call for it.
             A ticker outside the corpus (a cashtag, or a capitalised word that is not a common
             abbreviation) resolves as "unknown_ticker" and never falls back to the previous company.
+
+clarify_reply() The clarifying question (flow 2), in code: no company is known (none in the message or the
+            session, not a cross-company question) and the question points at one without naming it
+            ("they", "the company"). One fixed question listing the corpus companies, no search.
+            Decided 18 Nov: the model (Nova 2 Lite) ignored this rule in the prompt.
 
 corpus_reply()  The corpus check (flow 5), in code, before the agent runs: an unknown ticker, or a quarter
             the corpus lacks for a known ticker, gets a fixed reply instead of a search ("not discussed"
@@ -145,6 +151,19 @@ def corpus_reply(context: "Context", corpus: "Corpus") -> dict[str, Any] | None:
     return None
 
 
+ONE_COMPANY = re.compile(r"\b(they|their|them|theirs|the company|the company's|this company|that company|"
+                         r"management|its|the CEO|the CFO)\b", re.IGNORECASE)
+
+
+def clarify_reply(context: "Context", question: str, corpus: "Corpus") -> dict[str, Any] | None:
+    """The clarifying question when the message needs one company and none is known (flow 2), else None."""
+    if context.how != "none" or not ONE_COMPANY.search(question):
+        return None
+    names = list(corpus.quarters)
+    return {"kind": "clarify", "offer": None,
+            "message": f"Which company do you mean? I have calls for {', '.join(names[:-1])} and {names[-1]}."}
+
+
 def quarter_in(text: str) -> str | None:
     for i, pat in enumerate(_Q_FORMS):
         m = pat.search(text)
@@ -212,6 +231,11 @@ def resolve(question: str, payload: dict[str, Any], history: list[dict[str, Any]
         if ticker and quarter and how == "named" and not said and quarter not in corpus.quarters.get(ticker, []):
             notes.append(f"{ticker} has no {quarter} call; quarter dropped")
             quarter = None
+        if ticker and quarter is None and how == "named" and ticker in corpus.quarters:
+            # "What did AMD say about margins?" with no quarter anywhere: the latest call, not all of them
+            # mixed (flow 2). A comparison never gets here (cross_quarter above).
+            quarter = corpus.quarters[ticker][-1]
+            notes.append("no quarter given: latest quarter in the corpus")
 
     return Context(ticker, quarter, how, len(history), notes)
 
@@ -240,9 +264,9 @@ def turn_record(question: str, result: dict[str, Any], context: Context) -> dict
     (blocked, rejected, failed). The question is stored as the agent saw it: masked if the guardrail
     masked personal data, never the raw text."""
     answer = result.get("answer") or {}
-    if result.get("status") not in ("ok", "out_of_corpus") or not answer:
+    if result.get("status") not in ("ok", "out_of_corpus", "clarify") or not answer:
         return None
-    reply = result.get("corpus_check") or {}
+    reply = result.get("fixed_reply") or {}
     known = reply.get("kind") != "unknown_ticker"
     return {"question": result.get("question") or question, "answer": answer.get("answer", ""),
             "covered": bool(answer.get("covered")),
@@ -312,9 +336,9 @@ def run_turn(payload: dict[str, Any], session_id: str | None, store: Store | Non
     actor_id = str(payload.get("user_id") or "anonymous")
     history = store.load(actor_id, session_id, HISTORY_TURNS) if (store and session_id) else []
     context = resolve(question, payload, history, corpus)
-    reply = corpus_reply(context, corpus)
+    reply = corpus_reply(context, corpus) or clarify_reply(context, question, corpus)
     result = answer.run({**payload, "ticker": context.ticker, "quarter": context.quarter,
-                         "history": history, "context": context.to_dict(), "corpus_reply": reply}, **deps)
+                         "history": history, "context": context.to_dict(), "fixed_reply": reply}, **deps)
     record = turn_record(question, result, context)
     result["memory"] = {"loaded": len(history), "saved": False, "error": None}
     if store and session_id and record:

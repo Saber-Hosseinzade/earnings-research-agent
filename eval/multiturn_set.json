@@ -7,12 +7,12 @@
                   "cites": ["AMD_2026Q2"], "cites_only": ["AMD_2026Q2"], "mentions": "margin"}}
     ]},
     {"id": "MT-02", "flow": 2, "turns": [
-      {"user": "What did they say about gross margin?", "expect": {"status": "ok", "clarifies": true}},
+      {"user": "What did they say about gross margin?", "expect": {"status": "clarify", "clarifies": true}},
       {"user": "AMD", "expect": {"status": "ok", "ticker": "AMD", "quarter": "2026Q2", "covered": true,
                                  "cites_only": ["AMD_2026Q2"], "mentions": "margin"}}
     ]},
     {"id": "MT-03", "flow": 2, "turns": [
-      {"user": "How did the company describe demand?", "expect": {"status": "ok", "clarifies": true}},
+      {"user": "How did the company describe demand?", "expect": {"status": "clarify", "clarifies": true}},
       {"user": "Nebius", "expect": {"status": "ok", "ticker": "NBIS", "covered": true, "cites_only": ["NBIS_"],
                                     "mentions": "demand"}}
     ]},
