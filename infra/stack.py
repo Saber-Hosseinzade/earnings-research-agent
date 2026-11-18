@@ -19,12 +19,13 @@ class EarningsToolStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        # The value is set out of band (`aws secretsmanager put-secret-value`),
-        # so the API key never appears in code, in the template or in the repo.
+        # The value is set out of band (`aws secretsmanager put-secret-value`), so neither the API key
+        # nor the provider's URL appears in code, in the template or in the repo.
         secret = secretsmanager.Secret(
             self,
             "AlphaVantageKey",
-            description="Alpha Vantage API key for the earnings-research-agent tool",
+            # Construct id kept from v1: renaming it would delete and recreate the secret.
+            description='Transcript API for the earnings-research-agent tool: JSON {"api_key", "base_url"}',
             removal_policy=RemovalPolicy.DESTROY,
         )
 
@@ -41,7 +42,8 @@ class EarningsToolStack(Stack):
             code=lambda_.Code.from_asset(str(TOOL_DIR)),
             # The handler's HTTP timeout is derived from the remaining time minus a
             # margin, so the function can always return a typed error before this.
-            timeout=Duration.seconds(15),
+            # 30 s: a long call takes a few pages of 200 turns, each with its own HTTP timeout.
+            timeout=Duration.seconds(30),
             memory_size=256,
             environment={
                 "SECRET_ARN": secret.secret_arn,

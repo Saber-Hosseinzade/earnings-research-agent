@@ -33,7 +33,7 @@ def get_earnings_call_transcript(ticker: str, quarter: str) -> str:
 
     Args:
         ticker: Stock ticker symbol, e.g. "IBM".
-        quarter: Fiscal quarter in the form YYYYQn, e.g. "2024Q4".
+        quarter: The company's fiscal quarter in the form YYYYQn, e.g. "2024Q4".
     """
     try:
         resp = _lambda.invoke(

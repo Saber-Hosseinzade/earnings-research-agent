@@ -27,8 +27,8 @@ Label check: the period the call states about itself ("third quarter 2026",
 with the expected period. That is how the CRDO fiscal-vs-calendar question is
 answered: a "mismatch" or "unknown" needs a look at the raw file.
 
-Standard library only, plus tool_lambda/handler.py for the response mapping, so
-the corpus and the v1 tool classify Alpha Vantage replies the same way.
+Standard library only. The response mapping is the v1 Lambda's (copied below when the
+Lambda moved to the v2 transcript API), so this pull classifies replies as v1 did.
 """
 
 from __future__ import annotations
@@ -49,8 +49,53 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "tool_lambda"))
-from handler import API_URL, map_upstream  # noqa: E402
+# The v1 Lambda's Alpha Vantage mapping, kept here when the Lambda moved to the v2 transcript API
+# (18 Nov), so this record of the first pull still runs.
+API_URL = "https://www.alphavantage.co/query"
+MAX_TRANSCRIPT_CHARS = 100_000
+
+
+def error(kind: str, message: str, retryable: bool = False) -> dict[str, Any]:
+    return {"ok": False, "error": {"type": kind, "message": message, "retryable": retryable}}
+
+
+def map_upstream(body: dict[str, Any], ticker: str, quarter: str) -> dict[str, Any]:
+    """Turn an Alpha Vantage response into a tool result or a typed error."""
+    # Alpha Vantage signals problems with HTTP 200 plus one of these keys.
+    # The free tier has a burst limit (worth a retry) and a daily cap of 25
+    # requests (not worth one until tomorrow); only the message tells them apart.
+    for key in ("Note", "Information"):
+        if key in body:
+            message = str(body[key])
+            daily_cap = "per day" in message.lower()
+            return error("rate_limited", message[:300], retryable=not daily_cap)
+    if "Error Message" in body:
+        return error("upstream_error", str(body["Error Message"])[:300])
+
+    entries = body.get("transcript") or []
+    if not entries:
+        return error("not_found", f"no transcript for {ticker} {quarter}")
+
+    lines: list[str] = []
+    used = 0
+    truncated = False
+    for entry in entries:
+        line = f"{entry.get('speaker', '?')} ({entry.get('title', '')}): {entry.get('content', '')}"
+        if used + len(line) > MAX_TRANSCRIPT_CHARS:
+            truncated = True
+            break
+        lines.append(line)
+        used += len(line)
+
+    return {
+        "ok": True,
+        "ticker": ticker,
+        "quarter": quarter,
+        "segments_returned": len(lines),
+        "segments_total": len(entries),
+        "truncated": truncated,
+        "transcript": "\n".join(lines),
+    }
 
 ENV_FILE = ROOT / ".env.local"   # git-ignored via .env.*; see .env.local.example
 RAW_DIR = ROOT / "corpus" / "raw"
