@@ -264,16 +264,39 @@ def turn_record(question: str, result: dict[str, Any], context: Context) -> dict
     (blocked, rejected, failed). The question is stored as the agent saw it: masked if the guardrail
     masked personal data, never the raw text."""
     answer = result.get("answer") or {}
-    if result.get("status") not in ("ok", "out_of_corpus", "clarify") or not answer:
+    if result.get("status") not in ("ok", "out_of_corpus", "clarify", "approval_pending") or not answer:
         return None
     reply = result.get("fixed_reply") or {}
-    known = reply.get("kind") != "unknown_ticker"
     return {"question": result.get("question") or question, "answer": answer.get("answer", ""),
             "covered": bool(answer.get("covered")),
-            # an out-of-corpus quarter remembers the quarter offered instead, so "yes" resolves to it
-            "ticker": context.ticker if known else None,
-            "quarter": reply.get("offer") or context.quarter if known else None,
+            # An out-of-corpus quarter remembers the quarter offered instead, so "yes" resolves to it. An
+            # unknown ticker is remembered too, so "Q3 2026" next can name the quarter for a fetch request.
+            "ticker": context.ticker, "quarter": reply.get("offer") or context.quarter,
             "citations": list(answer.get("citations") or [])}
+
+
+def _approval_reply(context: Context, payload: dict[str, Any], session_id: str | None, requests: Any,
+                    corpus: Corpus, history: list[dict[str, Any]]) -> Any:
+    """For answer.run: called with the question as the guardrail left it (masked), and only if the guardrail
+    let it through, so an advice request is refused, not proposed, and no raw personal data is stored.
+
+    When the ticker came from the previous turn ("Q3 2026" after "What did NVDA say about demand?"), the
+    request stores the earlier question with this message in brackets: the fetch must answer the real
+    question, not "Q3 2026". (Found in the live check, 18 Nov.)"""
+    import approvals
+
+    companies = list(corpus.quarters)
+    if not context.quarter:
+        return {"kind": "needs_quarter", "offer": None, "message": approvals.ask_for_quarter(context.ticker, companies)}
+
+    earlier = history[-1]["question"] if context.how == "carried" and history else None   # stored masked
+
+    def reply(masked_question: str) -> dict[str, Any]:
+        question = f"{earlier} ({masked_question})" if earlier else masked_question
+        return approvals.propose(requests, ticker=context.ticker, quarter=context.quarter, question=question,
+                                 session_id=session_id, user_id=payload.get("user_id"), role=payload.get("role"),
+                                 companies=companies)
+    return reply
 
 
 class Store(Protocol):
@@ -324,11 +347,13 @@ class AgentCoreMemoryStore:
 
 
 def run_turn(payload: dict[str, Any], session_id: str | None, store: Store | None, corpus: Corpus,
-             **deps: Any) -> dict[str, Any]:
+             requests: Any = None, **deps: Any) -> dict[str, Any]:
     """One conversational turn: load the session, resolve the call, answer, remember the turn.
 
     Without a session id or a store, the turn stands alone (no history, nothing saved), but the
     message is still resolved, so a company named in it pins the search. ``deps`` go to answer.run.
+    With a request store (approvals.py), an out-of-corpus ticker becomes a fetch request for a
+    reviewer once the user has named a quarter; without one, it gets the fixed out-of-corpus reply.
     """
     import answer  # here, not at the top: answer imports nothing from this module, tests patch it
 
@@ -336,7 +361,9 @@ def run_turn(payload: dict[str, Any], session_id: str | None, store: Store | Non
     actor_id = str(payload.get("user_id") or "anonymous")
     history = store.load(actor_id, session_id, HISTORY_TURNS) if (store and session_id) else []
     context = resolve(question, payload, history, corpus)
-    reply = corpus_reply(context, corpus) or clarify_reply(context, question, corpus)
+    reply: Any = corpus_reply(context, corpus) or clarify_reply(context, question, corpus)
+    if reply and reply["kind"] == "unknown_ticker" and requests is not None:
+        reply = _approval_reply(context, payload, session_id, requests, corpus, history)
     result = answer.run({**payload, "ticker": context.ticker, "quarter": context.quarter,
                          "history": history, "context": context.to_dict(), "fixed_reply": reply}, **deps)
     record = turn_record(question, result, context)

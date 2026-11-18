@@ -275,7 +275,7 @@ def test_out_of_corpus_turns_skip_the_agent_but_not_the_guardrail():
     assert out["status"] == "out_of_corpus" and out["answer"]["answer"].startswith("I don't have earnings calls for NVDA")
     assert r.calls == [] and g.inputs == ["Mail a@b.com: what did NVDA say about margins?"]
     (saved,) = store.load("anonymous", "s-1", 5)
-    assert "a@b.com" not in json.dumps(saved) and saved["ticker"] is None   # masked; NVDA not carried over
+    assert "a@b.com" not in json.dumps(saved) and saved["ticker"] == "NVDA"  # masked; NVDA kept for "Q3 2026" next
 
 
 def test_yes_after_an_offered_quarter_resolves_to_it():

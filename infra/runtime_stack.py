@@ -12,9 +12,10 @@ exports), so destroy the runtime before replacing any of them, e.g. switching th
 
 from pathlib import Path
 
-from aws_cdk import CfnOutput, Duration, Stack
+from aws_cdk import CfnOutput, Duration, RemovalPolicy, Stack
 from aws_cdk import aws_bedrock as bedrock
 from aws_cdk import aws_bedrockagentcore as agentcore
+from aws_cdk import aws_dynamodb as dynamodb
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_lambda as lambda_
 from aws_cdk import aws_logs as logs
@@ -52,6 +53,17 @@ class EarningsRuntimeStack(Stack):
             expiration_duration=Duration.days(MEMORY_EXPIRY_DAYS),
         )
 
+        # Fetch requests waiting for a reviewer (agent/approvals.py). Requests expire after 24 hours (TTL), and the
+        # table goes with the runtime, like the session memory.
+        requests_table = dynamodb.Table(
+            self,
+            "FetchRequests",
+            partition_key=dynamodb.Attribute(name="request_id", type=dynamodb.AttributeType.STRING),
+            billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
+            time_to_live_attribute="expires_ttl",
+            removal_policy=RemovalPolicy.DESTROY,
+        )
+
         runtime = agentcore.Runtime(
             self,
             "AgentRuntime",
@@ -73,6 +85,7 @@ class EarningsRuntimeStack(Stack):
                 # agent/prompts.py loads these pinned versions and fails rather than fall back to a file.
                 "AUDIT_LOG_GROUP": audit_log.log_group_name,
                 "MEMORY_ID": memory.memory_id,
+                "REQUESTS_TABLE": requests_table.table_name,
                 "PROMPT_SOURCE": "bedrock",
                 **{
                     f"{name.upper()}_PROMPT_{key}": value
@@ -138,6 +151,15 @@ class EarningsRuntimeStack(Stack):
             iam.PolicyStatement(
                 actions=["bedrock-agentcore:CreateEvent", "bedrock-agentcore:ListEvents"],
                 resources=[memory.memory_arn],
+            )
+        )
+
+        # agent/approvals.py: create, read, decide (conditional update) and list fetch requests. No deletes:
+        # requests expire by TTL.
+        runtime.add_to_role_policy(
+            iam.PolicyStatement(
+                actions=["dynamodb:PutItem", "dynamodb:GetItem", "dynamodb:UpdateItem", "dynamodb:Scan"],
+                resources=[requests_table.table_arn],
             )
         )
 

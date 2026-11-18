@@ -215,3 +215,25 @@ def test_role_may_only_read_and_append_session_events(tmp_path):
 def test_runtime_gets_the_memory_id(tmp_path):
     res = Template.from_stack(runtime(tmp_path)).find_resources("AWS::BedrockAgentCore::Runtime")
     assert "MEMORY_ID" in next(iter(res.values()))["Properties"]["EnvironmentVariables"]
+
+
+# --- approval gate ---------------------------------------------------------------------------------------------
+
+def test_fetch_requests_expire_and_go_with_the_runtime(tmp_path):
+    (table,) = Template.from_stack(runtime(tmp_path)).find_resources("AWS::DynamoDB::Table").values()
+    assert table["Properties"]["TimeToLiveSpecification"] == {"AttributeName": "expires_ttl", "Enabled": True}
+    assert table["DeletionPolicy"] == "Delete"
+
+
+def test_role_may_use_the_request_table_but_not_delete_from_it(tmp_path):
+    found = by_action(statements(tmp_path), "dynamodb:UpdateItem")
+    assert len(found) == 1
+    assert sorted(found[0]["Action"]) == ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:Scan", "dynamodb:UpdateItem"]
+    assert "FetchRequests" in json.dumps(found[0]["Resource"])
+    assert not by_action(statements(tmp_path), "dynamodb:DeleteItem")
+
+
+def test_runtime_gets_the_request_table_and_the_tool(tmp_path):
+    res = Template.from_stack(runtime(tmp_path)).find_resources("AWS::BedrockAgentCore::Runtime")
+    env = next(iter(res.values()))["Properties"]["EnvironmentVariables"]
+    assert "REQUESTS_TABLE" in env and "TOOL_FUNCTION_NAME" in env
