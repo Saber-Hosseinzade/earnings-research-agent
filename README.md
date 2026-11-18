@@ -22,11 +22,11 @@ flowchart LR
 
     subgraph toolstack["Tool stack: stays deployed"]
         lambda["Lambda tool<br/>validation, typed errors"]
-        secret["Secrets Manager<br/>API key"]
+        secret["Secrets Manager<br/>API key + base URL"]
         lambda --> secret
     end
 
-    lambda --> av["Alpha Vantage API"]
+    lambda --> av["Transcript API<br/>(third party, your own key)"]
 ```
 
 | Folder | Contents |
@@ -44,7 +44,7 @@ The two stacks have different lifetimes, so the runtime can be destroyed while t
 | Safeguard | Where | Why |
 |---|---|---|
 | HTTP timeout derived from the Lambda's remaining time, minus a margin | `tool_lambda/handler.py` | A slow upstream returns a typed `timeout` error to the agent instead of the Lambda timing out |
-| Upstream errors mapped to typed, retryable-or-not results | `tool_lambda/handler.py` | Alpha Vantage reports rate limits with HTTP 200 and a message; those must not reach the model as data |
+| Upstream errors mapped to typed, retryable-or-not results | `tool_lambda/handler.py` | Not found, quota used up and bad keys reach the agent as typed errors, not as data; a used-up daily quota is not retried |
 | Transcript capped at 100,000 characters | `tool_lambda/handler.py` | Bounds the tokens a single tool call can add, while normal calls are read in full |
 | Soft stop: tool calls past the limit are cancelled with an instruction to answer | `agent/budget.py` | Lets the model finish with what it has |
 | Hard stop: model calls and tokens; further model calls are cancelled | `agent/budget.py` | A ceiling that doesn't depend on the model obeying a message |
@@ -56,7 +56,7 @@ The budget is tested end to end with a scripted model that calls the tool foreve
 
 ## Run it
 
-**Prerequisites:** Python 3.12, Node.js (for the CDK CLI), AWS CLI with a profile for your own account, an [Alpha Vantage](https://www.alphavantage.co/) API key, and access to a Bedrock model in your chosen region. The dev container in `.devcontainer/` provides the tools.
+**Prerequisites:** Python 3.12, Node.js (for the CDK CLI), AWS CLI with a profile for your own account, a key for an earnings-call transcript API (the same one as in "Evaluation corpus"), and access to a Bedrock model in your chosen region. The dev container in `.devcontainer/` provides the tools.
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
@@ -73,7 +73,8 @@ The build targets Linux on arm64 and Python 3.12, the runtime's platform, whatev
 cd infra
 npx cdk bootstrap                         # once per account and region
 npx cdk deploy EarningsResearchAgentTool
-aws secretsmanager put-secret-value --secret-id <SecretArn> --secret-string '<your Alpha Vantage key>'
+aws secretsmanager put-secret-value --secret-id <SecretArn> \
+  --secret-string '{"api_key": "<your key>", "base_url": "<the API base URL>"}'
 ```
 
 **2. Run the agent locally** against the deployed tool and Bedrock:
@@ -102,7 +103,7 @@ The model comes from `model_id` in `infra/cdk.json`. The role is scoped to that 
 {"ticker": "IBM", "quarter": "2024Q4"}
 ```
 
-The response has a `status`, the `brief`, a `run` block of measurements, and any `error`. Each run uses one of Alpha Vantage's 25 free daily requests. Traces appear under AgentCore → Observability.
+The response has a `status`, the `brief`, a `run` block of measurements, and any `error`. Each fetch uses one request per 200 transcript turns from your transcript API quota. Traces appear under AgentCore → Observability.
 
 **5. Tear down**
 
