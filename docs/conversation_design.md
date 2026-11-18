@@ -71,6 +71,9 @@ Fixed texts, so that tests and the UI can rely on them.
 | Answer reads as investment advice | I can't give that answer: it read as investment advice. I only report what management said on earnings calls. | Guardrail, blocked output |
 | Prompt attack | I can't follow instructions to change how I work. Ask a question about what management said on an earnings call. | `agent/guard.py` |
 | Guardrail unavailable | The safety check could not run, so this question was not answered. Please try again. | `agent/guard.py` |
+| No company known (flow 2) | Which company do you mean? I have calls for AMD, RIVN, ROOT, META, CRDO and NBIS. | `agent/session.py` |
+| Unknown ticker (flow 5) | I don't have earnings calls for XYZ. I can answer about AMD, RIVN, ROOT, META, CRDO, NBIS. | `agent/session.py` |
+| Quarter not in the corpus (flow 5) | The corpus has AMD's calls for Q3 2025 to Q2 2026, not Q3 2026. Do you want the Q2 2026 call? | `agent/session.py` |
 | Not discussed | One sentence, written by the model, saying the calls searched did not discuss it; `covered=false`, no citations | System prompt |
 
 ## Context rules
@@ -107,8 +110,7 @@ Expected:
 
 ### 2. Missing slot: one clarifying question, not a guess
 
-**Status: planned.** Today a question without a ticker searches all calls, which suits cross-company
-questions but can answer about the wrong company.
+**Status: built** (in code, `session.clarify_reply`). Multi-turn set: 3/3 in both runs (18 Nov).
 
 > **User:** What did they say about gross margin?
 > **Assistant:** Which company do you mean? I have calls for AMD, RIVN, ROOT, META, CRDO and NBIS.
@@ -121,8 +123,13 @@ Expected:
 - A question without a quarter does not need clarifying: the latest quarter in the corpus is used and named
   in the answer ("on the Q2 2026 call…").
 
-Design note: the decision is made by the model (prompt), since "they" and "the company" can't be resolved in
-code. The multi-turn set checks it.
+Design note: first planned as a prompt rule, since "they" and "the company" can't be resolved in code. Measured
+18 Nov: Nova 2 Lite ignored the rule in both runs and searched all calls, answering about whichever company came
+back. Moved to code: when no company is known (none in the message or the session, and not a cross-company
+question) and the question points at one without naming it ("they", "their", "the company", "management",
+"its"), a fixed question is returned with no search and no model call. Wording the pattern doesn't catch still
+goes to the agent. A company named without a quarter, and none in context, gets its latest quarter in the
+corpus (`session.resolve`).
 
 ### 3. Follow-up: resolved against the session
 
@@ -267,6 +274,7 @@ Decided 17 Nov.
 
 1. **No company named (flow 2):** ask one clarifying question only when the question needs one specific
    company and neither the message nor the session supplies it. Cross-company questions search all calls.
+   *Updated 18 Nov (Saber): the question is asked in code, not by the model (see flow 2).*
 2. **Advice reply (flow 4):** the fixed guardrail message. The question is blocked before the agent runs, so
    the hard rule doesn't depend on the model. No tailored redirect.
 3. **Corpus check (flows 5, 6):** in code, against `corpus/calls.json`, before the agent runs. Deterministic
