@@ -46,6 +46,7 @@ if CODE_PATH.is_dir() and any(CODE_PATH.iterdir()):
         guardrail_version=guard.version,
         prompts=prompts.prompts,
         audit_log=audit.log_group,
+        helper_log_group=audit.helper_log_group,
         tags=TAGS,
     )
 else:

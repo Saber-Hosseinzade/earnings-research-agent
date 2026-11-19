@@ -20,9 +20,14 @@ from aws_cdk import aws_bedrockagentcore as agentcore
 from aws_cdk import aws_dynamodb as dynamodb
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_logs as logs
+from aws_cdk import custom_resources as cr
 from constructs import Construct
 
 MEMORY_EXPIRY_DAYS = 7
+# The runtime's log group holds its spans (full prompts, questions and answers) and stdout. AgentCore creates
+# it together with the runtime, with no expiry and outside the stack; the stack sets this retention right after
+# and deletes the group when the runtime goes.
+RUNTIME_LOG_RETENTION_DAYS = 7
 
 
 class EarningsRuntimeStack(Stack):
@@ -38,6 +43,7 @@ class EarningsRuntimeStack(Stack):
         guardrail_version: bedrock.CfnGuardrailVersion,
         prompts: dict[str, tuple[bedrock.CfnPrompt, bedrock.CfnPromptVersion]],
         audit_log: logs.ILogGroup,
+        helper_log_group: logs.ILogGroup,
         **kwargs,
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
@@ -95,6 +101,44 @@ class EarningsRuntimeStack(Stack):
             },
             tracing_enabled=True,
         )
+
+        # AgentCore creates the log group when it creates the runtime (a LogGroup resource here fails: "already
+        # exists", tried 19 Nov), named <runtime id>-<endpoint>, endpoint DEFAULT. So: set its retention once the
+        # runtime exists, and delete the group with the stack instead of by hand.
+        log_group_name = f"/aws/bedrock-agentcore/runtimes/{runtime.agent_runtime_id}-DEFAULT"
+        retention = cr.AwsCustomResource(
+            self,
+            "RuntimeLogRetention",
+            on_create=cr.AwsSdkCall(
+                service="CloudWatchLogs",
+                action="putRetentionPolicy",
+                parameters={"logGroupName": log_group_name, "retentionInDays": RUNTIME_LOG_RETENTION_DAYS},
+                physical_resource_id=cr.PhysicalResourceId.of(log_group_name),
+            ),
+            on_update=cr.AwsSdkCall(
+                service="CloudWatchLogs",
+                action="putRetentionPolicy",
+                parameters={"logGroupName": log_group_name, "retentionInDays": RUNTIME_LOG_RETENTION_DAYS},
+                physical_resource_id=cr.PhysicalResourceId.of(log_group_name),
+            ),
+            on_delete=cr.AwsSdkCall(
+                service="CloudWatchLogs",
+                action="deleteLogGroup",
+                parameters={"logGroupName": log_group_name},
+                ignore_error_codes_matching="ResourceNotFoundException",
+            ),
+            policy=cr.AwsCustomResourcePolicy.from_statements([
+                iam.PolicyStatement(
+                    actions=["logs:PutRetentionPolicy", "logs:DeleteLogGroup"],
+                    resources=[f"arn:{self.partition}:logs:{self.region}:{self.account}:log-group:{log_group_name}",
+                               f"arn:{self.partition}:logs:{self.region}:{self.account}:log-group:{log_group_name}:*"],
+                )
+            ]),
+            install_latest_aws_sdk=False,
+            # The custom resource's own logs go to a group in the audit stack, which outlives this one (audit_stack.py).
+            log_group=helper_log_group,
+        )
+        retention.node.add_dependency(runtime)
 
         # Least privilege: this one Gateway, this one model and (below) this one guardrail, set of prompts and
         # audit log. The Gateway is the only way to the Knowledge Base and the transcript Lambda.
