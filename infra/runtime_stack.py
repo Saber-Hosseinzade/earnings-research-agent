@@ -6,8 +6,10 @@ is torn down after testing, while the Lambda and its secret stay.
     scripts/build_agent.sh && cdk deploy EarningsResearchAgentRuntime
     cdk destroy EarningsResearchAgentRuntime
 
-It reads the Knowledge Base, guardrail, prompt and audit log IDs from their stacks (cross-stack
-exports), so destroy the runtime before replacing any of them, e.g. switching the KB's vector store.
+It reads the Gateway, guardrail, prompt and audit log IDs from their stacks (cross-stack exports),
+so destroy the runtime before replacing any of them. Search and fetch go through the Gateway
+(gateway_stack.py): the role may invoke that Gateway, and neither the Knowledge Base nor the
+transcript Lambda directly.
 """
 
 from pathlib import Path
@@ -17,7 +19,6 @@ from aws_cdk import aws_bedrock as bedrock
 from aws_cdk import aws_bedrockagentcore as agentcore
 from aws_cdk import aws_dynamodb as dynamodb
 from aws_cdk import aws_iam as iam
-from aws_cdk import aws_lambda as lambda_
 from aws_cdk import aws_logs as logs
 from constructs import Construct
 
@@ -32,8 +33,7 @@ class EarningsRuntimeStack(Stack):
         *,
         code_path: Path,
         model_id: str,
-        tool: lambda_.IFunction,
-        knowledge_base: bedrock.CfnKnowledgeBase,
+        gateway: agentcore.IGateway,
         guardrail: bedrock.CfnGuardrail,
         guardrail_version: bedrock.CfnGuardrailVersion,
         prompts: dict[str, tuple[bedrock.CfnPrompt, bedrock.CfnPromptVersion]],
@@ -78,8 +78,8 @@ class EarningsRuntimeStack(Stack):
             ),
             environment_variables={
                 "MODEL_ID": model_id,
-                "TOOL_FUNCTION_NAME": tool.function_name,
-                "KNOWLEDGE_BASE_ID": knowledge_base.attr_knowledge_base_id,
+                # agent/gateway.py: search and fetch go over MCP to this Gateway.
+                "GATEWAY_URL": gateway.gateway_url,
                 "GUARDRAIL_ID": guardrail.attr_guardrail_id,
                 "GUARDRAIL_VERSION": guardrail_version.attr_version,
                 # agent/prompts.py loads these pinned versions and fails rather than fall back to a file.
@@ -96,10 +96,11 @@ class EarningsRuntimeStack(Stack):
             tracing_enabled=True,
         )
 
-        # Least privilege: this one tool, this one model and (below) this one KB, guardrail, set of prompts and audit log.
+        # Least privilege: this one Gateway, this one model and (below) this one guardrail, set of prompts and
+        # audit log. The Gateway is the only way to the Knowledge Base and the transcript Lambda.
         # An inference profile routes between EU regions, so the role needs the
         # profile and the model behind it in each of them ("eu.amazon.x" -> "amazon.x").
-        tool.grant_invoke(runtime)
+        gateway.grant_invoke(runtime)
         foundation_model = model_id.split(".", 1)[1]
         runtime.add_to_role_policy(
             iam.PolicyStatement(
@@ -109,12 +110,6 @@ class EarningsRuntimeStack(Stack):
                     f"arn:{self.partition}:bedrock:eu-*::foundation-model/{foundation_model}",
                 ],
             )
-        )
-
-        # retrieve_passages searches this one Knowledge Base. The KB's own role
-        # embeds the query, so the runtime needs no embedding-model permission.
-        runtime.add_to_role_policy(
-            iam.PolicyStatement(actions=["bedrock:Retrieve"], resources=[knowledge_base.attr_knowledge_base_arn])
         )
 
         # agent/guard.py checks the question and the answer with this one guardrail.

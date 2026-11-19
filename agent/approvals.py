@@ -257,6 +257,15 @@ def lambda_fetcher(function_name: str | None = None, client: Any = None) -> Call
     return fetch
 
 
+def default_fetcher() -> Callable[[str, str], dict[str, Any]]:
+    """The Gateway (MCP) when GATEWAY_URL is set, as deployed; otherwise the transcript Lambda directly."""
+    if os.environ.get("GATEWAY_URL"):
+        from gateway import gateway_fetcher
+
+        return gateway_fetcher()
+    return lambda_fetcher()
+
+
 def answer_from_transcript(question: str, fetched: dict[str, Any], model: Any | None = None) -> dict[str, Any]:
     """One model call, no tools: answer the question from the fetched transcript."""
     from strands import Agent
@@ -317,7 +326,7 @@ def decide(requests: Requests, request_id: str, decision: str, *, user_id: str |
     if item["status"] == "declined":
         return Decision("declined", item, "declined; nothing was fetched")
 
-    fetched = (fetch or lambda_fetcher())(item["ticker"], item["quarter"])  # the only fetch, after approval
+    fetched = (fetch or default_fetcher())(item["ticker"], item["quarter"])  # the only fetch, after approval
     if not fetched.get("ok"):
         err = fetched.get("error") or {}
         result = {"status": "fetch_failed", "error": err, "answer": None}

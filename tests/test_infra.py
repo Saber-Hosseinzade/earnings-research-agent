@@ -1,4 +1,4 @@
-"""The runtime and guardrail stacks, offline: the role reaches one tool, model, KB and guardrail."""
+"""The runtime, Gateway and guardrail stacks, offline: the role reaches one Gateway, model and guardrail."""
 
 import json
 import sys
@@ -10,6 +10,7 @@ from aws_cdk.assertions import Template
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "infra"))
 
 from audit_stack import LOG_GROUP_NAME, EarningsAuditStack  # noqa: E402
+from gateway_stack import EarningsGatewayStack  # noqa: E402
 from guardrail_stack import PII_TYPES, EarningsGuardrailStack  # noqa: E402
 from kb_stack import EarningsKnowledgeBaseStack  # noqa: E402
 from prompt_stack import PROMPT_NAMES, EarningsPromptStack  # noqa: E402
@@ -19,18 +20,22 @@ from stack import EarningsToolStack  # noqa: E402
 MODEL_ID = "eu.amazon.nova-2-lite-v1:0"
 
 
-def runtime(tmp_path):
+def stacks(tmp_path):
     app = cdk.App()
     tool = EarningsToolStack(app, "Tool")
     kb = EarningsKnowledgeBaseStack(app, "KB", vector_store="s3vectors")
+    gateway = EarningsGatewayStack(app, "Gateway", tool=tool.function, knowledge_base=kb.knowledge_base)
     guard = EarningsGuardrailStack(app, "Guard")
     prompts = EarningsPromptStack(app, "Prompts")
     audit = EarningsAuditStack(app, "Audit")
-    stack = EarningsRuntimeStack(app, "Runtime", code_path=tmp_path, model_id=MODEL_ID, tool=tool.function,
-                                 knowledge_base=kb.knowledge_base, guardrail=guard.guardrail,
-                                 guardrail_version=guard.version, prompts=prompts.prompts,
-                                 audit_log=audit.log_group)
-    return stack
+    stack = EarningsRuntimeStack(app, "Runtime", code_path=tmp_path, model_id=MODEL_ID, gateway=gateway.gateway,
+                                 guardrail=guard.guardrail, guardrail_version=guard.version,
+                                 prompts=prompts.prompts, audit_log=audit.log_group)
+    return stack, gateway
+
+
+def runtime(tmp_path):
+    return stacks(tmp_path)[0]
 
 
 def statements(tmp_path):
@@ -42,10 +47,15 @@ def by_action(found, action):
     return [s for s in found if action in str(s["Action"])]
 
 
-def test_role_may_invoke_only_the_tool(tmp_path):
-    found = by_action(statements(tmp_path), "lambda:InvokeFunction")
-    assert found
-    assert '"*"' not in json.dumps([s["Resource"] for s in found])
+def test_role_reaches_tools_only_through_the_gateway(tmp_path):
+    found = statements(tmp_path)
+    invoke = by_action(found, "bedrock-agentcore:InvokeGateway")
+    assert len(invoke) == 1
+    resource = json.dumps(invoke[0]["Resource"])
+    assert "GatewayArn" in resource and '"*"' not in resource
+    # Neither the transcript Lambda nor the Knowledge Base directly.
+    assert not by_action(found, "lambda:InvokeFunction")
+    assert not by_action(found, "bedrock:Retrieve")
 
 
 def test_role_may_call_only_the_configured_model(tmp_path):
@@ -56,10 +66,39 @@ def test_role_may_call_only_the_configured_model(tmp_path):
     assert '"*"' not in resources
 
 
-def test_role_may_retrieve_only_from_the_knowledge_base(tmp_path):
-    found = by_action(statements(tmp_path), "bedrock:Retrieve")
-    assert len(found) == 1
-    assert found[0]["Action"] == "bedrock:Retrieve"
+def gateway_template(tmp_path):
+    return Template.from_stack(stacks(tmp_path)[1])
+
+
+def test_gateway_is_mcp_with_iam_auth(tmp_path):
+    gw = next(iter(gateway_template(tmp_path).find_resources("AWS::BedrockAgentCore::Gateway").values()))
+    assert gw["Properties"]["AuthorizerType"] == "AWS_IAM"
+    assert gw["Properties"]["ProtocolType"] == "MCP"
+    # Semantic tool search off: charged per indexed tool, and two tools don't need it.
+    assert "SearchType" not in json.dumps(gw["Properties"].get("ProtocolConfiguration", {}))
+
+
+def test_gateway_exposes_exactly_the_two_tools(tmp_path):
+    targets = gateway_template(tmp_path).find_resources("AWS::BedrockAgentCore::GatewayTarget").values()
+    tools = {t["Properties"]["Name"]: [d["Name"] for d in t["Properties"]["TargetConfiguration"]["Mcp"]["Lambda"]
+                                        ["ToolSchema"]["InlinePayload"]] for t in targets}
+    assert tools == {"passages": ["search_passages"], "transcripts": ["get_transcript"]}
+
+
+def test_gateway_role_may_invoke_only_its_two_functions(tmp_path):
+    policies = gateway_template(tmp_path).find_resources("AWS::IAM::Policy")
+    gw = [s for k, p in policies.items() if k.startswith("GatewayServiceRole")
+          for s in p["Properties"]["PolicyDocument"]["Statement"]]
+    assert gw and all(s["Action"] == "lambda:InvokeFunction" for s in gw)
+    resources = json.dumps([s["Resource"] for s in gw])
+    assert "SearchPassages" in resources and "EarningsTranscriptTool" in resources and '"*"' not in resources
+
+
+def test_search_function_may_retrieve_only_from_the_knowledge_base(tmp_path):
+    policies = gateway_template(tmp_path).find_resources("AWS::IAM::Policy")
+    found = [s for k, p in policies.items() if k.startswith("SearchPassages")
+             for s in p["Properties"]["PolicyDocument"]["Statement"]]
+    assert len(found) == 1 and found[0]["Action"] == "bedrock:Retrieve"
     resource = json.dumps(found[0]["Resource"])
     assert "KnowledgeBaseArn" in resource  # imported from the KB stack, not a wildcard
     assert '"*"' not in resource
@@ -233,7 +272,8 @@ def test_role_may_use_the_request_table_but_not_delete_from_it(tmp_path):
     assert not by_action(statements(tmp_path), "dynamodb:DeleteItem")
 
 
-def test_runtime_gets_the_request_table_and_the_tool(tmp_path):
+def test_runtime_gets_the_request_table_and_the_gateway(tmp_path):
     res = Template.from_stack(runtime(tmp_path)).find_resources("AWS::BedrockAgentCore::Runtime")
     env = next(iter(res.values()))["Properties"]["EnvironmentVariables"]
-    assert "REQUESTS_TABLE" in env and "TOOL_FUNCTION_NAME" in env
+    assert "REQUESTS_TABLE" in env and "GATEWAY_URL" in env
+    assert "TOOL_FUNCTION_NAME" not in env and "KNOWLEDGE_BASE_ID" not in env
