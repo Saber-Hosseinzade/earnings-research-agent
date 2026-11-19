@@ -147,8 +147,10 @@ def make_retrieve_tool(retriever: Retriever, ledger: Ledger,
         try:
             passages = retriever(sent, t, q, k)
         except Exception as exc:  # throttling, permissions, network
-            retryable = type(exc).__name__ in {"ThrottlingException"} or "Throttl" in str(exc)
-            return _error("retrieve_failed", str(exc), retryable)
+            retryable = getattr(exc, "retryable", None)
+            if retryable is None:
+                retryable = type(exc).__name__ in {"ThrottlingException"} or "Throttl" in str(exc)
+            return _error("retrieve_failed", str(exc), bool(retryable))
         ledger.record(query, t, q, passages, sent)
         return json.dumps({"ok": True, "filter": {"ticker": t, "quarter": q}, "passages": passages})
 
@@ -184,3 +186,12 @@ def bedrock_retriever(kb_id: str | None = None, region: str | None = None) -> Re
         return out
 
     return retrieve
+
+
+def default_retriever() -> Retriever:
+    """The Gateway (MCP) when GATEWAY_URL is set, as deployed; otherwise the Knowledge Base directly (local runs)."""
+    if os.environ.get("GATEWAY_URL"):
+        from gateway import gateway_retriever
+
+        return gateway_retriever()
+    return bedrock_retriever()

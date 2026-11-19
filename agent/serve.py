@@ -30,8 +30,9 @@ import audit
 import session
 from guard import BedrockGuard
 
-REQUIRED_ENV = ("MODEL_ID", "KNOWLEDGE_BASE_ID", "GUARDRAIL_ID", "GUARDRAIL_VERSION", "AUDIT_LOG_GROUP", "MEMORY_ID",
-                "REQUESTS_TABLE", "TOOL_FUNCTION_NAME")
+# GATEWAY_URL: deployed, search and fetch go through the AgentCore Gateway (gateway.py), never directly.
+REQUIRED_ENV = ("MODEL_ID", "GATEWAY_URL", "GUARDRAIL_ID", "GUARDRAIL_VERSION", "AUDIT_LOG_GROUP", "MEMORY_ID",
+                "REQUESTS_TABLE")
 REQUEST_FIELDS = ("request_id", "status", "ticker", "quarter", "question", "requested_by", "created_at", "expires_at",
                   "decided_by", "decided_at")  # what a reviewer's list shows: no answers, no session ids
 
@@ -48,7 +49,7 @@ def _deployed() -> dict[str, Any]:
     """Built once per process: the audit writer keeps one log stream per process (audit.py)."""
     return {"guard": BedrockGuard(), "audit_writer": audit.CloudWatchWriter(),
             "store": session.AgentCoreMemoryStore(), "corpus": session.Corpus.load(),
-            "requests": approvals.DynamoRequests(), "fetch": approvals.lambda_fetcher()}
+            "requests": approvals.DynamoRequests(), "fetch": approvals.default_fetcher()}
 
 
 DEPS = ("guard", "audit_writer", "store", "corpus", "requests", "fetch")

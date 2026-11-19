@@ -53,7 +53,7 @@ import session
 from budget import RunBudget
 from citations import check_citations
 from guard import GUARD_ERROR_MESSAGE, PROMPT_ATTACK_MESSAGE, Check, Guard
-from retrieval import Ledger, Retriever, bedrock_retriever, make_retrieve_tool
+from retrieval import Ledger, Retriever, default_retriever, make_retrieve_tool
 
 # Prompts live in agent/prompts/*.txt and are published to Bedrock Prompt Management
 # (prompts.py, infra/prompt_stack.py). Deployed, the pinned version is loaded; offline, the file.
@@ -142,7 +142,7 @@ def _run(payload: dict[str, Any], model: Any | None, budget: RunBudget | None,
                 "guardrail": guard_info, "error": None}
 
     ledger = Ledger()
-    retrieve_tool = make_retrieve_tool(retriever or bedrock_retriever(), ledger, ticker, quarter)
+    retrieve_tool = make_retrieve_tool(retriever or default_retriever(), ledger, ticker, quarter)
     budget = budget or RunBudget()
     agent = build_agent(budget, retrieve_tool, model)
 

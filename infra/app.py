@@ -5,6 +5,7 @@ from pathlib import Path
 import aws_cdk as cdk
 
 from audit_stack import EarningsAuditStack
+from gateway_stack import EarningsGatewayStack
 from guardrail_stack import EarningsGuardrailStack
 from kb_stack import EarningsKnowledgeBaseStack
 from prompt_stack import EarningsPromptStack
@@ -25,6 +26,10 @@ kb = EarningsKnowledgeBaseStack(
     vector_store=app.node.get_context("vector_store"),
     tags=TAGS,
 )
+# MCP: search and fetch tools behind an AgentCore Gateway (IAM auth). No hourly charge; stays deployed.
+gateway = EarningsGatewayStack(
+    app, "EarningsResearchAgentGateway", tool=tool.function, knowledge_base=kb.knowledge_base, tags=TAGS
+)
 guard = EarningsGuardrailStack(app, "EarningsResearchAgentGuardrail", tags=TAGS)
 prompts = EarningsPromptStack(app, "EarningsResearchAgentPrompts", tags=TAGS)
 audit = EarningsAuditStack(app, "EarningsResearchAgentAudit", tags=TAGS)
@@ -36,8 +41,7 @@ if CODE_PATH.is_dir() and any(CODE_PATH.iterdir()):
         "EarningsResearchAgentRuntime",
         code_path=CODE_PATH,
         model_id=app.node.get_context("model_id"),
-        tool=tool.function,
-        knowledge_base=kb.knowledge_base,
+        gateway=gateway.gateway,
         guardrail=guard.guardrail,
         guardrail_version=guard.version,
         prompts=prompts.prompts,

@@ -24,7 +24,7 @@ uv pip install \
 
 # Only the modules the runtime imports; run_local.py, ask.py and the eval code are for local use.
 # serve.py (v2) is the deployed entrypoint; main.py and its modules (v1) are kept so it can be redeployed.
-cp "$ROOT"/agent/{serve,answer,approvals,ask,audit,budget,citations,guard,prompts,retrieval,session,main,schema,tools}.py "$OUT"/
+cp "$ROOT"/agent/{serve,answer,approvals,ask,audit,budget,citations,gateway,guard,prompts,retrieval,session,main,schema,tools}.py "$OUT"/
 # session.py resolves follow-ups against the corpus call list and company names.
 cp "$ROOT"/corpus/calls.json "$OUT"/calls.json
 cp "$ROOT"/corpus/terms.json "$OUT"/terms.json   # capitalised words that are not tickers (scripts/corpus_terms.py)
