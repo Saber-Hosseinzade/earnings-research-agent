@@ -110,9 +110,9 @@ The response has a `status`, the `brief`, a `run` block of measurements, and any
 ```bash
 cd infra
 npx cdk destroy EarningsResearchAgentRuntime
-aws logs describe-log-groups --log-group-name-prefix /aws/bedrock-agentcore/runtimes/
-aws logs delete-log-group --log-group-name <each group listed>   # the stack doesn't own these
 ```
+
+The runtime's log group (AgentCore creates it) is deleted with the stack, and keeps 7 days while it exists.
 
 Transaction Search stays on. To undo it: `aws xray update-trace-segment-destination --destination XRay`.
 
@@ -163,7 +163,7 @@ All 15 claims of one IBM 2024Q4 brief were checked against the full transcript b
 
 - `speakers_cited` is model-written text that nothing checks. It once named a CFO whose remarks had been cut from the transcript.
 - A budget stop was tested offline with a model that loops forever, not on the deployed runtime.
-- Spans store full prompts and outputs in CloudWatch. Harmless for public transcripts, but set a retention period before using this with private data.
+- Spans store full prompts and outputs in CloudWatch. They expire after 7 days: the runtime stack sets the retention on the runtime's log group, and `scripts/enable_transaction_search.sh` on the account's span groups (`aws/spans`, `/aws/application-signals/data`). The audit log keeps 30 days.
 - The newest Anthropic models were not available to the test account, with their quotas at 0. Older Claude models worked. The deployed model is Amazon Nova. Changing model is a config edit.
 
 ## License

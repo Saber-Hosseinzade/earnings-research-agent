@@ -15,6 +15,7 @@ from constructs import Construct
 
 LOG_GROUP_NAME = "/earnings-research-agent/audit"
 RETENTION = logs.RetentionDays.ONE_MONTH
+HELPER_LOG_GROUP_NAME = "/earnings-research-agent/runtime-helpers"
 
 
 class EarningsAuditStack(Stack):
@@ -29,3 +30,14 @@ class EarningsAuditStack(Stack):
             removal_policy=RemovalPolicy.RETAIN,
         )
         CfnOutput(self, "AuditLogGroupName", value=self.log_group.log_group_name)
+
+        # Logs of the runtime stack's deploy-time helper (the custom resource that sets the runtime log group's
+        # retention). Here, not in the runtime stack: that Lambda still writes while its stack is being deleted,
+        # and a deleted group would be recreated without retention (seen 19 Nov). Only SDK-call logs, no prompts.
+        self.helper_log_group = logs.LogGroup(
+            self,
+            "RuntimeHelperLogs",
+            log_group_name=HELPER_LOG_GROUP_NAME,
+            retention=logs.RetentionDays.ONE_WEEK,
+            removal_policy=RemovalPolicy.DESTROY,
+        )

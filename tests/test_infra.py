@@ -30,7 +30,8 @@ def stacks(tmp_path):
     audit = EarningsAuditStack(app, "Audit")
     stack = EarningsRuntimeStack(app, "Runtime", code_path=tmp_path, model_id=MODEL_ID, gateway=gateway.gateway,
                                  guardrail=guard.guardrail, guardrail_version=guard.version,
-                                 prompts=prompts.prompts, audit_log=audit.log_group)
+                                 prompts=prompts.prompts, audit_log=audit.log_group,
+                                 helper_log_group=audit.helper_log_group)
     return stack, gateway
 
 
@@ -209,8 +210,7 @@ def test_versions_are_retained_and_follow_the_text(tmp_path):
 
 def test_audit_log_has_retention_and_survives_stack_deletion():
     groups = Template.from_stack(EarningsAuditStack(cdk.App(), "A")).find_resources("AWS::Logs::LogGroup")
-    (group,) = groups.values()
-    assert group["Properties"]["LogGroupName"] == LOG_GROUP_NAME
+    (group,) = [g for g in groups.values() if g["Properties"]["LogGroupName"] == LOG_GROUP_NAME]
     assert group["Properties"]["RetentionInDays"] == 30
     assert group["DeletionPolicy"] == "Retain"
 
@@ -277,3 +277,31 @@ def test_runtime_gets_the_request_table_and_the_gateway(tmp_path):
     env = next(iter(res.values()))["Properties"]["EnvironmentVariables"]
     assert "REQUESTS_TABLE" in env and "GATEWAY_URL" in env
     assert "TOOL_FUNCTION_NAME" not in env and "KNOWLEDGE_BASE_ID" not in env
+
+
+def _sdk_call(props, phase):
+    """A Custom::AWS phase (Create/Update/Delete) as its JSON text, with the runtime id token left as a marker."""
+    parts = props[phase]["Fn::Join"][1]
+    return json.loads("".join(p if isinstance(p, str) else "RUNTIME_ID" for p in parts))
+
+
+def test_runtime_log_group_gets_a_retention_and_is_deleted_with_the_stack(tmp_path):
+    """Spans hold full prompts and answers: the runtime's log group (created by AgentCore) must not keep them forever."""
+    found = Template.from_stack(runtime(tmp_path)).find_resources("Custom::AWS")
+    assert len(found) == 1
+    props = next(iter(found.values()))["Properties"]
+    name = "/aws/bedrock-agentcore/runtimes/RUNTIME_ID-DEFAULT"
+    for phase in ("Create", "Update"):
+        call = _sdk_call(props, phase)
+        assert call["action"] == "putRetentionPolicy"
+        assert call["parameters"] == {"logGroupName": name, "retentionInDays": 7}
+    delete = _sdk_call(props, "Delete")
+    assert delete["action"] == "deleteLogGroup" and delete["parameters"] == {"logGroupName": name}
+
+
+def test_runtime_stack_owns_no_log_group_that_could_outlive_it(tmp_path):
+    """Its helper Lambda logs into the audit stack's group, which expires and is never deleted under it."""
+    assert not Template.from_stack(runtime(tmp_path)).find_resources("AWS::Logs::LogGroup")
+    helper = Template.from_stack(EarningsAuditStack(cdk.App(), "Audit")).find_resources("AWS::Logs::LogGroup")
+    named = [g for g in helper.values() if g["Properties"].get("LogGroupName") == "/earnings-research-agent/runtime-helpers"]
+    assert len(named) == 1 and named[0]["Properties"]["RetentionInDays"] == 7
