@@ -156,8 +156,11 @@ ONE_COMPANY = re.compile(r"\b(they|their|them|theirs|the company|the company's|t
 
 
 def clarify_reply(context: "Context", question: str, corpus: "Corpus") -> dict[str, Any] | None:
-    """The clarifying question when the message needs one company and none is known (flow 2), else None."""
-    if context.how != "none" or not ONE_COMPANY.search(question):
+    """The clarifying question when the message needs one company and none is known (flow 2), else None.
+
+    A quarter named without a company needs one too: a quarter is one company's call, and the search can
+    only filter on a quarter together with a ticker."""
+    if context.how != "none" or not (ONE_COMPANY.search(question) or context.quarter):
         return None
     names = list(corpus.quarters)
     return {"kind": "clarify", "offer": None,
@@ -210,7 +213,9 @@ def resolve(question: str, payload: dict[str, Any], history: list[dict[str, Any]
             return Context(named[0] if named else prev["ticker"], None, "cross_quarter", len(history))
         if named:
             ticker, how = named[0], "named"
-            quarter = prev.get("quarter") if prev.get("ticker") else None   # "and META?" keeps the quarter
+            # "and META?" keeps the quarter; so does "AMD" after "Which company do you mean?" for a question
+            # that named only a quarter (the clarify turn remembers the quarter without a ticker).
+            quarter = prev.get("quarter") if prev.get("ticker") or prev.get("quarter") else None
         elif prev.get("ticker"):
             ticker, quarter, how = prev["ticker"], prev.get("quarter"), "carried"
         else:
@@ -364,7 +369,9 @@ def run_turn(payload: dict[str, Any], session_id: str | None, store: Store | Non
     reply: Any = corpus_reply(context, corpus) or clarify_reply(context, question, corpus)
     if reply and reply["kind"] == "unknown_ticker" and requests is not None:
         reply = _approval_reply(context, payload, session_id, requests, corpus, history)
-    result = answer.run({**payload, "ticker": context.ticker, "quarter": context.quarter,
+    # A quarter goes to the search only with a company; alone it stays in the context (and memory) for the
+    # clarifying question's answer.
+    result = answer.run({**payload, "ticker": context.ticker, "quarter": context.quarter if context.ticker else None,
                          "history": history, "context": context.to_dict(), "fixed_reply": reply}, **deps)
     record = turn_record(question, result, context)
     result["memory"] = {"loaded": len(history), "saved": False, "error": None}

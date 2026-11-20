@@ -304,10 +304,22 @@ def test_the_audit_record_says_out_of_corpus():
     ("Which companies talked about tariffs?", [], False),           # cross-company
     ("What did AMD say about margins?", [], False),                 # named
     ("What was said about tariffs?", [], False),                    # no pointer at one company: search all
+    ("Why did gross margin change in Q2 2026?", [], True),          # a quarter is one company's call
+    ("Why did gross margin change in Q2 2026?", prev(), False),     # the session supplies AMD
+    ("Which companies talked about tariffs in Q2 2026?", [], False),  # cross-company
 ])
 def test_clarify_only_when_one_company_is_meant_and_none_is_known(question, history, asks):
     c = resolve(question, {}, history, CORPUS)
     assert (session.clarify_reply(c, question, CORPUS) is not None) == asks
+
+
+def test_quarter_without_a_company_asks_which_company_then_keeps_the_quarter():
+    store = InMemoryStore()
+    out = session.run_turn({"question": "Why did gross margin change in Q4 2025?"}, "s-1", store, CORPUS,
+                           model=NoModel(), retriever=FakeRetriever())
+    assert out["status"] == "clarify" and out["answer"]["answer"].startswith("Which company do you mean?")
+    second, r = run(store, "AMD")
+    assert (r.calls[0]["ticker"], r.calls[0]["quarter"]) == ("AMD", "2025Q4")   # not AMD's latest (2026Q2)
 
 
 def test_clarify_then_answer_resolves_to_the_named_company_and_its_latest_quarter():
