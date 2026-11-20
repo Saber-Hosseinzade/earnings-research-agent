@@ -68,6 +68,10 @@ _Q_FORMS = [
 ]
 
 
+# Company names that are also ordinary words: in lowercase they name the company only as the whole message.
+COMMON_WORD_NAMES = {"root", "meta", "credo"}
+
+
 @dataclass
 class Corpus:
     quarters: dict[str, list[str]]          # ticker -> labels, oldest first
@@ -86,11 +90,19 @@ class Corpus:
         return cls({t: sorted(qs) for t, qs in quarters.items()}, names, terms)
 
     def named_tickers(self, text: str) -> list[str]:
-        """Corpus tickers named in the text, in order of first mention."""
+        """Corpus tickers named in the text, in order of first mention. Any case ("meta", "amd"), except that a
+        name which is also an ordinary word, typed all lowercase ("root", "meta", "credo"), counts only when it
+        is the whole message, like a reply to "Which company do you mean?": "the root cause" is not ROOT.
+        A lowercase name followed by a hyphen ("amd-like") is not the company either."""
+        whole = re.sub(r"[^a-z ]", "", text.lower()).strip()
         hits: list[tuple[int, str]] = []
         for ticker in self.quarters:
             for name in [ticker, *self.names.get(ticker, [])]:
-                m = re.search(r"(?<![A-Za-z])" + re.escape(name) + r"(?:'s)?(?![A-Za-z])", text)
+                pattern = r"(?<![A-Za-z])" + re.escape(name) + r"(?:'s)?(?![A-Za-z])"
+                m = next((m for m in re.finditer(pattern, text, re.IGNORECASE)
+                          if not m.group(0).islower()
+                          or (text[m.end():m.end() + 1] != "-"   # "amd-like" is a description, not AMD
+                              and (name.lower() not in COMMON_WORD_NAMES or whole == name.lower()))), None)
                 if m:
                     hits.append((m.start(), ticker))
                     break

@@ -315,6 +315,27 @@ def test_clarify_when_no_company_is_known_unless_cross_company(question, history
     assert (session.clarify_reply(c, question, CORPUS) is not None) == asks
 
 
+@pytest.mark.parametrize("text, tickers", [
+    ("meta", ["META"]), ("Meta.", ["META"]), ("amd", ["AMD"]), ("what did amd say about margins?", ["AMD"]),
+    ("rivian", ["RIVN"]), ("root", ["ROOT"]), ("credo", ["CRDO"]),
+    ("what was the root cause of the claims increase?", []),   # ordinary words, not companies
+    ("any meta commentary on guidance?", []),
+    ("What did Root say about claims?", ["ROOT"]),            # capitalised: the company, as before
+    ("nebius and meta", ["NBIS"]),                            # "meta" not alone: only Nebius
+])
+def test_company_names_in_any_case_but_not_ordinary_words(text, tickers):
+    assert CORPUS.named_tickers(text) == tickers
+
+
+def test_lowercase_reply_to_the_clarifying_question_answers_it():
+    store = InMemoryStore()
+    out = session.run_turn({"question": "Why did gross margin change?"}, "s-1", store, CORPUS,
+                           model=NoModel(), retriever=FakeRetriever())
+    assert out["status"] == "clarify"
+    second, r = run(store, "meta")
+    assert second["status"] == "ok" and r.calls[0]["ticker"] == "META"
+
+
 def test_quarter_without_a_company_asks_which_company_then_keeps_the_quarter():
     store = InMemoryStore()
     out = session.run_turn({"question": "Why did gross margin change in Q4 2025?"}, "s-1", store, CORPUS,
