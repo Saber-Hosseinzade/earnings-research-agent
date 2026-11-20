@@ -5,6 +5,7 @@ import json
 import pytest
 
 import fake_model
+import approvals
 import session
 from session import AgentCoreMemoryStore, Corpus, InMemoryStore, quarter_in, resolve
 from test_answer import FakeRetriever, model_answering
@@ -334,6 +335,46 @@ def test_lowercase_reply_to_the_clarifying_question_answers_it():
     assert out["status"] == "clarify"
     second, r = run(store, "meta")
     assert second["status"] == "ok" and r.calls[0]["ticker"] == "META"
+
+
+@pytest.mark.parametrize("reply, ticker", [("nvda", "NVDA"), ("NVDA", "NVDA"), ("$nvda", "NVDA"), ("tsla.", "TSLA"),
+                                           ("yes", None), ("ok", None), ("why", None), ("gpu", None)])
+def test_one_word_reply_to_the_clarifying_question_is_a_ticker(reply, ticker):
+    c = resolve(reply, {}, [{"question": "Why did gross margin change in Q3 2026?", "answer": "Which company?",
+                             "covered": False, "ticker": None, "quarter": "2026Q3", "clarify": True}], CORPUS)
+    if ticker:
+        assert (c.ticker, c.quarter, c.how, c.reply_to_clarify) == (ticker, "2026Q3", "unknown_ticker", True)
+    else:
+        assert c.how != "unknown_ticker"
+
+
+def test_lowercase_word_is_not_a_ticker_without_the_clarifying_question():
+    assert resolve("nvda", {}, [], CORPUS).how == "none"
+
+
+def test_out_of_corpus_reply_to_the_clarifying_question_requests_a_fetch_of_the_real_question():
+    store, requests = InMemoryStore(), approvals.InMemoryRequests()
+    first = session.run_turn({"question": "Why did gross margin change in Q3 2026?"}, "s-1", store, CORPUS,
+                             requests=requests, model=NoModel(), retriever=FakeRetriever())
+    assert first["status"] == "clarify"
+    second = session.run_turn({"question": "nvda"}, "s-1", store, CORPUS, requests=requests,
+                              model=NoModel(), retriever=FakeRetriever())
+    assert second["status"] == "approval_pending"
+    (req,) = requests.pending()
+    assert (req["ticker"], req["quarter"]) == ("NVDA", "2026Q3")
+    assert req["question"] == "Why did gross margin change in Q3 2026? (nvda)"
+
+
+def test_reply_without_a_quarter_asks_for_it_and_keeps_the_question():
+    store, requests = InMemoryStore(), approvals.InMemoryRequests()
+    for q in ["Why did gross margin change?", "nvda"]:
+        out = session.run_turn({"question": q}, "s-1", store, CORPUS, requests=requests,
+                               model=NoModel(), retriever=FakeRetriever())
+    assert "quarter" in out["answer"]["answer"].lower() and not requests.pending()
+    session.run_turn({"question": "Q3 2026"}, "s-1", store, CORPUS, requests=requests,
+                     model=NoModel(), retriever=FakeRetriever())
+    (req,) = requests.pending()
+    assert req["question"].startswith("Why did gross margin change? (nvda)")
 
 
 def test_quarter_without_a_company_asks_which_company_then_keeps_the_quarter():

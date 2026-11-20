@@ -194,9 +194,31 @@ class Context:
     how: str                                  # payload | named | unknown_ticker | carried | cross_company | cross_quarter | none
     history_turns: int = 0
     notes: list[str] = field(default_factory=list)
+    reply_to_clarify: bool = False            # this message answers "Which company do you mean?"
 
     def to_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        d = asdict(self)
+        if not d["reply_to_clarify"]:
+            del d["reply_to_clarify"]   # in the result and audit record only when it applies
+        return d
+
+
+# Short replies that are not companies, even right after "Which company do you mean?".
+REPLY_WORDS = {"yes", "no", "ok", "okay", "sure", "all", "any", "none", "both", "each", "hi", "hello", "thanks",
+               "thx", "why", "what", "how", "who", "which"}
+
+
+def clarify_answer_ticker(question: str, corpus: Corpus) -> str | None:
+    """A one-word reply to the clarifying question, in any case ("nvda", "$nvda"), as a ticker outside the
+    corpus. Lowercase words are not tickers elsewhere (unknown_tickers); here the question asked for one."""
+    m = re.fullmatch(r"\s*\$?([A-Za-z]{1,5})\s*[.!?]?\s*", question)
+    if not m or m.group(1).lower() in REPLY_WORDS:
+        return None
+    symbol = m.group(1).upper()
+    from retrieval import ABBREVIATIONS
+    if symbol in NOT_TICKERS | {a.upper() for a in ABBREVIATIONS} | set(corpus.quarters):
+        return None
+    return symbol
 
 
 def resolve(question: str, payload: dict[str, Any], history: list[dict[str, Any]], corpus: Corpus) -> Context:
@@ -210,8 +232,13 @@ def resolve(question: str, payload: dict[str, Any], history: list[dict[str, Any]
     else:
         named = corpus.named_tickers(question)
         unknown = unknown_tickers(question, corpus)
+        after_clarify = bool(prev.get("clarify"))
+        if after_clarify and not named and not unknown:
+            unknown = [t for t in [clarify_answer_ticker(question, corpus)] if t]
         if unknown and not named:   # "What about NVDA?" must not carry the previous company over
-            return Context(unknown[0], quarter_in(question), "unknown_ticker", len(history))
+            # After "Which company do you mean?", the quarter named in the original question still holds.
+            quarter = quarter_in(question) or (prev.get("quarter") if after_clarify else None)
+            return Context(unknown[0], quarter, "unknown_ticker", len(history), reply_to_clarify=after_clarify)
         if unknown:
             notes.append(f"not in the corpus: {', '.join(unknown)}")
         compare = bool(COMPARE.search(question))
@@ -252,7 +279,7 @@ def resolve(question: str, payload: dict[str, Any], history: list[dict[str, Any]
             quarter = corpus.quarters[ticker][-1]
             notes.append("no quarter given: latest quarter in the corpus")
 
-    return Context(ticker, quarter, how, len(history), notes)
+    return Context(ticker, quarter, how, len(history), notes, reply_to_clarify=bool(prev.get("clarify")) and how == "named")
 
 
 def history_block(history: list[dict[str, Any]], turns: int = HISTORY_TURNS) -> str:
@@ -287,7 +314,9 @@ def turn_record(question: str, result: dict[str, Any], context: Context) -> dict
             # An out-of-corpus quarter remembers the quarter offered instead, so "yes" resolves to it. An
             # unknown ticker is remembered too, so "Q3 2026" next can name the quarter for a fetch request.
             "ticker": context.ticker, "quarter": reply.get("offer") or context.quarter,
-            "citations": list(answer.get("citations") or [])}
+            "citations": list(answer.get("citations") or []),
+            # The next message answers "Which company do you mean?" (resolve reads this).
+            **({"clarify": True} if result.get("status") == "clarify" else {})}
 
 
 def _approval_reply(context: Context, payload: dict[str, Any], session_id: str | None, requests: Any,
@@ -304,7 +333,9 @@ def _approval_reply(context: Context, payload: dict[str, Any], session_id: str |
     if not context.quarter:
         return {"kind": "needs_quarter", "offer": None, "message": approvals.ask_for_quarter(context.ticker, companies)}
 
-    earlier = history[-1]["question"] if context.how == "carried" and history else None   # stored masked
+    # "Q3 2026" after a question about NVDA, or "nvda" after "Which company do you mean?": the real question is
+    # the earlier one (stored masked).
+    earlier = history[-1]["question"] if (context.how == "carried" or context.reply_to_clarify) and history else None
 
     def reply(masked_question: str) -> dict[str, Any]:
         question = f"{earlier} ({masked_question})" if earlier else masked_question
@@ -384,6 +415,9 @@ def run_turn(payload: dict[str, Any], session_id: str | None, store: Store | Non
     result = answer.run({**payload, "ticker": context.ticker, "quarter": context.quarter if context.ticker else None,
                          "history": history, "context": context.to_dict(), "fixed_reply": reply}, **deps)
     record = turn_record(question, result, context)
+    if record and context.reply_to_clarify and history:
+        # Remember "Why did gross margin change? (nvda)", not "nvda": a later "Q3 2026" or fetch needs the question.
+        record["question"] = f"{history[-1]['question']} ({record['question']})"
     result["memory"] = {"loaded": len(history), "saved": False, "error": None}
     if store and session_id and record:
         try:
