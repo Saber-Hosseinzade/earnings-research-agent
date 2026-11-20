@@ -105,9 +105,16 @@ def _speaker(p: dict[str, Any]) -> str:
     return f"{speaker} ({role})" if speaker and role and role.lower() != speaker.lower() else speaker or role
 
 
+def passage_body(text: str) -> str:
+    """A Knowledge Base passage starts with a header line for retrieval ("Company | AMD 2026Q2 | Speaker (Role)",
+    scripts/build_kb_docs.py), then a blank line. The label shows that already; show what was said."""
+    head, sep, body = text.strip().partition("\n\n")
+    return body.strip() if sep and "\n" not in head and head.count(" | ") >= 2 else text.strip()
+
+
 def citation(p: dict[str, Any]) -> Citation:
     parts = [f"{p.get('ticker', '')} {quarter_label(p.get('quarter'))}".strip(), _speaker(p)]
-    return Citation(p.get("passage_id", ""), " · ".join(x for x in parts if x), (p.get("text") or "").strip())
+    return Citation(p.get("passage_id", ""), " · ".join(x for x in parts if x), passage_body(p.get("text") or ""))
 
 
 def render(result: dict[str, Any]) -> Turn:
@@ -152,7 +159,8 @@ def render_fetched(result: dict[str, Any], ticker: str | None, quarter: str | No
         turn.notes.append("The quoted sentence was not found in the fetched transcript. Treat this answer with care.")
     if result.get("call_date"):
         # Fiscal quarters differ from calendar quarters for some companies: the call date says which call it was.
-        turn.notes.append(f"Fetched call held on {result['call_date']} ({ticker} fiscal {quarter_label(quarter)}).")
+        day = str(result["call_date"])[:10]  # an ISO timestamp from the transcript API
+        turn.notes.append(f"Fetched call held on {day} ({ticker} fiscal {quarter_label(quarter)}).")
     if result.get("truncated"):
         turn.notes.append("The fetched transcript was cut to its first part.")
     return turn

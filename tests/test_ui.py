@@ -54,6 +54,12 @@ def test_covered_answer_shows_its_sources_and_the_call():
     assert [(c.label, c.text) for c in t.citations] == [("AMD Q2 2026 · Jean Hu (CFO)", "Gross margin was 54%.")]
 
 
+def test_passage_header_is_dropped_from_the_quote():
+    text = "Advanced Micro Devices Inc Q2 FY2026 Earnings Call | AMD 2026Q2 | Jean Hu (CFO)\n\nGross margin was 54%.\n"
+    assert view.render({**OK, "passages": [{**PASSAGE, "text": text}]}).citations[0].text == "Gross margin was 54%."
+    assert view.passage_body("No header here.\n\nSecond paragraph.") == "No header here.\n\nSecond paragraph."
+
+
 def test_flags_become_notes():
     t = view.render({**OK, "citation_check": {"ok": False},
                      "guardrail": {"output": {"grounding_flagged": True}}})
@@ -89,7 +95,7 @@ def test_dollar_signs_are_not_latex():
 
 def test_fetched_answer_shows_the_quote_and_the_call_date():
     res = {"status": "ok", "covered": True, "answer": "Demand was strong. (fetched)", "quote": "Record revenue.",
-           "speaker": "Colette Kress", "quote_in_transcript": True, "call_date": "2025-11-19", "truncated": False}
+           "speaker": "Colette Kress", "quote_in_transcript": True, "call_date": "2025-11-19T00:00:00+00:00", "truncated": False}
     t = view.render_fetched(res, "NVDA", "2026Q3")
     assert [(c.label, c.text) for c in t.citations] == [("NVDA Q3 2026 · Colette Kress", "Record revenue.")]
     assert t.notes == ["Fetched call held on 2025-11-19 (NVDA fiscal Q3 2026)."]
