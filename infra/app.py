@@ -5,6 +5,7 @@ from pathlib import Path
 import aws_cdk as cdk
 
 from audit_stack import EarningsAuditStack
+from auth_stack import EarningsAuthStack
 from gateway_stack import EarningsGatewayStack
 from guardrail_stack import EarningsGuardrailStack
 from kb_stack import EarningsKnowledgeBaseStack
@@ -33,6 +34,16 @@ gateway = EarningsGatewayStack(
 guard = EarningsGuardrailStack(app, "EarningsResearchAgentGuardrail", tags=TAGS)
 prompts = EarningsPromptStack(app, "EarningsResearchAgentPrompts", tags=TAGS)
 audit = EarningsAuditStack(app, "EarningsResearchAgentAudit", tags=TAGS)
+# UI login: Cognito, groups viewer and reviewer. Stays deployed. The hosted UI's callback URLs come from context
+# (localhost for local runs; the hosted UI's URL is added when the UI is deployed).
+EarningsAuthStack(
+    app,
+    "EarningsResearchAgentAuth",
+    domain_prefix=app.node.get_context("auth_domain_prefix"),
+    callback_urls=app.node.get_context("ui_callback_urls"),
+    logout_urls=app.node.get_context("ui_logout_urls"),
+    tags=TAGS,
+)
 # The runtime stack uploads build/agent as its code. Without a build it is left
 # out, so the other stacks can still be deployed or destroyed.
 if CODE_PATH.is_dir() and any(CODE_PATH.iterdir()):

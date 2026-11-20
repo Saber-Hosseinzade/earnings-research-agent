@@ -5,7 +5,7 @@ description = "Streamlit chat UI for the earnings research agent (calls the Agen
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "boto3",
-    "streamlit>=1.60",
+    "streamlit[auth]>=1.60",
 ]
 
 [tool.uv]

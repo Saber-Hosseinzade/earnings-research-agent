@@ -5,6 +5,7 @@ import json
 import pytest
 
 import fake_model
+import approvals
 import session
 from session import AgentCoreMemoryStore, Corpus, InMemoryStore, quarter_in, resolve
 from test_answer import FakeRetriever, model_answering
@@ -303,11 +304,99 @@ def test_the_audit_record_says_out_of_corpus():
     ("What did they say about gross margin?", prev(), False),        # the session supplies AMD
     ("Which companies talked about tariffs?", [], False),           # cross-company
     ("What did AMD say about margins?", [], False),                 # named
-    ("What was said about tariffs?", [], False),                    # no pointer at one company: search all
+    ("What was said about tariffs?", [], True),                     # no company: ask (20 Nov), not search all
+    ("Why did gross margin change?", [], True),
+    ("What was said about tariffs across the companies?", [], False),  # cross-company on purpose
+    ("Why did gross margin change in Q2 2026?", [], True),          # a quarter is one company's call
+    ("Why did gross margin change in Q2 2026?", prev(), False),     # the session supplies AMD
+    ("Which companies talked about tariffs in Q2 2026?", [], False),  # cross-company
 ])
-def test_clarify_only_when_one_company_is_meant_and_none_is_known(question, history, asks):
+def test_clarify_when_no_company_is_known_unless_cross_company(question, history, asks):
     c = resolve(question, {}, history, CORPUS)
     assert (session.clarify_reply(c, question, CORPUS) is not None) == asks
+
+
+@pytest.mark.parametrize("text, tickers", [
+    ("meta", ["META"]), ("Meta.", ["META"]), ("amd", ["AMD"]), ("what did amd say about margins?", ["AMD"]),
+    ("rivian", ["RIVN"]), ("root", ["ROOT"]), ("credo", ["CRDO"]),
+    ("what was the root cause of the claims increase?", []),   # ordinary words, not companies
+    ("any meta commentary on guidance?", []),
+    ("What did Root say about claims?", ["ROOT"]),            # capitalised: the company, as before
+    ("nebius and meta", ["NBIS"]),                            # "meta" not alone: only Nebius
+])
+def test_company_names_in_any_case_but_not_ordinary_words(text, tickers):
+    assert CORPUS.named_tickers(text) == tickers
+
+
+def test_lowercase_reply_to_the_clarifying_question_answers_it():
+    store = InMemoryStore()
+    out = session.run_turn({"question": "Why did gross margin change?"}, "s-1", store, CORPUS,
+                           model=NoModel(), retriever=FakeRetriever())
+    assert out["status"] == "clarify"
+    second, r = run(store, "meta")
+    assert second["status"] == "ok" and r.calls[0]["ticker"] == "META"
+
+
+@pytest.mark.parametrize("reply, ticker", [("nvda", "NVDA"), ("NVDA", "NVDA"), ("$nvda", "NVDA"), ("tsla.", "TSLA"),
+                                           ("yes", None), ("ok", None), ("why", None), ("gpu", None)])
+def test_one_word_reply_to_the_clarifying_question_is_a_ticker(reply, ticker):
+    c = resolve(reply, {}, [{"question": "Why did gross margin change in Q3 2026?", "answer": "Which company?",
+                             "covered": False, "ticker": None, "quarter": "2026Q3", "fixed": "clarify"}], CORPUS)
+    if ticker:
+        assert (c.ticker, c.quarter, c.how, c.reply_to_clarify) == (ticker, "2026Q3", "unknown_ticker", True)
+    else:
+        assert c.how != "unknown_ticker"
+
+
+def test_lowercase_word_is_not_a_ticker_without_the_clarifying_question():
+    assert resolve("nvda", {}, [], CORPUS).how == "none"
+
+
+def test_out_of_corpus_reply_to_the_clarifying_question_requests_a_fetch_of_the_real_question():
+    store, requests = InMemoryStore(), approvals.InMemoryRequests()
+    first = session.run_turn({"question": "Why did gross margin change in Q3 2026?"}, "s-1", store, CORPUS,
+                             requests=requests, model=NoModel(), retriever=FakeRetriever())
+    assert first["status"] == "clarify"
+    second = session.run_turn({"question": "nvda"}, "s-1", store, CORPUS, requests=requests,
+                              model=NoModel(), retriever=FakeRetriever())
+    assert second["status"] == "approval_pending"
+    (req,) = requests.pending()
+    assert (req["ticker"], req["quarter"]) == ("NVDA", "2026Q3")
+    assert req["question"] == "Why did gross margin change in Q3 2026? (nvda)"
+
+
+def test_reply_without_a_quarter_asks_for_it_and_keeps_the_question():
+    store, requests = InMemoryStore(), approvals.InMemoryRequests()
+    for q in ["Why did gross margin change?", "nvda"]:
+        out = session.run_turn({"question": q}, "s-1", store, CORPUS, requests=requests,
+                               model=NoModel(), retriever=FakeRetriever())
+    assert "quarter" in out["answer"]["answer"].lower() and not requests.pending()
+    session.run_turn({"question": "Q3 2026"}, "s-1", store, CORPUS, requests=requests,
+                     model=NoModel(), retriever=FakeRetriever())
+    (req,) = requests.pending()
+    assert req["question"].startswith("Why did gross margin change? (nvda)")
+
+
+def test_reply_without_the_quarter_asks_only_for_it_and_keeps_the_real_question():
+    store, requests = InMemoryStore(), approvals.InMemoryRequests()
+    outs = [session.run_turn({"question": q}, "s-1", store, CORPUS, requests=requests, model=NoModel(),
+                             retriever=FakeRetriever())
+            for q in ["Why did gross margin change?", "nvda", "ask a reviewer", "ask", "Q3 2026"]]
+    assert outs[1]["answer"]["answer"].startswith("NVDA isn't in my corpus. Which quarter's call should I request?")
+    assert outs[2]["answer"]["answer"] == outs[3]["answer"]["answer"] == (
+        "I need the quarter before I can send the request: which NVDA call, for example Q3 2026?")
+    assert outs[4]["status"] == "approval_pending"
+    (req,) = requests.pending()
+    assert req["question"] == "Why did gross margin change? (nvda) (Q3 2026)"
+
+
+def test_quarter_without_a_company_asks_which_company_then_keeps_the_quarter():
+    store = InMemoryStore()
+    out = session.run_turn({"question": "Why did gross margin change in Q4 2025?"}, "s-1", store, CORPUS,
+                           model=NoModel(), retriever=FakeRetriever())
+    assert out["status"] == "clarify" and out["answer"]["answer"].startswith("Which company do you mean?")
+    second, r = run(store, "AMD")
+    assert (r.calls[0]["ticker"], r.calls[0]["quarter"]) == ("AMD", "2025Q4")   # not AMD's latest (2026Q2)
 
 
 def test_clarify_then_answer_resolves_to_the_named_company_and_its_latest_quarter():

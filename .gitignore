@@ -35,3 +35,6 @@ corpus/v2/raw/
 # Agent outputs hold text copied from the transcripts (provider terms): local only.
 # Scores (eval/results/<label>-<date>.json) are committed.
 eval/results/*.outputs.json
+
+# UI login secrets for local runs (scripts/ui_auth_config.py)
+ui/.streamlit/secrets.toml

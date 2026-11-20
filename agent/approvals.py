@@ -55,8 +55,15 @@ def quarter_label(label: str) -> str:
 
 
 def ask_for_quarter(ticker: str, companies: list[str]) -> str:
-    return (f"{ticker} isn't in my corpus. If you name a quarter (for example Q3 2026), I can ask a reviewer to "
-            f"approve fetching that call from an external source. Or ask about {', '.join(companies)}.")
+    return (f"{ticker} isn't in my corpus. Which quarter's call should I request? Reply with the quarter, for "
+            f"example Q3 2026 (the company's own fiscal quarter); a reviewer then approves fetching that call from an "
+            f"external source. Or ask about {', '.join(companies)}.")
+
+
+def ask_again_for_quarter(ticker: str) -> str:
+    """The reply did not name a quarter: say only what is missing (found 20 Nov: "ask a reviewer" got the
+    whole message again)."""
+    return f"I need the quarter before I can send the request: which {ticker} call, for example Q3 2026?"
 
 
 def pending_message(ticker: str, quarter: str, request_id: str) -> str:
