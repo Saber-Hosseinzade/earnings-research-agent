@@ -156,6 +156,7 @@ class EarningsRuntimeStack(Stack):
             log_group=helper_log_group,
         )
         retention.node.add_dependency(runtime)
+        self.runtime = runtime  # the UI stack grants invoke on it (ui_stack.py)
 
         # Least privilege: this one Gateway, this one model and (below) this one guardrail, set of prompts and
         # audit log. The Gateway is the only way to the Knowledge Base and the transcript Lambda.

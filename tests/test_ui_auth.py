@@ -101,8 +101,10 @@ def test_client_is_confidential_code_flow_with_short_id_tokens(template):
 
 
 def test_outputs_carry_no_secret(template):
-    outputs = json.dumps(template.find_outputs("*"))
-    assert "ClientSecret" not in outputs
+    # The secret's name is an output (scripts/deploy_ui.sh copies the value in); its value never is.
+    outputs = template.find_outputs("*")
+    assert "ClientSecret" not in json.dumps({k: v for k, v in outputs.items() if k != "ClientSecretName"})
+    assert "SecretString" not in json.dumps(outputs) and "GetAtt" not in json.dumps(outputs.get("ClientSecretName"))
 
 
 # --- local secrets file --------------------------------------------------------------------------------------------

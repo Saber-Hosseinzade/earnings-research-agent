@@ -1,6 +1,8 @@
-"""Write ui/.streamlit/secrets.toml for local runs with Cognito sign-in (infra/auth_stack.py).
+"""Write ui/.streamlit/secrets.toml for local runs with Cognito sign-in (infra/auth_stack.py), or, with
+--to-secrets-manager, copy the app client secret into the hosted UI's secret (scripts/deploy_ui.sh).
 
     AWS_PROFILE=sandbox python scripts/ui_auth_config.py
+    AWS_PROFILE=sandbox python scripts/ui_auth_config.py --to-secrets-manager
 
 Reads the auth stack's outputs and the app client's secret, and writes the [auth] section Streamlit's
 OIDC sign-in needs. The file is git-ignored and written owner-only; the client secret is never printed.
@@ -46,15 +48,34 @@ def existing_cookie_secret(path: Path) -> str | None:
         return None
 
 
-def main() -> int:
+def copy_to_secrets_manager(sm, secret_name: str, value: str) -> bool:
+    """Put the value as the secret's current version, unless it already is. Returns whether it changed."""
+    try:
+        if sm.get_secret_value(SecretId=secret_name)["SecretString"] == value:
+            return False
+    except sm.exceptions.ResourceNotFoundException:
+        raise
+    except Exception:  # noqa: BLE001 - no current value yet: write one
+        pass
+    sm.put_secret_value(SecretId=secret_name, SecretString=value)
+    return True
+
+
+def main(argv: list[str] | None = None) -> int:
     import boto3
 
+    argv = sys.argv[1:] if argv is None else argv
     region = os.environ.get("AWS_REGION", "eu-central-1")
     cfn = boto3.client("cloudformation", region_name=region)
     outputs = {o["OutputKey"]: o["OutputValue"]
                for o in cfn.describe_stacks(StackName=STACK)["Stacks"][0].get("Outputs", [])}
     client = boto3.client("cognito-idp", region_name=region).describe_user_pool_client(
         UserPoolId=outputs["UserPoolId"], ClientId=outputs["ClientId"])["UserPoolClient"]
+    if "--to-secrets-manager" in argv:
+        changed = copy_to_secrets_manager(boto3.client("secretsmanager", region_name=region),
+                                          outputs["ClientSecretName"], client["ClientSecret"])
+        print(f"client secret {'copied to' if changed else 'already in'} {outputs['ClientSecretName']} (not shown)")
+        return 0
     cookie_secret = existing_cookie_secret(OUT) or secrets.token_urlsafe(32)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     fd = os.open(OUT, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
