@@ -50,10 +50,12 @@ class EarningsUiStack(Stack):
         # The task role may invoke this one runtime and nothing else. No AWS keys anywhere.
         runtime.grant_invoke_runtime(task.task_role)
 
+        # Express Mode requires the container to be named "Main" (found on first deploy, 20 Nov; not in the docs).
         task.add_container(
-            "ui",
+            "Main",
             image=ecs.ContainerImage.from_ecr_repository(repository, image_tag),
-            port_mappings=[ecs.PortMapping(container_port=CONTAINER_PORT)],
+            # Express Mode also requires a named TCP port mapping (found on first deploy).
+            port_mappings=[ecs.PortMapping(container_port=CONTAINER_PORT, name="main", protocol=ecs.Protocol.TCP)],
             environment={
                 "AGENT_RUNTIME_ARN": runtime.agent_runtime_arn,
                 "AWS_REGION": self.region,
