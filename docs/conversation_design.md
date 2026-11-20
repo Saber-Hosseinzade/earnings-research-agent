@@ -90,8 +90,9 @@ resolved company and quarter pin the search filter. The audit record says which 
    search all calls and the answer names each company it cites. Two companies named, or a comparison with a
    company other than the previous one, counts as cross-company. A comparison about one company ("how did
    that compare with the quarter before?") keeps the company and searches all its quarters.
-5. A clarifying question is asked only when the question needs one specific company or quarter and neither
-   the message nor the session supplies it (flow 2). At most one clarifying question per turn.
+5. A clarifying question is asked when neither the message nor the session supplies a company, unless the
+   question spans companies on purpose (rule 4) (flow 2). A quarter named without a company gets it too.
+   At most one clarifying question per turn. *Changed 20 Nov, see Decisions 1.*
 
 ## Flows
 
@@ -118,7 +119,8 @@ Expected:
 > **Assistant:** [Answer about AMD's latest call in the corpus, naming the quarter.] *Cited: …*
 
 Expected:
-- A clarifying question only when the question needs one company and none is known (context rule 5).
+- A clarifying question whenever no company is known and the question is not cross-company (context rule 5).
+  "Why did gross margin change in Q2 2026?" gets it too, and the answer "AMD" keeps Q2 2026.
 - One question, naming the options. No search before the answer arrives.
 - A question without a quarter does not need clarifying: the latest quarter in the corpus is used and named
   in the answer ("on the Q2 2026 call…").
@@ -284,6 +286,9 @@ Decided 17 Nov.
 1. **No company named (flow 2):** ask one clarifying question only when the question needs one specific
    company and neither the message nor the session supplies it. Cross-company questions search all calls.
    *Updated 18 Nov (Saber): the question is asked in code, not by the model (see flow 2).*
+   *Changed 20 Nov (Saber): ask whenever no company is known, unless the question is cross-company on purpose
+   ("which companies…", "across the companies…"). Found in the UI: "Why did gross margin change?" searched all
+   24 calls and mixed AMD, CRDO and RIVN from different quarters into one answer, flagged for low grounding.*
 2. **Advice reply (flow 4):** the fixed guardrail message. The question is blocked before the agent runs, so
    the hard rule doesn't depend on the model. No tailored redirect.
 3. **Corpus check (flows 5, 6):** in code, against `corpus/calls.json`, before the agent runs. Deterministic

@@ -303,12 +303,14 @@ def test_the_audit_record_says_out_of_corpus():
     ("What did they say about gross margin?", prev(), False),        # the session supplies AMD
     ("Which companies talked about tariffs?", [], False),           # cross-company
     ("What did AMD say about margins?", [], False),                 # named
-    ("What was said about tariffs?", [], False),                    # no pointer at one company: search all
+    ("What was said about tariffs?", [], True),                     # no company: ask (20 Nov), not search all
+    ("Why did gross margin change?", [], True),
+    ("What was said about tariffs across the companies?", [], False),  # cross-company on purpose
     ("Why did gross margin change in Q2 2026?", [], True),          # a quarter is one company's call
     ("Why did gross margin change in Q2 2026?", prev(), False),     # the session supplies AMD
     ("Which companies talked about tariffs in Q2 2026?", [], False),  # cross-company
 ])
-def test_clarify_only_when_one_company_is_meant_and_none_is_known(question, history, asks):
+def test_clarify_when_no_company_is_known_unless_cross_company(question, history, asks):
     c = resolve(question, {}, history, CORPUS)
     assert (session.clarify_reply(c, question, CORPUS) is not None) == asks
 

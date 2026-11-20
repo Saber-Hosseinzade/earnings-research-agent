@@ -151,16 +151,14 @@ def corpus_reply(context: "Context", corpus: "Corpus") -> dict[str, Any] | None:
     return None
 
 
-ONE_COMPANY = re.compile(r"\b(they|their|them|theirs|the company|the company's|this company|that company|"
-                         r"management|its|the CEO|the CFO)\b", re.IGNORECASE)
-
-
 def clarify_reply(context: "Context", question: str, corpus: "Corpus") -> dict[str, Any] | None:
-    """The clarifying question when the message needs one company and none is known (flow 2), else None.
+    """The clarifying question when no company is known (flow 2), else None.
 
-    A quarter named without a company needs one too: a quarter is one company's call, and the search can
-    only filter on a quarter together with a ticker."""
-    if context.how != "none" or not (ONE_COMPANY.search(question) or context.quarter):
+    Asked unless the question spans companies on purpose ("which companies...", "across the companies"),
+    which resolve() marks cross_company. Decided 20 Nov (Saber), replacing the 17 Nov rule (ask only for
+    "they", "the company", ...): a question without a company searched all 24 calls and mixed companies and
+    quarters into one answer ("Why did gross margin change?" -> AMD, CRDO and RIVN, low grounding)."""
+    if context.how != "none":
         return None
     names = list(corpus.quarters)
     return {"kind": "clarify", "offer": None,
