@@ -28,9 +28,15 @@ kb-sync: kb-docs  ## Upload passages to the KB bucket and run an ingestion job
 corpus-terms:  ## Rebuild corpus/terms.json (words that are not tickers) from corpus/v2/raw (offline)
 	python scripts/corpus_terms.py
 
-ui:  ## Run the UI locally with Cognito sign-in (needs AGENT_RUNTIME_ARN; once: python scripts/ui_auth_config.py)
-	cd ui && uv sync --frozen -q && AWS_PROFILE=$(PROFILE) AWS_REGION=eu-central-1 .venv/bin/streamlit run app.py
+# The deployed runtime's ARN, from the runtime stack's output, unless AGENT_RUNTIME_ARN is already set.
+RUNTIME_ARN_LOOKUP = aws cloudformation describe-stacks --profile $(PROFILE) --region eu-central-1 \
+	--stack-name EarningsResearchAgentRuntime --query "Stacks[0].Outputs[?OutputKey=='RuntimeArn'].OutputValue" --output text
 
-ui-dev:  ## Run the UI locally without sign-in, as UI_DEV_USER / UI_DEV_ROLE=viewer|reviewer (needs AGENT_RUNTIME_ARN)
+ui:  ## Run the UI locally with Cognito sign-in against the deployed runtime (once: python scripts/ui_auth_config.py)
+	cd ui && uv sync --frozen -q && AWS_PROFILE=$(PROFILE) AWS_REGION=eu-central-1 \
+	  AGENT_RUNTIME_ARN="$(or $(AGENT_RUNTIME_ARN),$(shell $(RUNTIME_ARN_LOOKUP)))" .venv/bin/streamlit run app.py
+
+ui-dev:  ## Run the UI locally without sign-in, as UI_DEV_USER / UI_DEV_ROLE=viewer|reviewer
 	cd ui && uv sync --frozen -q && AWS_PROFILE=$(PROFILE) AWS_REGION=eu-central-1 UI_AUTH=dev \
+	  AGENT_RUNTIME_ARN="$(or $(AGENT_RUNTIME_ARN),$(shell $(RUNTIME_ARN_LOOKUP)))" \
 	  UI_DEV_USER=$(UI_DEV_USER) UI_DEV_ROLE=$(UI_DEV_ROLE) .venv/bin/streamlit run app.py

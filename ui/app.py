@@ -23,6 +23,11 @@ from runtime_client import RuntimeClient
 
 st.set_page_config(page_title="Earnings call research", layout="centered")
 
+if not os.environ.get("AGENT_RUNTIME_ARN", "").startswith("arn:"):
+    st.error("The assistant is not configured: AGENT_RUNTIME_ARN is not set. Locally, start it with `make ui`, "
+             "which looks the ARN up from the deployed runtime stack.")
+    st.stop()
+
 
 @st.cache_resource
 def runtime() -> RuntimeClient:
