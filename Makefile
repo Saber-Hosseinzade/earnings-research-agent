@@ -3,7 +3,7 @@
 
 PROFILE ?= sandbox
 
-.PHONY: help sso-login sso-whoami test kb-docs kb-sync corpus-terms ui
+.PHONY: help sso-login sso-whoami test kb-docs kb-sync corpus-terms ui ui-dev
 UI_DEV_USER ?= local-viewer
 UI_DEV_ROLE ?= viewer
 
@@ -28,6 +28,9 @@ kb-sync: kb-docs  ## Upload passages to the KB bucket and run an ingestion job
 corpus-terms:  ## Rebuild corpus/terms.json (words that are not tickers) from corpus/v2/raw (offline)
 	python scripts/corpus_terms.py
 
-ui:  ## Run the Streamlit UI locally against the deployed runtime (needs AGENT_RUNTIME_ARN; UI_DEV_ROLE=viewer|reviewer)
+ui:  ## Run the UI locally with Cognito sign-in (needs AGENT_RUNTIME_ARN; once: python scripts/ui_auth_config.py)
+	cd ui && uv sync --frozen -q && AWS_PROFILE=$(PROFILE) AWS_REGION=eu-central-1 .venv/bin/streamlit run app.py
+
+ui-dev:  ## Run the UI locally without sign-in, as UI_DEV_USER / UI_DEV_ROLE=viewer|reviewer (needs AGENT_RUNTIME_ARN)
 	cd ui && uv sync --frozen -q && AWS_PROFILE=$(PROFILE) AWS_REGION=eu-central-1 UI_AUTH=dev \
 	  UI_DEV_USER=$(UI_DEV_USER) UI_DEV_ROLE=$(UI_DEV_ROLE) .venv/bin/streamlit run app.py

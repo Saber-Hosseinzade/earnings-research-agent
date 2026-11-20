@@ -2,6 +2,15 @@
   "app": "python3 app.py",
   "context": {
     "model_id": "eu.amazon.nova-2-lite-v1:0",
-    "vector_store": "s3vectors"
+    "vector_store": "s3vectors",
+    "auth_domain_prefix": "earnings-research-eldt7k",
+    "ui_callback_urls": [
+      "http://localhost:8501/oauth2callback",
+      "http://localhost:8502/oauth2callback"
+    ],
+    "ui_logout_urls": [
+      "http://localhost:8501/",
+      "http://localhost:8502/"
+    ]
   }
 }

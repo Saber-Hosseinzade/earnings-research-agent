@@ -1,17 +1,20 @@
 """Streamlit chat UI for the earnings research agent.
 
-    cd ui && uv sync --frozen
-    AGENT_RUNTIME_ARN=... AWS_PROFILE=sandbox AWS_REGION=eu-central-1 \\
-      UI_AUTH=dev UI_DEV_USER=me UI_DEV_ROLE=viewer .venv/bin/streamlit run app.py
+    python scripts/ui_auth_config.py        # once: Cognito settings into ui/.streamlit/secrets.toml
+    AGENT_RUNTIME_ARN=... make ui           # sign in with a Cognito user in group viewer or reviewer
+    AGENT_RUNTIME_ARN=... make ui-dev       # no login, a fixed local identity (refused on ECS)
 
 Every request goes to the AgentCore Runtime (agent/serve.py) from this server; the browser never holds
-AWS credentials. Identity and role are set here, from the login, never from the browser (view.py).
+AWS credentials. Identity and role are set here, from the login (Cognito via Streamlit's OIDC sign-in,
+infra/auth_stack.py), never from anything the browser sends (view.py).
 Spend caps, guardrails, the citation check and the audit log all run in the runtime.
 
 The answer arrives whole, not streamed (issue #35).
 """
 
 from __future__ import annotations
+
+import os
 
 import streamlit as st
 
@@ -26,11 +29,35 @@ def runtime() -> RuntimeClient:
     return RuntimeClient()
 
 
-def identity() -> view.Identity:
+def _metadata_url() -> str:
     try:
-        return view.dev_identity()
+        return str(st.secrets["auth"]["server_metadata_url"])
+    except (KeyError, FileNotFoundError, st.errors.StreamlitSecretNotFoundError):
+        return ""
+
+
+def identity() -> view.Identity:
+    if os.environ.get("UI_AUTH") == "dev":
+        try:
+            return view.dev_identity()
+        except view.LoginRequired as exc:
+            st.error(f"Sign-in is not configured: {exc}")
+            st.stop()
+    metadata_url = _metadata_url()
+    if not metadata_url:
+        st.error("Sign-in is not configured (no [auth] section in .streamlit/secrets.toml).")
+        st.stop()
+    if not st.user.is_logged_in:
+        st.title("Earnings call research")
+        st.caption(view.DISCLAIMER)
+        st.button("Sign in", on_click=st.login, type="primary")
+        st.stop()
+    try:
+        return view.login_identity(st.user.to_dict(), view.issuer_from_metadata_url(metadata_url))
     except view.LoginRequired as exc:
-        st.error(f"Sign-in is not configured: {exc}")
+        st.warning(f"{str(exc)[:1].upper()}{str(exc)[1:]}.")
+        # Signing out clears the app's cookie; signing in again reads fresh groups from a new ID token.
+        st.button("Sign out", on_click=st.logout)
         st.stop()
 
 
@@ -61,8 +88,10 @@ if "session_id" not in st.session_state:
 with st.sidebar:
     st.subheader("Earnings call research")
     st.caption(view.DISCLAIMER)
-    st.caption(f"Signed in as **{who.user_id}** ({who.role})")
+    st.caption(f"Signed in as **{who.display or who.user_id}** ({who.role})")
     st.button("New conversation", on_click=new_conversation, width="stretch")
+    if os.environ.get("UI_AUTH") != "dev":
+        st.button("Sign out", on_click=st.logout, width="stretch")
     page = st.radio("View", ["Chat", "Fetch requests"], label_visibility="collapsed") \
         if who.role == view.REVIEWER else "Chat"
 

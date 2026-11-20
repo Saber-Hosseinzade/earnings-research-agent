@@ -10,6 +10,7 @@ both from the login on the server, never from anything the browser sends.
 from __future__ import annotations
 
 import os
+import time
 import uuid
 from dataclasses import dataclass, field
 from typing import Any
@@ -34,10 +35,53 @@ class LoginRequired(RuntimeError):
     pass
 
 
+class SessionExpired(LoginRequired):
+    """The ID token behind the login has expired: sign in again (groups are re-read then)."""
+
+
+class NoAccess(LoginRequired):
+    """Signed in, but in neither group."""
+
+
 @dataclass(frozen=True)
 class Identity:
     user_id: str
     role: str
+    display: str = ""  # shown in the UI only; the audit log gets user_id
+
+
+METADATA_SUFFIX = "/.well-known/openid-configuration"
+
+
+def issuer_from_metadata_url(url: str) -> str:
+    return url.removesuffix(METADATA_SUFFIX) if url.endswith(METADATA_SUFFIX) else ""
+
+
+def login_identity(user: dict[str, Any], issuer: str, now: float | None = None) -> Identity:
+    """Identity from st.user: the ID token's claims, verified by Streamlit at sign-in (signature, issuer,
+    audience) and kept in a cookie signed with the server's secret, so the browser cannot change them.
+
+    Checked again here: the issuer is our user pool, the token has not expired (the cookie outlives it by
+    weeks, and its groups are a snapshot from sign-in), and the user is in a group. reviewer wins over viewer.
+    user_id is the Cognito ``sub``, not the email, so the audit log holds no address.
+    """
+    if not user.get("is_logged_in"):
+        raise LoginRequired("not signed in")
+    if not issuer or user.get("iss") != issuer:
+        raise LoginRequired("signed in with an unexpected identity provider")
+    try:
+        exp = float(user.get("exp") or 0)
+    except (TypeError, ValueError):
+        exp = 0
+    if exp <= (time.time() if now is None else now):
+        raise SessionExpired("your sign-in has expired")
+    groups = user.get("cognito:groups") or []
+    if isinstance(groups, str):
+        groups = [groups]
+    role = REVIEWER if REVIEWER in groups else VIEWER if VIEWER in groups else None
+    if role is None or not user.get("sub"):
+        raise NoAccess("your account has no access yet: an admin must add it to the viewer or reviewer group")
+    return Identity(str(user["sub"]), role, str(user.get("email") or ""))
 
 
 def dev_identity(environ: dict[str, str] | None = None) -> Identity:
