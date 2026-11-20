@@ -27,12 +27,14 @@ from bedrock_agentcore.runtime import BedrockAgentCoreApp
 
 import approvals
 import audit
+import caps
 import session
 from guard import BedrockGuard
 
 # GATEWAY_URL: deployed, search and fetch go through the AgentCore Gateway (gateway.py), never directly.
+# USAGE_TABLE: the spend caps' counters (caps.py).
 REQUIRED_ENV = ("MODEL_ID", "GATEWAY_URL", "GUARDRAIL_ID", "GUARDRAIL_VERSION", "AUDIT_LOG_GROUP", "MEMORY_ID",
-                "REQUESTS_TABLE")
+                "REQUESTS_TABLE", "USAGE_TABLE")
 REQUEST_FIELDS = ("request_id", "status", "ticker", "quarter", "question", "requested_by", "created_at", "expires_at",
                   "decided_by", "decided_at")  # what a reviewer's list shows: no answers, no session ids
 
@@ -49,28 +51,37 @@ def _deployed() -> dict[str, Any]:
     """Built once per process: the audit writer keeps one log stream per process (audit.py)."""
     return {"guard": BedrockGuard(), "audit_writer": audit.CloudWatchWriter(),
             "store": session.AgentCoreMemoryStore(), "corpus": session.Corpus.load(),
-            "requests": approvals.DynamoRequests(), "fetch": approvals.default_fetcher()}
+            "requests": approvals.DynamoRequests(), "fetch": approvals.default_fetcher(),
+            "counter": caps.DynamoCounter(), "limits": caps.Limits.from_env()}
 
 
 DEPS = ("guard", "audit_writer", "store", "corpus", "requests", "fetch")
 
 
 def handle(payload: dict[str, Any], session_id: str | None, **deps: Any) -> dict[str, Any]:
-    """One request. ``deps`` (model, retriever, guard, audit_writer, store, corpus, requests, fetch) are for
-    tests; deployed, they come from the env.
+    """One request. ``deps`` (model, retriever, guard, audit_writer, store, corpus, requests, fetch, counter,
+    limits) are for tests; deployed, they come from the env. Without a counter, nothing is capped (tests only:
+    deployed, the counter always comes with the other deps).
 
     payload.action:
       (none)          a chat turn (session.run_turn); earlier turns come from AgentCore Memory
       list_requests   reviewer only: pending fetch requests (approvals.py)
       decide          reviewer only: {"request_id", "decision": "approve" | "decline"}; approval fetches and answers
       request_status  the requester or a reviewer: status of one request, with the answer once there is one
+    A chat turn and a decision count against the spend caps (caps.py) before anything runs; a capped one
+    returns status "capped" and gets an audit record.
     user_id and role come from the caller; behind the UI they will come from the login, checked server-side.
     """
     payload = {**payload, "session_id": session_id}  # the runtime's session id, never the caller's
     if any(k not in deps for k in DEPS):
         deps = {**_deployed(), **deps}
     store, corpus, requests, fetch = (deps.pop(k) for k in ("store", "corpus", "requests", "fetch"))
+    counter, limits = deps.pop("counter", None), deps.pop("limits", None)
     action = payload.get("action")
+    if action in (None, "", "decide") and counter is not None:
+        verdict = caps.take(counter, session_id, limits)
+        if not verdict.allowed:
+            return _capped(payload, verdict, deps)
     if not action:
         return session.run_turn(payload, session_id, store, corpus, requests=requests, **deps)
     if action == "list_requests":
@@ -87,6 +98,16 @@ def handle(payload: dict[str, Any], session_id: str | None, **deps: Any) -> dict
             return {"status": "not_found"}  # the same reply whether it doesn't exist or isn't yours
         return {"status": "ok", "request": {**{k: item.get(k) for k in REQUEST_FIELDS}, "result": item.get("result")}}
     return {"status": "bad_request", "error": f"unknown action {action!r}"}
+
+
+def _capped(payload: dict[str, Any], verdict: caps.Verdict, deps: dict[str, Any]) -> dict[str, Any]:
+    out = {"status": "capped", "question": str(payload.get("question", "")).strip(),
+           "answer": {"covered": False, "answer": verdict.message, "citations": []},
+           "cap": verdict.to_dict(), "citation_check": None, "retrieval": None, "run": {}, "guardrail": None,
+           "error": verdict.error}
+    if deps.get("audit_writer") is not None:
+        out["audit"] = audit.write(deps["audit_writer"], out, payload)
+    return out
 
 
 def _decide(payload: dict[str, Any], store: Any, requests: Any, fetch: Any, deps: dict[str, Any]) -> dict[str, Any]:

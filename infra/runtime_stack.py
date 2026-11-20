@@ -28,6 +28,9 @@ MEMORY_EXPIRY_DAYS = 7
 # it together with the runtime, with no expiry and outside the stack; the stack sets this retention right after
 # and deletes the group when the runtime goes.
 RUNTIME_LOG_RETENTION_DAYS = 7
+# Spend caps (agent/caps.py), across all callers. A turn runs up to 40K tokens (budget.py).
+TURNS_PER_SESSION = 30
+TURNS_PER_DAY = 100
 
 
 class EarningsRuntimeStack(Stack):
@@ -70,6 +73,17 @@ class EarningsRuntimeStack(Stack):
             removal_policy=RemovalPolicy.DESTROY,
         )
 
+        # Spend caps (agent/caps.py): one counter per session and per UTC day, expired by TTL. Goes with the
+        # runtime: a fresh runtime starts with fresh counters, which is fine for caps measured in days.
+        usage_table = dynamodb.Table(
+            self,
+            "UsageCounters",
+            partition_key=dynamodb.Attribute(name="counter", type=dynamodb.AttributeType.STRING),
+            billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
+            time_to_live_attribute="expires_ttl",
+            removal_policy=RemovalPolicy.DESTROY,
+        )
+
         runtime = agentcore.Runtime(
             self,
             "AgentRuntime",
@@ -92,6 +106,9 @@ class EarningsRuntimeStack(Stack):
                 "AUDIT_LOG_GROUP": audit_log.log_group_name,
                 "MEMORY_ID": memory.memory_id,
                 "REQUESTS_TABLE": requests_table.table_name,
+                "USAGE_TABLE": usage_table.table_name,
+                "TURNS_PER_SESSION": str(TURNS_PER_SESSION),
+                "TURNS_PER_DAY": str(TURNS_PER_DAY),
                 "PROMPT_SOURCE": "bedrock",
                 **{
                     f"{name.upper()}_PROMPT_{key}": value
@@ -199,6 +216,14 @@ class EarningsRuntimeStack(Stack):
             iam.PolicyStatement(
                 actions=["dynamodb:PutItem", "dynamodb:GetItem", "dynamodb:UpdateItem", "dynamodb:Scan"],
                 resources=[requests_table.table_arn],
+            )
+        )
+
+        # agent/caps.py: count turns (conditional updates in one transaction). Nothing else on the table.
+        runtime.add_to_role_policy(
+            iam.PolicyStatement(
+                actions=["dynamodb:UpdateItem"],
+                resources=[usage_table.table_arn],
             )
         )
 

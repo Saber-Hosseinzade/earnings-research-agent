@@ -145,6 +145,19 @@ def test_an_invented_citation_is_flagged_not_dropped():
     assert out["answer"]["citations"] == ["AMD_2026Q2_t003_p1", "AMD_2025Q4_t001"]
 
 
+def test_result_carries_only_the_verified_citations_passages():
+    out = answer.run({"question": "Why?", "ticker": "AMD", "quarter": "2026Q2"},
+                     model=model_answering(["AMD_2026Q2_t003_p1", "AMD_2025Q4_t001"]), retriever=FakeRetriever())
+    assert [p["passage_id"] for p in out["passages"]] == ["AMD_2026Q2_t003_p1"]
+    assert out["passages"][0]["text"] == PASSAGES["AMD_2026Q2_t003_p1"] and out["passages"][0]["speaker"] == "x"
+
+
+def test_not_covered_answer_carries_no_passages():
+    out = answer.run({"question": "Why?", "ticker": "AMD", "quarter": "2026Q2"},
+                     model=model_answering([], covered=False), retriever=FakeRetriever())
+    assert out["passages"] == []
+
+
 def test_citing_without_searching_fails_the_check():
     out = answer.run({"question": "Why?"}, model=model_answering(["AMD_2026Q2_t003_p1"], fetches=0),
                      retriever=FakeRetriever())
