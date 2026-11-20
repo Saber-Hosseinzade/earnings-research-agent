@@ -68,7 +68,7 @@ def test_an_out_of_corpus_ticker_with_a_quarter_becomes_a_pending_request():
 def test_without_a_quarter_the_user_is_asked_for_one_and_nothing_is_stored():
     r = InMemoryRequests()
     out = turn(r, "What did NVDA say about data center demand?")
-    assert out["status"] == "out_of_corpus" and "If you name a quarter" in out["answer"]["answer"] and r.items == {}
+    assert out["status"] == "out_of_corpus" and "Which quarter's call should I request?" in out["answer"]["answer"] and r.items == {}
 
 
 def test_naming_the_quarter_next_proposes_the_fetch():

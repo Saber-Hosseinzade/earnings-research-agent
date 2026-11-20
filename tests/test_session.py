@@ -341,7 +341,7 @@ def test_lowercase_reply_to_the_clarifying_question_answers_it():
                                            ("yes", None), ("ok", None), ("why", None), ("gpu", None)])
 def test_one_word_reply_to_the_clarifying_question_is_a_ticker(reply, ticker):
     c = resolve(reply, {}, [{"question": "Why did gross margin change in Q3 2026?", "answer": "Which company?",
-                             "covered": False, "ticker": None, "quarter": "2026Q3", "clarify": True}], CORPUS)
+                             "covered": False, "ticker": None, "quarter": "2026Q3", "fixed": "clarify"}], CORPUS)
     if ticker:
         assert (c.ticker, c.quarter, c.how, c.reply_to_clarify) == (ticker, "2026Q3", "unknown_ticker", True)
     else:
@@ -375,6 +375,19 @@ def test_reply_without_a_quarter_asks_for_it_and_keeps_the_question():
                      model=NoModel(), retriever=FakeRetriever())
     (req,) = requests.pending()
     assert req["question"].startswith("Why did gross margin change? (nvda)")
+
+
+def test_reply_without_the_quarter_asks_only_for_it_and_keeps_the_real_question():
+    store, requests = InMemoryStore(), approvals.InMemoryRequests()
+    outs = [session.run_turn({"question": q}, "s-1", store, CORPUS, requests=requests, model=NoModel(),
+                             retriever=FakeRetriever())
+            for q in ["Why did gross margin change?", "nvda", "ask a reviewer", "ask", "Q3 2026"]]
+    assert outs[1]["answer"]["answer"].startswith("NVDA isn't in my corpus. Which quarter's call should I request?")
+    assert outs[2]["answer"]["answer"] == outs[3]["answer"]["answer"] == (
+        "I need the quarter before I can send the request: which NVDA call, for example Q3 2026?")
+    assert outs[4]["status"] == "approval_pending"
+    (req,) = requests.pending()
+    assert req["question"] == "Why did gross margin change? (nvda) (Q3 2026)"
 
 
 def test_quarter_without_a_company_asks_which_company_then_keeps_the_quarter():

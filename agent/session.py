@@ -232,7 +232,7 @@ def resolve(question: str, payload: dict[str, Any], history: list[dict[str, Any]
     else:
         named = corpus.named_tickers(question)
         unknown = unknown_tickers(question, corpus)
-        after_clarify = bool(prev.get("clarify"))
+        after_clarify = prev.get("fixed") == "clarify"
         if after_clarify and not named and not unknown:
             unknown = [t for t in [clarify_answer_ticker(question, corpus)] if t]
         if unknown and not named:   # "What about NVDA?" must not carry the previous company over
@@ -279,7 +279,7 @@ def resolve(question: str, payload: dict[str, Any], history: list[dict[str, Any]
             quarter = corpus.quarters[ticker][-1]
             notes.append("no quarter given: latest quarter in the corpus")
 
-    return Context(ticker, quarter, how, len(history), notes, reply_to_clarify=bool(prev.get("clarify")) and how == "named")
+    return Context(ticker, quarter, how, len(history), notes, reply_to_clarify=prev.get("fixed") == "clarify" and how == "named")
 
 
 def history_block(history: list[dict[str, Any]], turns: int = HISTORY_TURNS) -> str:
@@ -315,8 +315,9 @@ def turn_record(question: str, result: dict[str, Any], context: Context) -> dict
             # unknown ticker is remembered too, so "Q3 2026" next can name the quarter for a fetch request.
             "ticker": context.ticker, "quarter": reply.get("offer") or context.quarter,
             "citations": list(answer.get("citations") or []),
-            # The next message answers "Which company do you mean?" (resolve reads this).
-            **({"clarify": True} if result.get("status") == "clarify" else {})}
+            # The assistant asked something ("clarify": which company; "needs_quarter": which quarter): the next
+            # message answers it (resolve and run_turn read this).
+            **({"fixed": reply["kind"]} if reply.get("kind") in ("clarify", "needs_quarter") else {})}
 
 
 def _approval_reply(context: Context, payload: dict[str, Any], session_id: str | None, requests: Any,
@@ -331,7 +332,11 @@ def _approval_reply(context: Context, payload: dict[str, Any], session_id: str |
 
     companies = list(corpus.quarters)
     if not context.quarter:
-        return {"kind": "needs_quarter", "offer": None, "message": approvals.ask_for_quarter(context.ticker, companies)}
+        prev = history[-1] if history else {}
+        again = prev.get("fixed") == "needs_quarter" and prev.get("ticker") == context.ticker
+        message = (approvals.ask_again_for_quarter(context.ticker) if again
+                   else approvals.ask_for_quarter(context.ticker, companies))
+        return {"kind": "needs_quarter", "offer": None, "message": message}
 
     # "Q3 2026" after a question about NVDA, or "nvda" after "Which company do you mean?": the real question is
     # the earlier one (stored masked).
@@ -415,9 +420,13 @@ def run_turn(payload: dict[str, Any], session_id: str | None, store: Store | Non
     result = answer.run({**payload, "ticker": context.ticker, "quarter": context.quarter if context.ticker else None,
                          "history": history, "context": context.to_dict(), "fixed_reply": reply}, **deps)
     record = turn_record(question, result, context)
+    prev = history[-1] if history else {}
     if record and context.reply_to_clarify and history:
         # Remember "Why did gross margin change? (nvda)", not "nvda": a later "Q3 2026" or fetch needs the question.
-        record["question"] = f"{history[-1]['question']} ({record['question']})"
+        record["question"] = f"{prev['question']} ({record['question']})"
+    elif record and prev.get("fixed") == "needs_quarter" and record.get("fixed") == "needs_quarter":
+        # Still waiting for the quarter ("ask a reviewer"): keep the real question, not this reply.
+        record["question"] = prev["question"]
     result["memory"] = {"loaded": len(history), "saved": False, "error": None}
     if store and session_id and record:
         try:

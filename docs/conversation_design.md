@@ -206,8 +206,11 @@ Expected:
 leaves the fixed corpus: an external API call, content nobody has checked, and a cost.
 
 > **User** *(viewer)*: What did NVDA say about data center demand?
-> **Assistant:** NVDA isn't in my corpus. If you name a quarter (for example Q3 2026), I can ask a reviewer to
-> approve fetching that call from an external source. Or ask about AMD, RIVN, ROOT, META, CRDO, NBIS.
+> **Assistant:** NVDA isn't in my corpus. Which quarter's call should I request? Reply with the quarter, for
+> example Q3 2026 (the company's own fiscal quarter); a reviewer then approves fetching that call from an
+> external source. Or ask about AMD, RIVN, ROOT, META, CRDO, NBIS.
+> **User:** ask a reviewer
+> **Assistant:** I need the quarter before I can send the request: which NVDA call, for example Q3 2026?
 > **User:** Q3 2026
 > **Assistant:** NVDA isn't in my corpus. I can fetch the transcript of its Q3 2026 call from an external
 > source, for this question only, once a reviewer approves. I've sent the request (b3f344e6).
