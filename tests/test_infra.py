@@ -258,18 +258,30 @@ def test_runtime_gets_the_memory_id(tmp_path):
 
 # --- approval gate ---------------------------------------------------------------------------------------------
 
-def test_fetch_requests_expire_and_go_with_the_runtime(tmp_path):
-    (table,) = Template.from_stack(runtime(tmp_path)).find_resources("AWS::DynamoDB::Table").values()
-    assert table["Properties"]["TimeToLiveSpecification"] == {"AttributeName": "expires_ttl", "Enabled": True}
-    assert table["DeletionPolicy"] == "Delete"
+def test_fetch_requests_and_usage_counters_expire_and_go_with_the_runtime(tmp_path):
+    tables = Template.from_stack(runtime(tmp_path)).find_resources("AWS::DynamoDB::Table")
+    assert sorted(k.rstrip("0123456789ABCDEF") for k in tables) == ["FetchRequests", "UsageCounters"]
+    for table in tables.values():
+        assert table["Properties"]["TimeToLiveSpecification"] == {"AttributeName": "expires_ttl", "Enabled": True}
+        assert table["DeletionPolicy"] == "Delete"
 
 
 def test_role_may_use_the_request_table_but_not_delete_from_it(tmp_path):
-    found = by_action(statements(tmp_path), "dynamodb:UpdateItem")
+    found = [s for s in by_action(statements(tmp_path), "dynamodb:UpdateItem") if "FetchRequests" in json.dumps(s["Resource"])]
     assert len(found) == 1
     assert sorted(found[0]["Action"]) == ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:Scan", "dynamodb:UpdateItem"]
-    assert "FetchRequests" in json.dumps(found[0]["Resource"])
     assert not by_action(statements(tmp_path), "dynamodb:DeleteItem")
+
+
+def test_role_may_only_count_on_the_usage_table(tmp_path):
+    found = [s for s in by_action(statements(tmp_path), "dynamodb:UpdateItem") if "UsageCounters" in json.dumps(s["Resource"])]
+    assert len(found) == 1 and found[0]["Action"] == "dynamodb:UpdateItem"
+
+
+def test_runtime_gets_the_usage_table_and_the_caps(tmp_path):
+    res = Template.from_stack(runtime(tmp_path)).find_resources("AWS::BedrockAgentCore::Runtime")
+    env = next(iter(res.values()))["Properties"]["EnvironmentVariables"]
+    assert "USAGE_TABLE" in env and env["TURNS_PER_SESSION"] == "30" and env["TURNS_PER_DAY"] == "100"
 
 
 def test_runtime_gets_the_request_table_and_the_gateway(tmp_path):

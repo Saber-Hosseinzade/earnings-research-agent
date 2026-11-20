@@ -11,6 +11,7 @@ ask.py and main.py are untouched, so the v1.0 and v1.1 baselines stay reproducib
                         | "out_of_corpus" | "clarify" | "approval_pending",
               "answer": {"covered", "answer", "citations"} | null,
               "citation_check": {"ok", "problems", "verified", "unreturned"} | null,
+              "passages": [{passage_id, ticker, quarter, speaker, role, ..., text}] (verified citations, covered answers),
               "retrieval": {"queries": [...], "returned": [passage ids]},
               "run": {budget counters, latency_ms, model_id, prompts: {name: source, id, version, sha256}},
               "guardrail": {"input": check, "output": check | null} | null,
@@ -190,7 +191,10 @@ def _run(payload: dict[str, Any], model: Any | None, budget: RunBudget | None,
         elif gout.text:  # PII masked
             answer = {**answer, "answer": gout.text}
 
-    return {"status": status, "question": question, "answer": answer, "citation_check": check,
+    # The verified citations' passages, for display (the UI shows what each citation says). Not in the audit record.
+    passages = [{**ledger.returned[pid], "text": ledger.texts.get(pid, "")}
+                for pid in (check or {}).get("verified", []) if pid in ledger.returned] if answer and answer["covered"] else []
+    return {"status": status, "question": question, "answer": answer, "citation_check": check, "passages": passages,
             "retrieval": {"queries": ledger.queries, "returned": list(ledger.returned)},
             "run": run_info, "guardrail": guard_info, "error": error}
 

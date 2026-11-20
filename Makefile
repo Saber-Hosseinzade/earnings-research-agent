@@ -3,7 +3,9 @@
 
 PROFILE ?= sandbox
 
-.PHONY: help sso-login sso-whoami test kb-docs kb-sync corpus-terms
+.PHONY: help sso-login sso-whoami test kb-docs kb-sync corpus-terms ui
+UI_DEV_USER ?= local-viewer
+UI_DEV_ROLE ?= viewer
 
 help:  ## List the targets
 	@grep -E '^[a-z-]+:.*##' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-20s %s\n", $$1, $$2}'
@@ -25,3 +27,7 @@ kb-sync: kb-docs  ## Upload passages to the KB bucket and run an ingestion job
 
 corpus-terms:  ## Rebuild corpus/terms.json (words that are not tickers) from corpus/v2/raw (offline)
 	python scripts/corpus_terms.py
+
+ui:  ## Run the Streamlit UI locally against the deployed runtime (needs AGENT_RUNTIME_ARN; UI_DEV_ROLE=viewer|reviewer)
+	cd ui && uv sync --frozen -q && AWS_PROFILE=$(PROFILE) AWS_REGION=eu-central-1 UI_AUTH=dev \
+	  UI_DEV_USER=$(UI_DEV_USER) UI_DEV_ROLE=$(UI_DEV_ROLE) .venv/bin/streamlit run app.py
