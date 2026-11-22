@@ -225,7 +225,7 @@ def test_memory_keeps_the_masked_question_never_the_raw_one():
     ("How is EPYC doing?", []),                          # product names the transcripts use
     ("What did the CEO say about AEC demand and GPU supply?", []),
     ("What did AMD say about FCF and R&D in Q2 2026?", []),
-    ("What about Nvidia?", []),                          # lowercase names are not recognised (known limit)
+    ("What about Nvidia?", []),                          # a name, not a ticker: Corpus.outside_named finds it
     ("Mail me at {EMAIL}", []),
 ])
 def test_unknown_tickers(text, expected):
@@ -408,3 +408,95 @@ def test_clarify_then_answer_resolves_to_the_named_company_and_its_latest_quarte
     second, r = run(store, "AMD")
     assert second["context"]["how"] == "named" and (r.calls[0]["ticker"], r.calls[0]["quarter"]) == ("AMD", "2026Q2")
     assert second["context"]["history_turns"] == 1 and second["memory"]["loaded"] == 1   # the topic comes with it
+
+
+# --- companies named by name, not ticker (issue #40, found on the hosted UI 22 Nov) ------------------------------
+
+@pytest.mark.parametrize("question, ticker", [
+    ("What did NVIDIA say about data center demand in Q3 2026?", "NVDA"),
+    ("What did Nvidia say about data center demand in Q3 2026?", "NVDA"),
+    ("what did nvidia say about demand?", "NVDA"),
+    ("And Microsoft?", "MSFT"),
+    ("How did General Motors describe EV demand in Q3 2026?", "GM"),
+    ("What did Taiwan Semiconductor say about capacity?", "TSM"),
+])
+def test_a_known_outside_company_name_resolves_to_its_ticker_not_the_previous_company(question, ticker):
+    c = resolve(question, {}, prev(), CORPUS)
+    assert (c.ticker, c.how) == (ticker, "unknown_ticker")
+
+
+@pytest.mark.parametrize("question", [
+    "Did AMD mention Nvidia in Q2 2026?",          # a corpus company wins; Nvidia is a topic
+    "What did Meta say about Microsoft?",
+    "Why is apple demand weak?",                   # lowercase ordinary word, not the whole message
+])
+def test_a_corpus_company_or_an_ordinary_word_is_not_an_outside_company(question):
+    assert resolve(question, {}, prev(), CORPUS).how != "unknown_ticker"
+
+
+def test_the_hosted_ui_session_now_ends_in_a_fetch_proposal_not_an_amd_reply():
+    store, requests = InMemoryStore(), approvals.InMemoryRequests()
+    store.turns[("anonymous", "s-1")] = prev()
+    out = session.run_turn({"question": "What did NVIDIA say about data center demand in Q3 2026?"}, "s-1", store,
+                           CORPUS, requests=requests, model=NoModel(), retriever=FakeRetriever())
+    assert out["status"] == "approval_pending"
+    (req,) = requests.pending()
+    assert (req["ticker"], req["quarter"]) == ("NVDA", "2026Q3")
+
+
+@pytest.mark.parametrize("question, name", [
+    ("What did Zorblax say about margins in Q3 2026?", "Zorblax"),
+    ("Has Acme Robotics guided for next year?", "Acme Robotics"),
+    ("Zorblax reported what?", "Zorblax"),
+])
+def test_an_unrecognised_name_in_the_company_place_asks_instead_of_carrying(question, name):
+    c = resolve(question, {}, prev(), CORPUS)
+    assert (c.ticker, c.how) == (None, "none") and c.notes == [f"unrecognised company: {name}"]
+    r = session.clarify_reply(c, question, CORPUS)
+    assert r["message"].startswith(f'I don\'t know which company "{name}" is. Which company do you mean?')
+
+
+@pytest.mark.parametrize("question", [
+    "What did Lisa Su say about Instinct?",        # a speaker on the call
+    "What did management say about China?",
+    "What about China?",                           # not in the company's place
+    "How is Europe's demand?",
+    "What did they say about Venice?",
+    "What did the CFO say about EPYC?",
+    "And operating margin?",
+])
+def test_names_the_transcripts_use_and_other_positions_still_carry(question):
+    c = resolve(question, {}, prev(), CORPUS)
+    assert (c.ticker, c.how) == ("AMD", "carried")
+
+
+def test_golden_and_multiturn_questions_flag_an_outside_company_only_where_the_set_expects_one():
+    from pathlib import Path
+    root = Path(__file__).resolve().parents[1]
+    golden = [json.loads(line)["question"] for line in (root / "eval" / "golden_set.jsonl").open()]
+    assert [q for q in golden if CORPUS.outside_named(q) or session.unrecognised_company(q, CORPUS)] == []
+    wrong = []
+    for conv in json.loads((root / "eval" / "multiturn_set.json").read_text())["conversations"]:
+        for turn in conv["turns"]:
+            if "user" not in turn:
+                continue
+            flagged = CORPUS.outside_named(turn["user"]) or session.unrecognised_company(turn["user"], CORPUS)
+            if flagged and turn.get("expect", {}).get("how") not in ("unknown_ticker", "none", None):
+                wrong.append((conv["id"], turn["user"], flagged))
+    assert wrong == []
+
+
+@pytest.mark.parametrize("reply", ["no. nvda", "No, NVDA", "nope nvda", "I meant nvda", "nvda"])
+def test_another_company_in_reply_to_a_quarter_offer_keeps_the_original_quarter(reply):
+    history = [{"question": "What did AMD say about data center demand in Q3 2026?",
+                "answer": "The corpus has AMD's calls for Q3 2025 to Q2 2026, not Q3 2026. Do you want the Q2 2026 call?",
+                "covered": False, "ticker": "AMD", "quarter": "2026Q2", "fixed": "quarter_not_in_corpus"}]
+    c = resolve(reply, {}, history, CORPUS)
+    assert (c.ticker, c.quarter, c.how, c.reply_to_clarify) == ("NVDA", "2026Q3", "unknown_ticker", True)
+
+
+def test_yes_to_a_quarter_offer_still_takes_the_offered_quarter():
+    history = [{"question": "What did AMD say in Q3 2026?", "answer": "…Do you want the Q2 2026 call?",
+                "covered": False, "ticker": "AMD", "quarter": "2026Q2", "fixed": "quarter_not_in_corpus"}]
+    c = resolve("yes", {}, history, CORPUS)
+    assert (c.ticker, c.quarter, c.how) == ("AMD", "2026Q2", "carried")

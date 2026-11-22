@@ -17,7 +17,10 @@ resolve()   Decides the ticker and quarter a message is about, in code, from the
             quarter" the one before the quarter in context. A carried quarter is dropped when the
             company changes and the new company has no call for it.
             A ticker outside the corpus (a cashtag, or a capitalised word that is not a common
-            abbreviation) resolves as "unknown_ticker" and never falls back to the previous company.
+            abbreviation), or a well-known company outside it named by name ("Nvidia", calls.json
+            outside_companies), resolves as "unknown_ticker" and never falls back to the previous company.
+            Any other capitalised name in the company's place ("What did Zorblax say...") that the
+            transcripts never use pins nothing, so the clarifying question asks which company (issue #40).
 
 clarify_reply() The clarifying question (flow 2), in code: no company is known (none in the message or the
             session, not a cross-company question) and the question points at one without naming it
@@ -69,7 +72,8 @@ _Q_FORMS = [
 
 
 # Company names that are also ordinary words: in lowercase they name the company only as the whole message.
-COMMON_WORD_NAMES = {"root", "meta", "credo"}
+COMMON_WORD_NAMES = {"root", "meta", "credo", "apple", "oracle", "amazon", "snowflake", "progressive", "lemonade",
+                     "snap", "lucid", "ford", "arista"}
 
 
 @dataclass
@@ -77,6 +81,8 @@ class Corpus:
     quarters: dict[str, list[str]]          # ticker -> labels, oldest first
     names: dict[str, list[str]]             # ticker -> names a user may type
     terms: set[str] = field(default_factory=set)   # capitalised words the transcripts use (corpus/terms.json)
+    outside: dict[str, list[str]] = field(default_factory=dict)   # well-known tickers outside the corpus -> names
+    proper_nouns: set[str] = field(default_factory=set)   # lowercased names the transcripts use (people, products)
 
     @classmethod
     def load(cls, path: Path = CALLS_FILE) -> "Corpus":
@@ -85,33 +91,45 @@ class Corpus:
         for call in data["calls"]:
             quarters[call["ticker"]].append(call["label"])
         names = {t: v for t, v in data.get("companies", {}).items() if not t.startswith("_")}
+        outside = {t: v for t, v in data.get("outside_companies", {}).items() if not t.startswith("_")}
         terms_file = Path(path).with_name("terms.json")
-        terms = set(json.loads(terms_file.read_text())["terms"]) if terms_file.exists() else set()
-        return cls({t: sorted(qs) for t, qs in quarters.items()}, names, terms)
+        words = json.loads(terms_file.read_text()) if terms_file.exists() else {}
+        return cls({t: sorted(qs) for t, qs in quarters.items()}, names, set(words.get("terms", [])), outside,
+                   set(words.get("proper_nouns", [])))
 
     def named_tickers(self, text: str) -> list[str]:
         """Corpus tickers named in the text, in order of first mention. Any case ("meta", "amd"), except that a
         name which is also an ordinary word, typed all lowercase ("root", "meta", "credo"), counts only when it
         is the whole message, like a reply to "Which company do you mean?": "the root cause" is not ROOT.
         A lowercase name followed by a hyphen ("amd-like") is not the company either."""
-        whole = re.sub(r"[^a-z ]", "", text.lower()).strip()
-        hits: list[tuple[int, str]] = []
-        for ticker in self.quarters:
-            for name in [ticker, *self.names.get(ticker, [])]:
-                pattern = r"(?<![A-Za-z])" + re.escape(name) + r"(?:'s)?(?![A-Za-z])"
-                m = next((m for m in re.finditer(pattern, text, re.IGNORECASE)
-                          if not m.group(0).islower()
-                          or (text[m.end():m.end() + 1] != "-"   # "amd-like" is a description, not AMD
-                              and (name.lower() not in COMMON_WORD_NAMES or whole == name.lower()))), None)
-                if m:
-                    hits.append((m.start(), ticker))
-                    break
-        return [t for _, t in sorted(hits)]
+        return _named(text, {t: [t, *self.names.get(t, [])] for t in self.quarters})
+
+    def outside_named(self, text: str) -> list[str]:
+        """Tickers of well-known companies outside the corpus named in the text ("Nvidia", "NVIDIA",
+        "nvidia" -> NVDA), same rules as named_tickers. Only names: a capitalised ticker is found by
+        unknown_tickers."""
+        return _named(text, {t: names for t, names in self.outside.items() if t not in self.quarters})
+
+
+def _named(text: str, table: dict[str, list[str]]) -> list[str]:
+    whole = re.sub(r"[^a-z ]", "", text.lower()).strip()
+    hits: list[tuple[int, str]] = []
+    for ticker, names in table.items():
+        for name in names:
+            pattern = r"(?<![A-Za-z])" + re.escape(name) + r"(?:'s)?(?![A-Za-z])"
+            m = next((m for m in re.finditer(pattern, text, re.IGNORECASE)
+                      if not m.group(0).islower()
+                      or (text[m.end():m.end() + 1] != "-"   # "amd-like" is a description, not AMD
+                          and (name.lower() not in COMMON_WORD_NAMES or whole == name.lower()))), None)
+            if m:
+                hits.append((m.start(), ticker))
+                break
+    return [t for _, t in sorted(hits)]
 
 
 # Capitalised words that are not tickers. A capitalised 2-5 letter word not on this list, and not a corpus
-# ticker, is taken as a ticker outside the corpus; so is any cashtag ($NVDA). Lowercase company names
-# ("nvidia") are not recognised: the question then goes to the agent like any other.
+# ticker, is taken as a ticker outside the corpus; so is any cashtag ($NVDA). Company names ("Nvidia") are
+# matched separately (Corpus.outside_named, unrecognised_company).
 NOT_TICKERS = {
     "AI", "AGI", "API", "APIS", "ASIC", "AWS", "CEO", "CFO", "COO", "CTO", "CPU", "CPUS", "DC", "EBIT", "EBITDA",
     "ESG", "ETF", "EU", "EV", "EVS", "FX", "FY", "GAAP", "GPU", "GPUS", "HBM", "IPO", "IR", "IT", "KPI", "LLM",
@@ -134,6 +152,39 @@ def unknown_tickers(text: str, corpus: "Corpus") -> list[str]:
         if flagged and symbol not in found:
             found.append(symbol)
     return found
+
+
+# "What did Nvidia say...", "has Palantir guided...", "Lucid reported...": a capitalised name where the company
+# would be. Only this position counts: "What about China?" or "Europe's demand" after an AMD question stays on AMD.
+_VERBS = r"(?:say|said|says|report|reported|mention|mentioned|discuss|discussed|guide|guided|expect|expects|announce|" \
+         r"announced|talk|comment|commented|note|noted|describe|explain|explained|disclose|disclosed)"
+_NAME = r"((?:[A-Z][\w&.-]*\s+){0,2}[A-Z][\w&.-]*)"
+_SUBJECT = [
+    re.compile(r"\b(?i:did|does|do|has|have|had|will|would|was|is)\s+" + _NAME + r"\s+" + _VERBS + r"\b"),
+    re.compile(r"(?<![\w&.-])" + _NAME + r"\s+(?:said|says|reported|reports|guided|announced|disclosed)\b"),
+]
+# Capitalised words in that position that are not a company.
+GENERIC_SUBJECTS = {"management", "they", "he", "she", "it", "we", "i", "you", "the", "this", "that", "company",
+                    "ceo", "cfo", "coo", "cto", "analysts", "analyst", "someone", "anyone", "everyone", "what", "who",
+                    "how", "why", "when", "where", "which", "and", "but", "so", "also", "then"}
+
+
+def unrecognised_company(text: str, corpus: "Corpus") -> str | None:
+    """A capitalised name in the company's place ("What did Nvidia say...") that is no company the corpus
+    knows: not a corpus or outside name, not a corpus term (EPYC), not a common abbreviation, not a name
+    the transcripts use (people, products, partners: corpus/terms.json proper_nouns), not a pronoun.
+    Such a message must not carry the previous company over; resolve() asks which company is meant."""
+    from retrieval import ABBREVIATIONS
+    known_upper = NOT_TICKERS | {a.upper() for a in ABBREVIATIONS} | set(corpus.quarters) | corpus.terms
+    for pattern in _SUBJECT:
+        for m in pattern.finditer(text):
+            words = re.findall(r"[A-Za-z][\w&.-]*", m.group(1))
+            # "Lisa Su": every word known, a speaker. "Acme Robotics": "Robotics" is on a call, "Acme" is not.
+            if (any(w.lower() in GENERIC_SUBJECTS for w in words)
+                    or all(w.lower() in corpus.proper_nouns or w.upper() in known_upper for w in words)):
+                continue
+            return m.group(1)
+    return None
 
 
 def quarter_label(label: str) -> str:
@@ -173,8 +224,10 @@ def clarify_reply(context: "Context", question: str, corpus: "Corpus") -> dict[s
     if context.how != "none":
         return None
     names = list(corpus.quarters)
+    unsure = next((n.split(": ", 1)[1] for n in context.notes if n.startswith("unrecognised company: ")), None)
+    lead = f"I don't know which company \"{unsure}\" is. " if unsure else ""
     return {"kind": "clarify", "offer": None,
-            "message": f"Which company do you mean? I have calls for {', '.join(names[:-1])} and {names[-1]}."}
+            "message": f"{lead}Which company do you mean? I have calls for {', '.join(names[:-1])} and {names[-1]}."}
 
 
 def quarter_in(text: str) -> str | None:
@@ -209,9 +262,11 @@ REPLY_WORDS = {"yes", "no", "ok", "okay", "sure", "all", "any", "none", "both", 
 
 
 def clarify_answer_ticker(question: str, corpus: Corpus) -> str | None:
-    """A one-word reply to the clarifying question, in any case ("nvda", "$nvda"), as a ticker outside the
-    corpus. Lowercase words are not tickers elsewhere (unknown_tickers); here the question asked for one."""
-    m = re.fullmatch(r"\s*\$?([A-Za-z]{1,5})\s*[.!?]?\s*", question)
+    """A one-word reply to the clarifying question or to a quarter offer, in any case ("nvda", "$nvda",
+    "no. nvda", "I meant nvda"), as a ticker outside the corpus. Lowercase words are not tickers elsewhere
+    (unknown_tickers); here the assistant has just asked, so a bare word is an answer."""
+    m = re.fullmatch(r"\s*(?:(?:no|nope|not\s+that|i\s+meant?|i\s+mean)\s*[,.!:;-]*\s*)?\$?([A-Za-z]{1,5})\s*[.!?]?\s*",
+                     question, re.IGNORECASE)
     if not m or m.group(1).lower() in REPLY_WORDS:
         return None
     symbol = m.group(1).upper()
@@ -231,20 +286,30 @@ def resolve(question: str, payload: dict[str, Any], history: list[dict[str, Any]
         ticker, quarter, how = p_ticker, p_quarter, "payload"
     else:
         named = corpus.named_tickers(question)
-        unknown = unknown_tickers(question, corpus)
+        unknown = list(dict.fromkeys([*corpus.outside_named(question), *unknown_tickers(question, corpus)]))
         after_clarify = prev.get("fixed") == "clarify"
-        if after_clarify and not named and not unknown:
+        # "no. nvda" after "Do you want the Q2 2026 call?" answers the offer with another company (22 Nov).
+        after_offer = prev.get("fixed") == "quarter_not_in_corpus"
+        if (after_clarify or after_offer) and not named and not unknown:
             unknown = [t for t in [clarify_answer_ticker(question, corpus)] if t]
         if unknown and not named:   # "What about NVDA?" must not carry the previous company over
             # After "Which company do you mean?", the quarter named in the original question still holds.
-            quarter = quarter_in(question) or (prev.get("quarter") if after_clarify else None)
-            return Context(unknown[0], quarter, "unknown_ticker", len(history), reply_to_clarify=after_clarify)
+            # After a quarter offer, the remembered quarter is the one offered for the other company: take the
+            # quarter the original question named instead.
+            quarter = (quarter_in(question) or (prev.get("quarter") if after_clarify else None)
+                       or (quarter_in(prev.get("question", "")) if after_offer else None))
+            return Context(unknown[0], quarter, "unknown_ticker", len(history),
+                           reply_to_clarify=after_clarify or (after_offer and bool(clarify_answer_ticker(question, corpus))))
         if unknown:
             notes.append(f"not in the corpus: {', '.join(unknown)}")
         compare = bool(COMPARE.search(question))
         other = prev.get("ticker") if named and prev.get("ticker") not in (None, *named) else None
         if len(named) > 1 or (not named and CROSS_COMPANY.search(question)) or (compare and other):
             return Context(None, None, "cross_company", len(history), [f"named: {named}"] if named else [])
+        unsure = None if named else unrecognised_company(question, corpus)
+        if unsure:
+            # "What did Nvidia say...?" with a name not on any list: ask, never answer about the previous company.
+            return Context(None, quarter_in(question), "none", len(history), [f"unrecognised company: {unsure}"])
         if compare and (named or prev.get("ticker")) and not quarter_in(question):
             # "How did that compare with the quarter before?": one company, every quarter of it.
             return Context(named[0] if named else prev["ticker"], None, "cross_quarter", len(history))
@@ -315,9 +380,11 @@ def turn_record(question: str, result: dict[str, Any], context: Context) -> dict
             # unknown ticker is remembered too, so "Q3 2026" next can name the quarter for a fetch request.
             "ticker": context.ticker, "quarter": reply.get("offer") or context.quarter,
             "citations": list(answer.get("citations") or []),
-            # The assistant asked something ("clarify": which company; "needs_quarter": which quarter): the next
-            # message answers it (resolve and run_turn read this).
-            **({"fixed": reply["kind"]} if reply.get("kind") in ("clarify", "needs_quarter") else {})}
+            # The assistant asked something ("clarify": which company; "needs_quarter": which quarter;
+            # "quarter_not_in_corpus": do you want this quarter instead): the next message answers it (resolve and
+            # run_turn read this).
+            **({"fixed": reply["kind"]} if reply.get("kind") in ("clarify", "needs_quarter", "quarter_not_in_corpus")
+               else {})}
 
 
 def _approval_reply(context: Context, payload: dict[str, Any], session_id: str | None, requests: Any,
