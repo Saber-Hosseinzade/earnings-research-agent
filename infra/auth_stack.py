@@ -15,6 +15,7 @@ reviewer  chats, and approves or declines out-of-corpus fetches (agent/approvals
 
 from aws_cdk import CfnOutput, Duration, RemovalPolicy, Stack
 from aws_cdk import aws_cognito as cognito
+from aws_cdk import aws_secretsmanager as secretsmanager
 from constructs import Construct
 
 GROUPS = {
@@ -28,8 +29,11 @@ ID_TOKEN_VALIDITY = Duration.hours(8)
 
 class EarningsAuthStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, *, domain_prefix: str, callback_urls: list[str],
-                 logout_urls: list[str], **kwargs) -> None:
+                 logout_urls: list[str], ui_hostname: str = "", **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
+        if ui_hostname:  # the hosted UI's endpoint (ui_stack.py), known after its first deploy
+            callback_urls = [*callback_urls, f"https://{ui_hostname}/oauth2callback"]
+            logout_urls = [*logout_urls, f"https://{ui_hostname}/"]
 
         pool = cognito.UserPool(
             self,
@@ -74,9 +78,24 @@ class EarningsAuthStack(Stack):
             prevent_user_existence_errors=True,
         )
 
+        # For the hosted UI container (ui_stack.py). The client secret is copied in by scripts/deploy_ui.sh
+        # (scripts/ui_auth_config.py --to-secrets-manager), not by CDK: CDK's way reads it with a helper Lambda
+        # whose log group would never expire. Until then the secret holds a placeholder and sign-in fails.
+        self.client_secret = secretsmanager.Secret(
+            self, "UiClientSecret", secret_name="earnings-research-agent/ui-client-secret",
+            description="Cognito app client secret for the hosted UI (copied in by scripts/deploy_ui.sh)",
+            removal_policy=RemovalPolicy.DESTROY)
+        self.cookie_secret = secretsmanager.Secret(
+            self, "UiCookieSecret", secret_name="earnings-research-agent/ui-cookie-secret",
+            description="Signs the hosted UI's login cookie",
+            generate_secret_string=secretsmanager.SecretStringGenerator(password_length=48, exclude_punctuation=True),
+            removal_policy=RemovalPolicy.DESTROY)
+
         issuer = f"https://cognito-idp.{self.region}.amazonaws.com/{pool.user_pool_id}"
         CfnOutput(self, "UserPoolId", value=pool.user_pool_id)
         CfnOutput(self, "ClientId", value=client.user_pool_client_id)
         CfnOutput(self, "MetadataUrl", value=f"{issuer}/.well-known/openid-configuration")
         CfnOutput(self, "HostedUiUrl", value=domain.base_url())
+        CfnOutput(self, "ClientSecretName", value=self.client_secret.secret_name)
         self.user_pool, self.client = pool, client
+        self.metadata_url = f"{issuer}/.well-known/openid-configuration"

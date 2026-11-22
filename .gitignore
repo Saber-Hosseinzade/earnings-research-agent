@@ -38,3 +38,5 @@ eval/results/*.outputs.json
 
 # UI login secrets for local runs (scripts/ui_auth_config.py)
 ui/.streamlit/secrets.toml
+# The hosted UI endpoint (scripts/deploy_ui.sh): kept out of the public repo
+infra/.ui_hostname
