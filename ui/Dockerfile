@@ -1,5 +1,5 @@
 # The UI container: Streamlit behind the ECS Express Mode load balancer (infra/ui_stack.py). Built by CodeBuild
-# for ARM64 (infra/ui_image_stack.py, scripts/deploy_ui.sh), so no Docker is needed on the laptop.
+# for ARM64 (infra/ui_image_stack.py, scripts/deploy_ui.sh), so no local Docker is needed.
 FROM public.ecr.aws/docker/library/python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1

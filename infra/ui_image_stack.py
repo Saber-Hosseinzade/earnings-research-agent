@@ -65,7 +65,7 @@ class EarningsUiImageStack(Stack):
             environment=codebuild.BuildEnvironment(
                 build_image=codebuild.LinuxArmBuildImage.AMAZON_LINUX_2023_STANDARD_3_0,
                 compute_type=codebuild.ComputeType.SMALL,
-                privileged=True,  # docker build needs it; the build runs in AWS, not on the laptop
+                privileged=True,  # docker build needs it; the build runs in AWS, not locally
             ),
             environment_variables={
                 "REPO_URI": codebuild.BuildEnvironmentVariable(value=self.repository.repository_uri),
