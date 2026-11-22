@@ -7,29 +7,13 @@
     "CRDO": "Fiscal year ends early May; labels are fiscal. Q1 FY2027 not available on 5 Nov, so Q1 FY2026 is used"
   },
   "companies": {
-    "_comment": "Names a user may type for each ticker; agent/session.py matches them case-sensitively as whole words, plus the ticker itself in capitals. \"Root\" also matches a sentence starting with the word Root.",
-    "AMD": [
-      "Advanced Micro Devices"
-    ],
-    "RIVN": [
-      "Rivian"
-    ],
-    "ROOT": [
-      "Root",
-      "Root Insurance",
-      "Root Inc"
-    ],
-    "META": [
-      "Meta",
-      "Meta Platforms",
-      "Facebook"
-    ],
-    "CRDO": [
-      "Credo"
-    ],
-    "NBIS": [
-      "Nebius"
-    ]
+    "_comment": "Names a user may type for each ticker; agent/session.py matches them as whole words in any case, plus the ticker; a name that is also an ordinary word (root, meta, credo) counts in lowercase only as the whole message.",
+    "AMD": ["Advanced Micro Devices"],
+    "RIVN": ["Rivian"],
+    "ROOT": ["Root", "Root Insurance", "Root Inc"],
+    "META": ["Meta", "Meta Platforms", "Facebook"],
+    "CRDO": ["Credo"],
+    "NBIS": ["Nebius"]
   },
   "calls": [
     {
@@ -176,5 +160,42 @@
       "fiscal_year": 2026,
       "fiscal_quarter": 2
     }
-  ]
+  ],
+  "outside_companies": {
+    "_comment": "Well-known companies outside the corpus, by the names a user may type (any case, whole words; agent/session.py). A name here resolves to its ticker, so the turn becomes a fetch proposal instead of carrying the previous company. Tickers in capitals are recognised without this list.",
+    "NVDA": ["Nvidia"],
+    "AAPL": ["Apple"],
+    "MSFT": ["Microsoft"],
+    "GOOGL": ["Alphabet", "Google"],
+    "AMZN": ["Amazon"],
+    "TSLA": ["Tesla"],
+    "INTC": ["Intel"],
+    "ORCL": ["Oracle"],
+    "IBM": ["IBM"],
+    "NFLX": ["Netflix"],
+    "AVGO": ["Broadcom"],
+    "QCOM": ["Qualcomm"],
+    "TSM": ["TSMC", "Taiwan Semiconductor"],
+    "ARM": ["Arm Holdings"],
+    "MU": ["Micron"],
+    "ADBE": ["Adobe"],
+    "CRM": ["Salesforce"],
+    "PLTR": ["Palantir"],
+    "UBER": ["Uber"],
+    "SNOW": ["Snowflake"],
+    "SHOP": ["Shopify"],
+    "LCID": ["Lucid", "Lucid Motors"],
+    "F": ["Ford"],
+    "GM": ["General Motors"],
+    "LMND": ["Lemonade"],
+    "PGR": ["Progressive"],
+    "CRWV": ["CoreWeave"],
+    "MRVL": ["Marvell"],
+    "ANET": ["Arista"],
+    "SMCI": ["Supermicro", "Super Micro"],
+    "HPE": ["Hewlett Packard Enterprise"],
+    "DELL": ["Dell"],
+    "SNAP": ["Snap", "Snapchat"],
+    "PINS": ["Pinterest"]
+  }
 }
