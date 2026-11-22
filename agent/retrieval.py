@@ -1,0 +1,197 @@
+"""The retrieve_passages tool: search the transcript Knowledge Base, remember what came back.
+
+One passage is one speaker turn of one call (or part of a long turn), with an ID
+like ``AMD_2026Q2_t003_p1`` that is fixed before ingestion. The tool returns the
+passages with their IDs, and records every ID it returned in a ``Ledger`` for
+the run. The citation check (``citations.py``) compares the answer's cited IDs
+with that ledger: an ID the retriever never returned in this run is flagged,
+not trusted.
+
+Filtering: the retrieval baseline (9 Nov) found the right call at rank 1 for
+only 15 of 30 questions without a filter, because the same speaker says similar
+things every quarter. So when the caller already knows the ticker or quarter,
+the entrypoint *pins* them: the pinned values are applied in code and the model
+cannot widen the search. When nothing is pinned, the model may pass ticker and
+quarter itself.
+
+Search limit: the prompt asks for at most two searches and no repeated query, but
+the model does not keep to it (11 Nov: three keyword variants of one query, then
+the run budget). So the tool enforces it in code: past ``max_searches``, or for a
+query already used in this run, it refuses with a non-retryable ``search_limit``
+error and does not call the retriever.
+
+Result shape matches the Lambda tool: ``{"ok": true, ...}`` or
+``{"ok": false, "error": {"type", "message", "retryable"}}``.
+"""
+
+from __future__ import annotations
+
+import json
+import os
+import re
+from dataclasses import dataclass, field
+from typing import Any, Callable
+
+from strands import tool
+
+DEFAULT_K = 5
+MAX_SEARCHES = 2
+MAX_K = 8
+QUARTER = re.compile(r"^\d{4}Q[1-4]$")
+
+# Abbreviations common on earnings calls, and what they stand for. A query that uses one is sent
+# with the full phrase appended in brackets ("capex" -> "capex (capital expenditures)"): the
+# embedding model often misses the passage that spells it out, and the bare phrase alone misses
+# passages where management says the abbreviation (ASP). Measured 18 Nov, eval/eval_abbreviations.py:
+# 16 terms x the calls that mention them, top-5 hit 64/125 bare, 92/125 expanded.
+ABBREVIATIONS = {
+    "capex": "capital expenditures",
+    "opex": "operating expenses",
+    "FCF": "free cash flow",
+    "OCF": "operating cash flow",
+    "EPS": "earnings per share",
+    "ARR": "annual recurring revenue",
+    "SBC": "stock-based compensation",
+    "R&D": "research and development",
+    "SG&A": "selling, general and administrative expenses",
+    "D&A": "depreciation and amortization",
+    "TAM": "total addressable market",
+    "ASP": "average selling price",
+    "CAC": "customer acquisition cost",
+    "LTV": "lifetime value",
+    "GWP": "gross written premium",
+    "DAP": "daily active people",
+}
+_ABBREVIATION = re.compile(
+    r"(?<![A-Za-z&])(" + "|".join(re.escape(a) for a in sorted(ABBREVIATIONS, key=len, reverse=True)) + r")s?(?![A-Za-z&])",
+    re.IGNORECASE)
+_LOOKUP = {a.lower(): full for a, full in ABBREVIATIONS.items()}
+
+
+def expand_abbreviations(query: str) -> str:
+    """The query with "(full phrase)" appended for each known abbreviation it uses, once each,
+    unless the phrase is already in the query. Other text is unchanged."""
+    added: list[str] = []
+    for m in _ABBREVIATION.finditer(query):
+        full = _LOOKUP[m.group(1).lower()]
+        if full not in added and full.lower() not in query.lower():
+            added.append(full)
+    return f"{query} ({'; '.join(added)})" if added else query
+
+# retrieve(query, ticker_or_None, quarter_or_None, k) -> [{"passage_id", "ticker", "quarter", "speaker",
+#                                                          "role", "start_seconds", "score", "text"}]
+Retriever = Callable[[str, str | None, str | None, int], list[dict[str, Any]]]
+
+
+@dataclass
+class Ledger:
+    """What the retriever returned during one run, in order."""
+
+    queries: list[dict[str, Any]] = field(default_factory=list)
+    returned: dict[str, dict[str, Any]] = field(default_factory=dict)  # passage_id -> metadata (no text)
+    refused: list[str] = field(default_factory=list)  # queries refused by the search limit
+    texts: dict[str, str] = field(default_factory=dict, repr=False)  # passage_id -> text, for the final answer
+
+    def record(self, query: str, ticker: str | None, quarter: str | None, passages: list[dict[str, Any]],
+               sent: str | None = None) -> None:
+        """``query`` as the model wrote it; ``sent`` as it went to the retriever (abbreviations expanded)."""
+        self.queries.append({"query": query, "sent": sent or query, "ticker": ticker, "quarter": quarter,
+                             "returned": [p["passage_id"] for p in passages]})
+        for p in passages:
+            self.returned.setdefault(p["passage_id"], {k: v for k, v in p.items() if k != "text"})
+            self.texts.setdefault(p["passage_id"], p.get("text", ""))
+
+    def used(self, query: str) -> bool:
+        key = " ".join(query.lower().split())
+        return any(" ".join(q["query"].lower().split()) == key for q in self.queries)
+
+
+def _error(kind: str, message: str, retryable: bool = False) -> str:
+    return json.dumps({"ok": False, "error": {"type": kind, "message": message[:300], "retryable": retryable}})
+
+
+def make_retrieve_tool(retriever: Retriever, ledger: Ledger,
+                       pinned_ticker: str | None = None, pinned_quarter: str | None = None,
+                       max_searches: int = MAX_SEARCHES):
+    """Build the tool for one run. Pinned values override whatever the model passes."""
+
+    @tool
+    def retrieve_passages(query: str, ticker: str | None = None, quarter: str | None = None,
+                          k: int = DEFAULT_K) -> str:
+        """Search the earnings-call transcripts for passages relevant to a query.
+
+        Returns JSON. On success: ok=true and passages, each with passage_id, ticker, quarter, speaker,
+        role and text. Cite passages by their passage_id. On failure: ok=false with error.type and
+        error.retryable. Do not retry an error that is not retryable.
+
+        Args:
+            query: What to search for, in plain words, e.g. "reasons for gross margin change".
+            ticker: Limit the search to one company, e.g. "AMD". Leave empty to search all companies.
+            quarter: Limit the search to one quarter, in the form YYYYQn, e.g. "2026Q2". Leave empty for all.
+            k: How many passages to return, 1 to 8.
+        """
+        query = (query or "").strip()
+        t = pinned_ticker or ((ticker or "").strip().upper() or None)
+        q = pinned_quarter or ((quarter or "").strip().upper() or None)
+        if not query:
+            return _error("bad_request", "query is empty")
+        if q and not QUARTER.match(q):
+            return _error("bad_request", f"quarter must look like 2026Q2, got {q!r}")
+        if len(ledger.queries) >= max_searches or ledger.used(query):
+            ledger.refused.append(query)
+            why = "this query was already used" if ledger.used(query) else f"the limit is {max_searches} searches"
+            return _error("search_limit", f"Search refused: {why}. Do not search again. "
+                          "Answer now from the passages you already have, or say the calls did not discuss it.")
+        k = max(1, min(int(k or DEFAULT_K), MAX_K))
+        sent = expand_abbreviations(query)
+        try:
+            passages = retriever(sent, t, q, k)
+        except Exception as exc:  # throttling, permissions, network
+            retryable = getattr(exc, "retryable", None)
+            if retryable is None:
+                retryable = type(exc).__name__ in {"ThrottlingException"} or "Throttl" in str(exc)
+            return _error("retrieve_failed", str(exc), bool(retryable))
+        ledger.record(query, t, q, passages, sent)
+        return json.dumps({"ok": True, "filter": {"ticker": t, "quarter": q}, "passages": passages})
+
+    return retrieve_passages
+
+
+def bedrock_retriever(kb_id: str | None = None, region: str | None = None) -> Retriever:
+    """Retriever backed by the Knowledge Base's Retrieve API (filter on the passage metadata)."""
+    import boto3
+
+    kb_id = kb_id or os.environ["KNOWLEDGE_BASE_ID"]
+    client = boto3.client("bedrock-agent-runtime", region_name=region)
+
+    def retrieve(query: str, ticker: str | None, quarter: str | None, k: int) -> list[dict[str, Any]]:
+        search: dict[str, Any] = {"numberOfResults": k}
+        conds = [{"equals": {"key": key, "value": val}} for key, val in (("ticker", ticker), ("quarter", quarter)) if val]
+        if len(conds) == 1:
+            search["filter"] = conds[0]
+        elif conds:
+            search["filter"] = {"andAll": conds}
+        resp = client.retrieve(knowledgeBaseId=kb_id, retrievalQuery={"text": query},
+                               retrievalConfiguration={"vectorSearchConfiguration": search})
+        out = []
+        for r in resp["retrievalResults"]:
+            m = r.get("metadata", {})
+            out.append({
+                "passage_id": m.get("passage_id"), "ticker": m.get("ticker"), "quarter": m.get("quarter"),
+                "speaker": m.get("speaker"), "role": m.get("role"),
+                "start_seconds": None if m.get("start_seconds") is None else int(m["start_seconds"]),
+                "score": round(float(r.get("score", 0.0)), 4),
+                "text": (r.get("content") or {}).get("text", ""),
+            })
+        return out
+
+    return retrieve
+
+
+def default_retriever() -> Retriever:
+    """The Gateway (MCP) when GATEWAY_URL is set, as deployed; otherwise the Knowledge Base directly (local runs)."""
+    if os.environ.get("GATEWAY_URL"):
+        from gateway import gateway_retriever
+
+        return gateway_retriever()
+    return bedrock_retriever()

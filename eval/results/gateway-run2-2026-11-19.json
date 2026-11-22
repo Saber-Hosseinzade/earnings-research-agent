@@ -1,0 +1,2641 @@
+{
+  "label": "gateway-run2",
+  "date": "2026-11-19",
+  "run_at": "2026-11-19T11:36:36+00:00",
+  "agent_model_id": "eu.amazon.nova-2-lite-v1:0",
+  "judge_model_id": "eu.amazon.nova-pro-v1:0",
+  "git_head": "df4638a",
+  "git_tag_v1.0": "c1a7eac",
+  "agent_source_sha256": "eb253dd0db66256fa24f543043a9453fddf32a7ab500fff1a1b24495bdb76534",
+  "prompt_sha256": {
+    "answer_final": "53074c83f593e76b48747d53912b89eae84765ecc48feed8703a392533be565b",
+    "answer_system": "84f6850fa66d0e9ef87fada389d1a7ce3cbdecf6d7649fb4edb6c73cbdf9c62a"
+  },
+  "corpus_manifest": "corpus/manifest_v2.json",
+  "target": "v2.0",
+  "scored_as": "v2.0 CitedAnswer from KB passages, one run per question",
+  "summary": {
+    "answerable": 30,
+    "unanswerable": 4,
+    "retrieval_right_call": 30,
+    "task": {
+      "correct": 21,
+      "partial": 7,
+      "missing": 2
+    },
+    "grounding": {
+      "supported": 25,
+      "unsupported": 5,
+      "no_claim": 0
+    },
+    "false_abstentions": 2,
+    "no_answer": {
+      "answerable": 0,
+      "unanswerable": 0
+    },
+    "abstention_correct": 4,
+    "answered_anyway": 0,
+    "unanswerable_answers_unsupported": 0,
+    "judge_errors": 0,
+    "citations": {
+      "answers_given": 28,
+      "check_ok": 28,
+      "cited_not_returned": 0,
+      "uncited_answers": 0,
+      "support": {
+        "supported": 28,
+        "partial": 0,
+        "unsupported": 0
+      },
+      "support_judge_errors": 0
+    },
+    "gold_turn_returned": 30,
+    "gold_turn_cited": 28,
+    "search_limit": {
+      "runs_with_refused_search": 6,
+      "final_answer_after_stop": 0
+    },
+    "guardrail": {
+      "runs": 34,
+      "blocked": {
+        "answerable": 0,
+        "unanswerable": 0
+      },
+      "blocked_by": {},
+      "masked": 0,
+      "errors": 0,
+      "grounding_scored": 28,
+      "grounding_flagged": 2,
+      "flag_vs_judge_grounding": {
+        "flagged": {
+          "supported": 2
+        },
+        "not_flagged": {
+          "supported": 23,
+          "unsupported": 3
+        }
+      },
+      "flag_vs_citation_support": {
+        "flagged": {
+          "supported": 2
+        },
+        "not_flagged": {
+          "supported": 26
+        }
+      }
+    }
+  },
+  "agent_runs": {
+    "AMD-01": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 5654,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "searches_refused": 0,
+        "final_answer": null,
+        "latency_ms": 3851,
+        "model_id": "eu.amazon.nova-2-lite-v1:0",
+        "prompts": {
+          "answer_system": {
+            "source": "file",
+            "id": null,
+            "version": null,
+            "sha256": "84f6850fa66d"
+          }
+        }
+      }
+    },
+    "AMD-02": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 5806,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "searches_refused": 0,
+        "final_answer": null,
+        "latency_ms": 3230,
+        "model_id": "eu.amazon.nova-2-lite-v1:0",
+        "prompts": {
+          "answer_system": {
+            "source": "file",
+            "id": null,
+            "version": null,
+            "sha256": "84f6850fa66d"
+          }
+        }
+      }
+    },
+    "AMD-03": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 5271,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "searches_refused": 0,
+        "final_answer": null,
+        "latency_ms": 2290,
+        "model_id": "eu.amazon.nova-2-lite-v1:0",
+        "prompts": {
+          "answer_system": {
+            "source": "file",
+            "id": null,
+            "version": null,
+            "sha256": "84f6850fa66d"
+          }
+        }
+      }
+    },
+    "AMD-04": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 5740,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "searches_refused": 0,
+        "final_answer": null,
+        "latency_ms": 3141,
+        "model_id": "eu.amazon.nova-2-lite-v1:0",
+        "prompts": {
+          "answer_system": {
+            "source": "file",
+            "id": null,
+            "version": null,
+            "sha256": "84f6850fa66d"
+          }
+        }
+      }
+    },
+    "AMD-05": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 5371,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "searches_refused": 0,
+        "final_answer": null,
+        "latency_ms": 2921,
+        "model_id": "eu.amazon.nova-2-lite-v1:0",
+        "prompts": {
+          "answer_system": {
+            "source": "file",
+            "id": null,
+            "version": null,
+            "sha256": "84f6850fa66d"
+          }
+        }
+      }
+    },
+    "RIVN-01": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 6081,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "searches_refused": 0,
+        "final_answer": null,
+        "latency_ms": 2322,
+        "model_id": "eu.amazon.nova-2-lite-v1:0",
+        "prompts": {
+          "answer_system": {
+            "source": "file",
+            "id": null,
+            "version": null,
+            "sha256": "84f6850fa66d"
+          }
+        }
+      }
+    },
+    "RIVN-02": {
+      "status": "ok",
+      "run": {
+        "model_calls": 4,
+        "tool_calls": 3,
+        "tools_cancelled": 0,
+        "tokens_used": 14952,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "searches_refused": 1,
+        "final_answer": null,
+        "latency_ms": 3984,
+        "model_id": "eu.amazon.nova-2-lite-v1:0",
+        "prompts": {
+          "answer_system": {
+            "source": "file",
+            "id": null,
+            "version": null,
+            "sha256": "84f6850fa66d"
+          }
+        }
+      }
+    },
+    "RIVN-03": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 5967,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "searches_refused": 0,
+        "final_answer": null,
+        "latency_ms": 2695,
+        "model_id": "eu.amazon.nova-2-lite-v1:0",
+        "prompts": {
+          "answer_system": {
+            "source": "file",
+            "id": null,
+            "version": null,
+            "sha256": "84f6850fa66d"
+          }
+        }
+      }
+    },
+    "RIVN-04": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 5061,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "searches_refused": 0,
+        "final_answer": null,
+        "latency_ms": 2635,
+        "model_id": "eu.amazon.nova-2-lite-v1:0",
+        "prompts": {
+          "answer_system": {
+            "source": "file",
+            "id": null,
+            "version": null,
+            "sha256": "84f6850fa66d"
+          }
+        }
+      }
+    },
+    "RIVN-05": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 5527,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "searches_refused": 0,
+        "final_answer": null,
+        "latency_ms": 2773,
+        "model_id": "eu.amazon.nova-2-lite-v1:0",
+        "prompts": {
+          "answer_system": {
+            "source": "file",
+            "id": null,
+            "version": null,
+            "sha256": "84f6850fa66d"
+          }
+        }
+      }
+    },
+    "ROOT-01": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 5530,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "searches_refused": 0,
+        "final_answer": null,
+        "latency_ms": 2533,
+        "model_id": "eu.amazon.nova-2-lite-v1:0",
+        "prompts": {
+          "answer_system": {
+            "source": "file",
+            "id": null,
+            "version": null,
+            "sha256": "84f6850fa66d"
+          }
+        }
+      }
+    },
+    "ROOT-02": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 5455,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "searches_refused": 0,
+        "final_answer": null,
+        "latency_ms": 2536,
+        "model_id": "eu.amazon.nova-2-lite-v1:0",
+        "prompts": {
+          "answer_system": {
+            "source": "file",
+            "id": null,
+            "version": null,
+            "sha256": "84f6850fa66d"
+          }
+        }
+      }
+    },
+    "ROOT-03": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 5496,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "searches_refused": 0,
+        "final_answer": null,
+        "latency_ms": 2326,
+        "model_id": "eu.amazon.nova-2-lite-v1:0",
+        "prompts": {
+          "answer_system": {
+            "source": "file",
+            "id": null,
+            "version": null,
+            "sha256": "84f6850fa66d"
+          }
+        }
+      }
+    },
+    "ROOT-04": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 5966,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "searches_refused": 0,
+        "final_answer": null,
+        "latency_ms": 2638,
+        "model_id": "eu.amazon.nova-2-lite-v1:0",
+        "prompts": {
+          "answer_system": {
+            "source": "file",
+            "id": null,
+            "version": null,
+            "sha256": "84f6850fa66d"
+          }
+        }
+      }
+    },
+    "ROOT-05": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 5426,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "searches_refused": 0,
+        "final_answer": null,
+        "latency_ms": 2843,
+        "model_id": "eu.amazon.nova-2-lite-v1:0",
+        "prompts": {
+          "answer_system": {
+            "source": "file",
+            "id": null,
+            "version": null,
+            "sha256": "84f6850fa66d"
+          }
+        }
+      }
+    },
+    "META-01": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 5250,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "searches_refused": 0,
+        "final_answer": null,
+        "latency_ms": 2304,
+        "model_id": "eu.amazon.nova-2-lite-v1:0",
+        "prompts": {
+          "answer_system": {
+            "source": "file",
+            "id": null,
+            "version": null,
+            "sha256": "84f6850fa66d"
+          }
+        }
+      }
+    },
+    "META-02": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 6107,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "searches_refused": 0,
+        "final_answer": null,
+        "latency_ms": 2724,
+        "model_id": "eu.amazon.nova-2-lite-v1:0",
+        "prompts": {
+          "answer_system": {
+            "source": "file",
+            "id": null,
+            "version": null,
+            "sha256": "84f6850fa66d"
+          }
+        }
+      }
+    },
+    "META-03": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 5284,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "searches_refused": 0,
+        "final_answer": null,
+        "latency_ms": 2650,
+        "model_id": "eu.amazon.nova-2-lite-v1:0",
+        "prompts": {
+          "answer_system": {
+            "source": "file",
+            "id": null,
+            "version": null,
+            "sha256": "84f6850fa66d"
+          }
+        }
+      }
+    },
+    "META-04": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 6049,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "searches_refused": 0,
+        "final_answer": null,
+        "latency_ms": 2425,
+        "model_id": "eu.amazon.nova-2-lite-v1:0",
+        "prompts": {
+          "answer_system": {
+            "source": "file",
+            "id": null,
+            "version": null,
+            "sha256": "84f6850fa66d"
+          }
+        }
+      }
+    },
+    "META-05": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 6194,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "searches_refused": 0,
+        "final_answer": null,
+        "latency_ms": 2663,
+        "model_id": "eu.amazon.nova-2-lite-v1:0",
+        "prompts": {
+          "answer_system": {
+            "source": "file",
+            "id": null,
+            "version": null,
+            "sha256": "84f6850fa66d"
+          }
+        }
+      }
+    },
+    "CRDO-01": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 5680,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "searches_refused": 0,
+        "final_answer": null,
+        "latency_ms": 2650,
+        "model_id": "eu.amazon.nova-2-lite-v1:0",
+        "prompts": {
+          "answer_system": {
+            "source": "file",
+            "id": null,
+            "version": null,
+            "sha256": "84f6850fa66d"
+          }
+        }
+      }
+    },
+    "CRDO-02": {
+      "status": "ok",
+      "run": {
+        "model_calls": 5,
+        "tool_calls": 4,
+        "tools_cancelled": 1,
+        "tokens_used": 19552,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "searches_refused": 1,
+        "final_answer": null,
+        "latency_ms": 5645,
+        "model_id": "eu.amazon.nova-2-lite-v1:0",
+        "prompts": {
+          "answer_system": {
+            "source": "file",
+            "id": null,
+            "version": null,
+            "sha256": "84f6850fa66d"
+          }
+        }
+      }
+    },
+    "CRDO-03": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 5544,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "searches_refused": 0,
+        "final_answer": null,
+        "latency_ms": 2909,
+        "model_id": "eu.amazon.nova-2-lite-v1:0",
+        "prompts": {
+          "answer_system": {
+            "source": "file",
+            "id": null,
+            "version": null,
+            "sha256": "84f6850fa66d"
+          }
+        }
+      }
+    },
+    "CRDO-04": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 5775,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "searches_refused": 0,
+        "final_answer": null,
+        "latency_ms": 3057,
+        "model_id": "eu.amazon.nova-2-lite-v1:0",
+        "prompts": {
+          "answer_system": {
+            "source": "file",
+            "id": null,
+            "version": null,
+            "sha256": "84f6850fa66d"
+          }
+        }
+      }
+    },
+    "CRDO-05": {
+      "status": "ok",
+      "run": {
+        "model_calls": 4,
+        "tool_calls": 3,
+        "tools_cancelled": 0,
+        "tokens_used": 13461,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "searches_refused": 1,
+        "final_answer": null,
+        "latency_ms": 4782,
+        "model_id": "eu.amazon.nova-2-lite-v1:0",
+        "prompts": {
+          "answer_system": {
+            "source": "file",
+            "id": null,
+            "version": null,
+            "sha256": "84f6850fa66d"
+          }
+        }
+      }
+    },
+    "NBIS-01": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 5963,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "searches_refused": 0,
+        "final_answer": null,
+        "latency_ms": 2719,
+        "model_id": "eu.amazon.nova-2-lite-v1:0",
+        "prompts": {
+          "answer_system": {
+            "source": "file",
+            "id": null,
+            "version": null,
+            "sha256": "84f6850fa66d"
+          }
+        }
+      }
+    },
+    "NBIS-02": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 5819,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "searches_refused": 0,
+        "final_answer": null,
+        "latency_ms": 3508,
+        "model_id": "eu.amazon.nova-2-lite-v1:0",
+        "prompts": {
+          "answer_system": {
+            "source": "file",
+            "id": null,
+            "version": null,
+            "sha256": "84f6850fa66d"
+          }
+        }
+      }
+    },
+    "NBIS-03": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 5807,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "searches_refused": 0,
+        "final_answer": null,
+        "latency_ms": 3718,
+        "model_id": "eu.amazon.nova-2-lite-v1:0",
+        "prompts": {
+          "answer_system": {
+            "source": "file",
+            "id": null,
+            "version": null,
+            "sha256": "84f6850fa66d"
+          }
+        }
+      }
+    },
+    "NBIS-04": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 5669,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "searches_refused": 0,
+        "final_answer": null,
+        "latency_ms": 5752,
+        "model_id": "eu.amazon.nova-2-lite-v1:0",
+        "prompts": {
+          "answer_system": {
+            "source": "file",
+            "id": null,
+            "version": null,
+            "sha256": "84f6850fa66d"
+          }
+        }
+      }
+    },
+    "NBIS-05": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 5539,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "searches_refused": 0,
+        "final_answer": null,
+        "latency_ms": 4617,
+        "model_id": "eu.amazon.nova-2-lite-v1:0",
+        "prompts": {
+          "answer_system": {
+            "source": "file",
+            "id": null,
+            "version": null,
+            "sha256": "84f6850fa66d"
+          }
+        }
+      }
+    },
+    "NA-01": {
+      "status": "ok",
+      "run": {
+        "model_calls": 2,
+        "tool_calls": 1,
+        "tools_cancelled": 0,
+        "tokens_used": 4553,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "searches_refused": 0,
+        "final_answer": null,
+        "latency_ms": 3457,
+        "model_id": "eu.amazon.nova-2-lite-v1:0",
+        "prompts": {
+          "answer_system": {
+            "source": "file",
+            "id": null,
+            "version": null,
+            "sha256": "84f6850fa66d"
+          }
+        }
+      }
+    },
+    "NA-02": {
+      "status": "ok",
+      "run": {
+        "model_calls": 3,
+        "tool_calls": 2,
+        "tools_cancelled": 0,
+        "tokens_used": 8524,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "searches_refused": 1,
+        "final_answer": null,
+        "latency_ms": 4568,
+        "model_id": "eu.amazon.nova-2-lite-v1:0",
+        "prompts": {
+          "answer_system": {
+            "source": "file",
+            "id": null,
+            "version": null,
+            "sha256": "84f6850fa66d"
+          }
+        }
+      }
+    },
+    "NA-03": {
+      "status": "ok",
+      "run": {
+        "model_calls": 4,
+        "tool_calls": 3,
+        "tools_cancelled": 0,
+        "tokens_used": 13976,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "searches_refused": 1,
+        "final_answer": null,
+        "latency_ms": 4706,
+        "model_id": "eu.amazon.nova-2-lite-v1:0",
+        "prompts": {
+          "answer_system": {
+            "source": "file",
+            "id": null,
+            "version": null,
+            "sha256": "84f6850fa66d"
+          }
+        }
+      }
+    },
+    "NA-04": {
+      "status": "ok",
+      "run": {
+        "model_calls": 4,
+        "tool_calls": 3,
+        "tools_cancelled": 0,
+        "tokens_used": 13736,
+        "stopped_reason": null,
+        "limits": {
+          "max_model_calls": 6,
+          "max_tool_calls": 3,
+          "max_total_tokens": 40000
+        },
+        "searches_refused": 1,
+        "final_answer": null,
+        "latency_ms": 5327,
+        "model_id": "eu.amazon.nova-2-lite-v1:0",
+        "prompts": {
+          "answer_system": {
+            "source": "file",
+            "id": null,
+            "version": null,
+            "sha256": "84f6850fa66d"
+          }
+        }
+      }
+    }
+  },
+  "kb_docs_sha256": "8699903d1c13a45a6e07f2cdd681ff820acd1e6fe56c6de092eb72e765094d42",
+  "guardrail": {
+    "id": "us51h5jqcd2q",
+    "version": "2"
+  },
+  "questions": [
+    {
+      "id": "AMD-01",
+      "ticker": "AMD",
+      "quarter": "2026Q2",
+      "answerable": true,
+      "kind": "fact",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly states the revenue amount, year-over-year growth, and sequential growth, all of which are supported by the gold transcript evidence."
+      },
+      "queries": [
+        "revenue Q2 2026"
+      ],
+      "searches_refused": 0,
+      "final_answer": false,
+      "guardrail": {
+        "blocked_by": [],
+        "blocked_at": null,
+        "masked": [],
+        "grounding_score": 1.0,
+        "relevance_score": 1.0,
+        "grounding_flagged": false,
+        "error": null
+      },
+      "abstained": false,
+      "returned": [
+        "AMD_2026Q2_t003_p1",
+        "AMD_2026Q2_t003_p3",
+        "AMD_2026Q2_t044",
+        "AMD_2026Q2_t041",
+        "AMD_2026Q2_t009"
+      ],
+      "cited": [
+        "AMD_2026Q2_t003_p1"
+      ],
+      "citation_check_ok": true,
+      "citation_problems": [],
+      "gold_returned": true,
+      "gold_cited": true,
+      "citation_support": {
+        "support": "supported",
+        "note": "All factual claims in the answer are directly stated in the cited passage."
+      }
+    },
+    {
+      "id": "AMD-02",
+      "ticker": "AMD",
+      "quarter": "2026Q2",
+      "answerable": true,
+      "kind": "reason",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly includes all key facts and is supported by the gold transcript evidence."
+      },
+      "queries": [
+        "AMD gross margin expand Q2 2026"
+      ],
+      "searches_refused": 0,
+      "final_answer": false,
+      "guardrail": {
+        "blocked_by": [],
+        "blocked_at": null,
+        "masked": [],
+        "grounding_score": 0.99,
+        "relevance_score": 1.0,
+        "grounding_flagged": false,
+        "error": null
+      },
+      "abstained": false,
+      "returned": [
+        "AMD_2026Q2_t003_p1",
+        "AMD_2026Q2_t009",
+        "AMD_2026Q2_t044",
+        "AMD_2026Q2_t003_p3",
+        "AMD_2026Q2_t022"
+      ],
+      "cited": [
+        "AMD_2026Q2_t003_p1",
+        "AMD_2026Q2_t009"
+      ],
+      "citation_check_ok": true,
+      "citation_problems": [],
+      "gold_returned": true,
+      "gold_cited": true,
+      "citation_support": {
+        "support": "supported",
+        "note": "All claims in the answer are directly supported by the cited passages."
+      }
+    },
+    {
+      "id": "AMD-03",
+      "ticker": "AMD",
+      "quarter": "2026Q2",
+      "answerable": true,
+      "kind": "guidance",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "partial",
+        "grounding": "supported",
+        "note": "The output correctly mentions the sequential revenue growth and the non-GAAP gross margin, but it misses the specific revenue figure ($13 billion plus or minus $300 million) and the year-over-year growth at the midpoint (41%)."
+      },
+      "queries": [
+        "revenue and gross margin guide for Q3 2026"
+      ],
+      "searches_refused": 0,
+      "final_answer": false,
+      "guardrail": {
+        "blocked_by": [],
+        "blocked_at": null,
+        "masked": [],
+        "grounding_score": 1.0,
+        "relevance_score": 1.0,
+        "grounding_flagged": false,
+        "error": null
+      },
+      "abstained": false,
+      "returned": [
+        "AMD_2026Q2_t009",
+        "AMD_2026Q2_t044",
+        "AMD_2026Q2_t043",
+        "AMD_2026Q2_t003_p3",
+        "AMD_2026Q2_t011"
+      ],
+      "cited": [
+        "AMD_2026Q2_t003_p3"
+      ],
+      "citation_check_ok": true,
+      "citation_problems": [],
+      "gold_returned": true,
+      "gold_cited": true,
+      "citation_support": {
+        "support": "supported",
+        "note": "All factual claims in the answer are explicitly stated in the cited passage."
+      }
+    },
+    {
+      "id": "AMD-04",
+      "ticker": "AMD",
+      "quarter": "2025Q4",
+      "answerable": true,
+      "kind": "fact",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly states the revenue amount, its exclusion from guidance, and is supported by the gold transcript evidence."
+      },
+      "queries": [
+        "MI308 sales to China revenue Q4 2025 guidance"
+      ],
+      "searches_refused": 0,
+      "final_answer": false,
+      "guardrail": {
+        "blocked_by": [],
+        "blocked_at": null,
+        "masked": [],
+        "grounding_score": 0.99,
+        "relevance_score": 1.0,
+        "grounding_flagged": false,
+        "error": null
+      },
+      "abstained": false,
+      "returned": [
+        "AMD_2025Q4_t020",
+        "AMD_2025Q4_t019",
+        "AMD_2025Q4_t005_p1",
+        "AMD_2025Q4_t037",
+        "AMD_2025Q4_t004_p5"
+      ],
+      "cited": [
+        "AMD_2025Q4_t005_p1"
+      ],
+      "citation_check_ok": true,
+      "citation_problems": [],
+      "gold_returned": true,
+      "gold_cited": true,
+      "citation_support": {
+        "support": "supported",
+        "note": "All claims in the answer are directly stated in the cited passage."
+      }
+    },
+    {
+      "id": "AMD-05",
+      "ticker": "AMD",
+      "quarter": "2025Q4",
+      "answerable": true,
+      "kind": "reason",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "partial",
+        "grounding": "supported",
+        "note": "The output correctly identifies the adjusted gross margin and one of the one-off items, but misstates the amount of the inventory reserve release ($360 million instead of $306 million) and includes incorrect revenue figure ($390 million instead of unspecified amount for MI308 sales to China)."
+      },
+      "queries": [
+        "Q4 2025 gross margin without one-off items and what were they"
+      ],
+      "searches_refused": 0,
+      "final_answer": false,
+      "guardrail": {
+        "blocked_by": [],
+        "blocked_at": null,
+        "masked": [],
+        "grounding_score": 1.0,
+        "relevance_score": 1.0,
+        "grounding_flagged": false,
+        "error": null
+      },
+      "abstained": false,
+      "returned": [
+        "AMD_2025Q4_t027",
+        "AMD_2025Q4_t005_p1",
+        "AMD_2025Q4_t055",
+        "AMD_2025Q4_t056",
+        "AMD_2025Q4_t037"
+      ],
+      "cited": [
+        "AMD_2025Q4_t005_p1"
+      ],
+      "citation_check_ok": true,
+      "citation_problems": [],
+      "gold_returned": true,
+      "gold_cited": true,
+      "citation_support": {
+        "support": "supported",
+        "note": "All factual claims in the answer are explicitly stated in the cited passage."
+      }
+    },
+    {
+      "id": "RIVN-01",
+      "ticker": "RIVN",
+      "quarter": "2026Q3",
+      "answerable": true,
+      "kind": "fact",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly states the number of vehicles produced and delivered, matching the expected answer and key facts, and is supported by the gold transcript evidence."
+      },
+      "queries": [
+        "vehicles produced and delivered Q3 2026"
+      ],
+      "searches_refused": 0,
+      "final_answer": false,
+      "guardrail": {
+        "blocked_by": [],
+        "blocked_at": null,
+        "masked": [],
+        "grounding_score": 1.0,
+        "relevance_score": 1.0,
+        "grounding_flagged": false,
+        "error": null
+      },
+      "abstained": false,
+      "returned": [
+        "RIVN_2026Q3_t001_p1",
+        "RIVN_2026Q3_t002_p1",
+        "RIVN_2026Q3_t058",
+        "RIVN_2026Q3_t003_p1",
+        "RIVN_2026Q3_t071"
+      ],
+      "cited": [
+        "RIVN_2026Q3_t002_p1"
+      ],
+      "citation_check_ok": true,
+      "citation_problems": [],
+      "gold_returned": true,
+      "gold_cited": true,
+      "citation_support": {
+        "support": "supported",
+        "note": "All factual claims in the answer are directly stated in the cited passage."
+      }
+    },
+    {
+      "id": "RIVN-02",
+      "ticker": "RIVN",
+      "quarter": "2026Q3",
+      "answerable": true,
+      "kind": "guidance",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "missing",
+        "grounding": "unsupported",
+        "note": "The assistant's output incorrectly states that no changes to the 2026 delivery guidance were discussed, contradicting the gold transcript evidence."
+      },
+      "queries": [
+        "2026 delivery guidance",
+        "delivery guidance"
+      ],
+      "searches_refused": 1,
+      "final_answer": false,
+      "guardrail": {
+        "blocked_by": [],
+        "blocked_at": null,
+        "masked": [],
+        "grounding_score": null,
+        "relevance_score": null,
+        "grounding_flagged": false,
+        "error": null
+      },
+      "abstained": true,
+      "returned": [
+        "RIVN_2026Q3_t003_p2",
+        "RIVN_2026Q3_t016",
+        "RIVN_2026Q3_t058",
+        "RIVN_2026Q3_t042",
+        "RIVN_2026Q3_t041",
+        "RIVN_2026Q3_t037",
+        "RIVN_2026Q3_t036",
+        "RIVN_2026Q3_t018"
+      ],
+      "cited": [],
+      "citation_check_ok": true,
+      "citation_problems": [],
+      "gold_returned": true,
+      "gold_cited": false,
+      "citation_support": null
+    },
+    {
+      "id": "RIVN-03",
+      "ticker": "RIVN",
+      "quarter": "2026Q3",
+      "answerable": true,
+      "kind": "reason",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly identifies the reason for the decline in average selling prices and includes all key facts."
+      },
+      "queries": [
+        "Why did Rivian's average selling prices decline in Q3 2026?"
+      ],
+      "searches_refused": 0,
+      "final_answer": false,
+      "guardrail": {
+        "blocked_by": [],
+        "blocked_at": null,
+        "masked": [],
+        "grounding_score": 0.71,
+        "relevance_score": 1.0,
+        "grounding_flagged": false,
+        "error": null
+      },
+      "abstained": false,
+      "returned": [
+        "RIVN_2026Q3_t002_p1",
+        "RIVN_2026Q3_t063",
+        "RIVN_2026Q3_t003_p2",
+        "RIVN_2026Q3_t000",
+        "RIVN_2026Q3_t012"
+      ],
+      "cited": [
+        "RIVN_2026Q3_t002_p1"
+      ],
+      "citation_check_ok": true,
+      "citation_problems": [],
+      "gold_returned": true,
+      "gold_cited": true,
+      "citation_support": {
+        "support": "supported",
+        "note": "All claims in the answer are directly stated in the cited passage."
+      }
+    },
+    {
+      "id": "RIVN-04",
+      "ticker": "RIVN",
+      "quarter": "2026Q3",
+      "answerable": true,
+      "kind": "guidance",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "partial",
+        "grounding": "unsupported",
+        "note": "The output contains most key facts but misspells 'IEEPA' as 'IEPA' and the grounding is unsupported because the exact figures and terms do not perfectly match the expected answer."
+      },
+      "queries": [
+        "adjusted EBITDA loss 2026"
+      ],
+      "searches_refused": 0,
+      "final_answer": false,
+      "guardrail": {
+        "blocked_by": [],
+        "blocked_at": null,
+        "masked": [],
+        "grounding_score": 1.0,
+        "relevance_score": 1.0,
+        "grounding_flagged": false,
+        "error": null
+      },
+      "abstained": false,
+      "returned": [
+        "RIVN_2026Q3_t003_p2",
+        "RIVN_2026Q3_t011",
+        "RIVN_2026Q3_t044",
+        "RIVN_2026Q3_t032",
+        "RIVN_2026Q3_t013"
+      ],
+      "cited": [
+        "RIVN_2026Q3_t003_p2"
+      ],
+      "citation_check_ok": true,
+      "citation_problems": [],
+      "gold_returned": true,
+      "gold_cited": true,
+      "citation_support": {
+        "support": "supported",
+        "note": "All factual claims in the answer are directly stated in the cited passage."
+      }
+    },
+    {
+      "id": "RIVN-05",
+      "ticker": "RIVN",
+      "quarter": "2026Q1",
+      "answerable": true,
+      "kind": "reason",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly includes all key facts and is supported by the gold transcript evidence."
+      },
+      "queries": [
+        "Rivian automotive gross loss Q1 2026"
+      ],
+      "searches_refused": 0,
+      "final_answer": false,
+      "guardrail": {
+        "blocked_by": [],
+        "blocked_at": null,
+        "masked": [],
+        "grounding_score": 1.0,
+        "relevance_score": 1.0,
+        "grounding_flagged": false,
+        "error": null
+      },
+      "abstained": false,
+      "returned": [
+        "RIVN_2026Q1_t002_p1",
+        "RIVN_2026Q1_t002_p4",
+        "RIVN_2026Q1_t002_p2",
+        "RIVN_2026Q1_t016",
+        "RIVN_2026Q1_t056"
+      ],
+      "cited": [
+        "RIVN_2026Q1_t002_p1"
+      ],
+      "citation_check_ok": true,
+      "citation_problems": [],
+      "gold_returned": true,
+      "gold_cited": true,
+      "citation_support": {
+        "support": "supported",
+        "note": "All factual claims in the answer are directly stated in the cited passage."
+      }
+    },
+    {
+      "id": "ROOT-01",
+      "ticker": "ROOT",
+      "quarter": "2026Q2",
+      "answerable": true,
+      "kind": "fact",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly states the number of policies in force and the year-over-year increase, both of which are supported by the gold transcript evidence."
+      },
+      "queries": [
+        "number of policies in force at the end of Q2 2026"
+      ],
+      "searches_refused": 0,
+      "final_answer": false,
+      "guardrail": {
+        "blocked_by": [],
+        "blocked_at": null,
+        "masked": [],
+        "grounding_score": 1.0,
+        "relevance_score": 1.0,
+        "grounding_flagged": false,
+        "error": null
+      },
+      "abstained": false,
+      "returned": [
+        "ROOT_2026Q2_t018",
+        "ROOT_2026Q2_t003_p1",
+        "ROOT_2026Q2_t019",
+        "ROOT_2026Q2_t002_p1",
+        "ROOT_2026Q2_t012"
+      ],
+      "cited": [
+        "ROOT_2026Q2_t003_p1",
+        "ROOT_2026Q2_t002_p1"
+      ],
+      "citation_check_ok": true,
+      "citation_problems": [],
+      "gold_returned": true,
+      "gold_cited": true,
+      "citation_support": {
+        "support": "supported",
+        "note": "The number of policies in force and the year-over-year increase are directly stated in the cited passages."
+      }
+    },
+    {
+      "id": "ROOT-02",
+      "ticker": "ROOT",
+      "quarter": "2026Q2",
+      "answerable": true,
+      "kind": "reason",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "partial",
+        "grounding": "supported",
+        "note": "The output correctly identifies the key facts of expense discipline, 26%, and 66%, but incorrectly states the net combined ratio as 26% and includes an unsupported claim about performance-based equity compensation expense."
+      },
+      "queries": [
+        "improvement in Root's net combined ratio"
+      ],
+      "searches_refused": 0,
+      "final_answer": false,
+      "guardrail": {
+        "blocked_by": [],
+        "blocked_at": null,
+        "masked": [],
+        "grounding_score": 1.0,
+        "relevance_score": 1.0,
+        "grounding_flagged": false,
+        "error": null
+      },
+      "abstained": false,
+      "returned": [
+        "ROOT_2026Q2_t030",
+        "ROOT_2026Q2_t003_p1",
+        "ROOT_2026Q2_t032",
+        "ROOT_2026Q2_t016",
+        "ROOT_2026Q2_t028"
+      ],
+      "cited": [
+        "ROOT_2026Q2_t003_p1",
+        "ROOT_2026Q2_t030"
+      ],
+      "citation_check_ok": true,
+      "citation_problems": [],
+      "gold_returned": true,
+      "gold_cited": true,
+      "citation_support": {
+        "support": "supported",
+        "note": "All claims in the answer are directly supported by the cited passages."
+      }
+    },
+    {
+      "id": "ROOT-03",
+      "ticker": "ROOT",
+      "quarter": "2026Q2",
+      "answerable": true,
+      "kind": "fact",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly states the expected answer with both key facts (51% and 44%) and is supported by the gold transcript evidence."
+      },
+      "queries": [
+        "share of new writings from partnership and independent agent channels"
+      ],
+      "searches_refused": 0,
+      "final_answer": false,
+      "guardrail": {
+        "blocked_by": [],
+        "blocked_at": null,
+        "masked": [],
+        "grounding_score": 1.0,
+        "relevance_score": 1.0,
+        "grounding_flagged": false,
+        "error": null
+      },
+      "abstained": false,
+      "returned": [
+        "ROOT_2026Q2_t037",
+        "ROOT_2026Q2_t038",
+        "ROOT_2026Q2_t003_p1",
+        "ROOT_2026Q2_t012",
+        "ROOT_2026Q2_t036"
+      ],
+      "cited": [
+        "ROOT_2026Q2_t003_p1"
+      ],
+      "citation_check_ok": true,
+      "citation_problems": [],
+      "gold_returned": true,
+      "gold_cited": true,
+      "citation_support": {
+        "support": "supported",
+        "note": "The exact percentages and comparison to a year ago are stated in the cited passage."
+      }
+    },
+    {
+      "id": "ROOT-04",
+      "ticker": "ROOT",
+      "quarter": "2025Q4",
+      "answerable": true,
+      "kind": "reason",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly includes all key facts and is supported by the gold transcript evidence."
+      },
+      "queries": [
+        "Why did Root's net income and operating income fall year over year in Q4 2025?"
+      ],
+      "searches_refused": 0,
+      "final_answer": false,
+      "guardrail": {
+        "blocked_by": [],
+        "blocked_at": null,
+        "masked": [],
+        "grounding_score": 0.96,
+        "relevance_score": 1.0,
+        "grounding_flagged": false,
+        "error": null
+      },
+      "abstained": false,
+      "returned": [
+        "ROOT_2025Q4_t006_p1",
+        "ROOT_2025Q4_t006_p2",
+        "ROOT_2025Q4_t024_p1",
+        "ROOT_2025Q4_t002_p1",
+        "ROOT_2025Q4_t023"
+      ],
+      "cited": [
+        "ROOT_2025Q4_t006_p1"
+      ],
+      "citation_check_ok": true,
+      "citation_problems": [],
+      "gold_returned": true,
+      "gold_cited": true,
+      "citation_support": {
+        "support": "supported",
+        "note": "All claims in the answer are directly supported by the cited passage."
+      }
+    },
+    {
+      "id": "ROOT-05",
+      "ticker": "ROOT",
+      "quarter": "2025Q4",
+      "answerable": true,
+      "kind": "assumption",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly states that Root expects a more favorable gross accident period loss ratio in Q1 2026 due to fewer miles driven in winter, which is supported by the gold transcript evidence."
+      },
+      "queries": [
+        "What did Root expect for its Q1 2026 loss ratio, and on what basis?"
+      ],
+      "searches_refused": 0,
+      "final_answer": false,
+      "guardrail": {
+        "blocked_by": [],
+        "blocked_at": null,
+        "masked": [],
+        "grounding_score": 0.99,
+        "relevance_score": 1.0,
+        "grounding_flagged": false,
+        "error": null
+      },
+      "abstained": false,
+      "returned": [
+        "ROOT_2025Q4_t024_p1",
+        "ROOT_2025Q4_t006_p2",
+        "ROOT_2025Q4_t023",
+        "ROOT_2025Q4_t019",
+        "ROOT_2025Q4_t026"
+      ],
+      "cited": [
+        "ROOT_2025Q4_t006_p2"
+      ],
+      "citation_check_ok": true,
+      "citation_problems": [],
+      "gold_returned": true,
+      "gold_cited": true,
+      "citation_support": {
+        "support": "supported",
+        "note": "All factual claims in the answer are directly stated in the cited passage."
+      }
+    },
+    {
+      "id": "META-01",
+      "ticker": "META",
+      "quarter": "2026Q3",
+      "answerable": true,
+      "kind": "fact",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly states the total revenue of $64.6 billion and the 26% increase, both of which are supported by the gold transcript evidence."
+      },
+      "queries": [
+        "total revenue Q3 2026"
+      ],
+      "searches_refused": 0,
+      "final_answer": false,
+      "guardrail": {
+        "blocked_by": [],
+        "blocked_at": null,
+        "masked": [],
+        "grounding_score": 1.0,
+        "relevance_score": 1.0,
+        "grounding_flagged": false,
+        "error": null
+      },
+      "abstained": false,
+      "returned": [
+        "META_2026Q3_t005_p1",
+        "META_2026Q3_t003_p1",
+        "META_2026Q3_t004",
+        "META_2026Q3_t018",
+        "META_2026Q3_t027"
+      ],
+      "cited": [
+        "META_2026Q3_t003_p1"
+      ],
+      "citation_check_ok": true,
+      "citation_problems": [],
+      "gold_returned": true,
+      "gold_cited": true,
+      "citation_support": {
+        "support": "supported",
+        "note": "All factual claims in the answer are confirmed by the cited passage."
+      }
+    },
+    {
+      "id": "META-02",
+      "ticker": "META",
+      "quarter": "2026Q3",
+      "answerable": true,
+      "kind": "reason",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "partial",
+        "grounding": "supported",
+        "note": "The output correctly identifies the key factors contributing to the increase in expenses but does not explicitly mention the 68% increase or the specific amount of $51.6 billion."
+      },
+      "queries": [
+        "Why were Meta's total expenses up so much in Q3 2026?"
+      ],
+      "searches_refused": 0,
+      "final_answer": false,
+      "guardrail": {
+        "blocked_by": [],
+        "blocked_at": null,
+        "masked": [],
+        "grounding_score": 0.98,
+        "relevance_score": 1.0,
+        "grounding_flagged": false,
+        "error": null
+      },
+      "abstained": false,
+      "returned": [
+        "META_2026Q3_t003_p2",
+        "META_2026Q3_t005_p1",
+        "META_2026Q3_t003_p1",
+        "META_2026Q3_t003_p5",
+        "META_2026Q3_t016_p2"
+      ],
+      "cited": [
+        "META_2026Q3_t003_p1",
+        "META_2026Q3_t005_p1"
+      ],
+      "citation_check_ok": true,
+      "citation_problems": [],
+      "gold_returned": true,
+      "gold_cited": true,
+      "citation_support": {
+        "support": "supported",
+        "note": "All claims in the answer are directly supported by the cited passages."
+      }
+    },
+    {
+      "id": "META-03",
+      "ticker": "META",
+      "quarter": "2026Q3",
+      "answerable": true,
+      "kind": "reason",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly states the reason for the higher tax rate and includes all key facts."
+      },
+      "queries": [
+        "Why was Meta's Q3 2026 tax rate above its outlook?"
+      ],
+      "searches_refused": 0,
+      "final_answer": false,
+      "guardrail": {
+        "blocked_by": [],
+        "blocked_at": null,
+        "masked": [],
+        "grounding_score": 0.84,
+        "relevance_score": 1.0,
+        "grounding_flagged": false,
+        "error": null
+      },
+      "abstained": false,
+      "returned": [
+        "META_2026Q3_t005_p1",
+        "META_2026Q3_t003_p2",
+        "META_2026Q3_t004",
+        "META_2026Q3_t016_p2",
+        "META_2026Q3_t010"
+      ],
+      "cited": [
+        "META_2026Q3_t003_p2"
+      ],
+      "citation_check_ok": true,
+      "citation_problems": [],
+      "gold_returned": true,
+      "gold_cited": true,
+      "citation_support": {
+        "support": "supported",
+        "note": "The cited passage explicitly mentions that the tax rate for Q3 2026 was above the outlook range primarily due to the non-deductible portion of legal expenses."
+      }
+    },
+    {
+      "id": "META-04",
+      "ticker": "META",
+      "quarter": "2026Q1",
+      "answerable": true,
+      "kind": "reason",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly includes all key facts and is supported by the gold transcript evidence."
+      },
+      "queries": [
+        "Why did Meta's family daily active people decline from December to March 2026?"
+      ],
+      "searches_refused": 0,
+      "final_answer": false,
+      "guardrail": {
+        "blocked_by": [],
+        "blocked_at": null,
+        "masked": [],
+        "grounding_score": 1.0,
+        "relevance_score": 1.0,
+        "grounding_flagged": false,
+        "error": null
+      },
+      "abstained": false,
+      "returned": [
+        "META_2026Q1_t003_p1",
+        "META_2026Q1_t002_p1",
+        "META_2026Q1_t003_p2",
+        "META_2026Q1_t010",
+        "META_2026Q1_t003_p4"
+      ],
+      "cited": [
+        "META_2026Q1_t003_p1",
+        "META_2026Q1_t002_p1"
+      ],
+      "citation_check_ok": true,
+      "citation_problems": [],
+      "gold_returned": true,
+      "gold_cited": true,
+      "citation_support": {
+        "support": "supported",
+        "note": "All claims in the answer are directly supported by the cited passages."
+      }
+    },
+    {
+      "id": "META-05",
+      "ticker": "META",
+      "quarter": "2026Q1",
+      "answerable": true,
+      "kind": "reason",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly includes all key facts and is supported by the gold transcript evidence."
+      },
+      "queries": [
+        "What drove the increase in Meta's average price per ad in Q1 2026?"
+      ],
+      "searches_refused": 0,
+      "final_answer": false,
+      "guardrail": {
+        "blocked_by": [],
+        "blocked_at": null,
+        "masked": [],
+        "grounding_score": 0.34,
+        "relevance_score": 1.0,
+        "grounding_flagged": true,
+        "error": null
+      },
+      "abstained": false,
+      "returned": [
+        "META_2026Q1_t003_p5",
+        "META_2026Q1_t003_p8",
+        "META_2026Q1_t003_p6",
+        "META_2026Q1_t003_p2",
+        "META_2026Q1_t003_p1"
+      ],
+      "cited": [
+        "META_2026Q1_t003_p1"
+      ],
+      "citation_check_ok": true,
+      "citation_problems": [],
+      "gold_returned": true,
+      "gold_cited": true,
+      "citation_support": {
+        "support": "supported",
+        "note": "All factual claims in the answer are directly stated in the cited passage [META_2026Q1_t003_p1]."
+      }
+    },
+    {
+      "id": "CRDO-01",
+      "ticker": "CRDO",
+      "quarter": "2026Q4",
+      "answerable": true,
+      "kind": "fact",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly states the revenue, sequential increase, and year-over-year growth, all supported by the gold transcript evidence."
+      },
+      "queries": [
+        "revenue for fiscal Q4 2026"
+      ],
+      "searches_refused": 0,
+      "final_answer": false,
+      "guardrail": {
+        "blocked_by": [],
+        "blocked_at": null,
+        "masked": [],
+        "grounding_score": 0.99,
+        "relevance_score": 1.0,
+        "grounding_flagged": false,
+        "error": null
+      },
+      "abstained": false,
+      "returned": [
+        "CRDO_2026Q4_t017",
+        "CRDO_2026Q4_t018",
+        "CRDO_2026Q4_t003_p1",
+        "CRDO_2026Q4_t003_p2",
+        "CRDO_2026Q4_t003_p3"
+      ],
+      "cited": [
+        "CRDO_2026Q4_t003_p1"
+      ],
+      "citation_check_ok": true,
+      "citation_problems": [],
+      "gold_returned": true,
+      "gold_cited": true,
+      "citation_support": {
+        "support": "supported",
+        "note": "All claims in the answer are directly stated in the cited passage."
+      }
+    },
+    {
+      "id": "CRDO-02",
+      "ticker": "CRDO",
+      "quarter": "2026Q4",
+      "answerable": true,
+      "kind": "guidance",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "partial",
+        "grounding": "unsupported",
+        "note": "The output mentions some aspects of the guidance but misses specific figures and the basis of the guidance on the tariff regime."
+      },
+      "queries": [
+        "guide for fiscal Q1 2027",
+        "guidance for fiscal Q1 2027"
+      ],
+      "searches_refused": 1,
+      "final_answer": false,
+      "guardrail": {
+        "blocked_by": [],
+        "blocked_at": null,
+        "masked": [],
+        "grounding_score": 0.94,
+        "relevance_score": 1.0,
+        "grounding_flagged": false,
+        "error": null
+      },
+      "abstained": false,
+      "returned": [
+        "CRDO_2026Q4_t017",
+        "CRDO_2026Q4_t018",
+        "CRDO_2026Q4_t011",
+        "CRDO_2026Q4_t038",
+        "CRDO_2026Q4_t003_p3"
+      ],
+      "cited": [
+        "CRDO_2026Q4_t003_p3",
+        "CRDO_2026Q4_t011"
+      ],
+      "citation_check_ok": true,
+      "citation_problems": [],
+      "gold_returned": true,
+      "gold_cited": true,
+      "citation_support": {
+        "support": "supported",
+        "note": "All factual claims in the answer are directly stated in the cited passages."
+      }
+    },
+    {
+      "id": "CRDO-03",
+      "ticker": "CRDO",
+      "quarter": "2026Q4",
+      "answerable": true,
+      "kind": "assumption",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly includes all key facts and is supported by the gold transcript evidence."
+      },
+      "queries": [
+        "Credo expects revenue to develop through fiscal 2027"
+      ],
+      "searches_refused": 0,
+      "final_answer": false,
+      "guardrail": {
+        "blocked_by": [],
+        "blocked_at": null,
+        "masked": [],
+        "grounding_score": 0.63,
+        "relevance_score": 1.0,
+        "grounding_flagged": true,
+        "error": null
+      },
+      "abstained": false,
+      "returned": [
+        "CRDO_2026Q4_t033_p2",
+        "CRDO_2026Q4_t003_p1",
+        "CRDO_2026Q4_t003_p3",
+        "CRDO_2026Q4_t007",
+        "CRDO_2026Q4_t006"
+      ],
+      "cited": [
+        "CRDO_2026Q4_t003_p3",
+        "CRDO_2026Q4_t006"
+      ],
+      "citation_check_ok": true,
+      "citation_problems": [],
+      "gold_returned": true,
+      "gold_cited": true,
+      "citation_support": {
+        "support": "supported",
+        "note": "All factual claims in the answer are directly stated in the cited passages."
+      }
+    },
+    {
+      "id": "CRDO-04",
+      "ticker": "CRDO",
+      "quarter": "2026Q2",
+      "answerable": true,
+      "kind": "reason",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "All key facts are present and supported by the gold transcript evidence."
+      },
+      "queries": [
+        "Why did Credo's free cash flow fall in fiscal Q2 2026?"
+      ],
+      "searches_refused": 0,
+      "final_answer": false,
+      "guardrail": {
+        "blocked_by": [],
+        "blocked_at": null,
+        "masked": [],
+        "grounding_score": 1.0,
+        "relevance_score": 1.0,
+        "grounding_flagged": false,
+        "error": null
+      },
+      "abstained": false,
+      "returned": [
+        "CRDO_2026Q2_t003_p2",
+        "CRDO_2026Q2_t001",
+        "CRDO_2026Q2_t003_p3",
+        "CRDO_2026Q2_t003_p1",
+        "CRDO_2026Q2_t041"
+      ],
+      "cited": [
+        "CRDO_2026Q2_t003_p2"
+      ],
+      "citation_check_ok": true,
+      "citation_problems": [],
+      "gold_returned": true,
+      "gold_cited": true,
+      "citation_support": {
+        "support": "supported",
+        "note": "All factual claims in the answer are directly stated in the cited passage."
+      }
+    },
+    {
+      "id": "CRDO-05",
+      "ticker": "CRDO",
+      "quarter": "2026Q2",
+      "answerable": true,
+      "kind": "reason",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": false,
+        "task": "missing",
+        "grounding": "unsupported",
+        "note": "The output does not provide any information addressing the rise in Credo’s operating margin in fiscal Q2 2026."
+      },
+      "queries": [
+        "operating margin rise in fiscal Q2 2026",
+        "operating margin rise"
+      ],
+      "searches_refused": 1,
+      "final_answer": false,
+      "guardrail": {
+        "blocked_by": [],
+        "blocked_at": null,
+        "masked": [],
+        "grounding_score": null,
+        "relevance_score": null,
+        "grounding_flagged": false,
+        "error": null
+      },
+      "abstained": true,
+      "returned": [
+        "CRDO_2026Q2_t042",
+        "CRDO_2026Q2_t003_p3",
+        "CRDO_2026Q2_t032",
+        "CRDO_2026Q2_t043",
+        "CRDO_2026Q2_t033"
+      ],
+      "cited": [],
+      "citation_check_ok": true,
+      "citation_problems": [],
+      "gold_returned": true,
+      "gold_cited": false,
+      "citation_support": null
+    },
+    {
+      "id": "NBIS-01",
+      "ticker": "NBIS",
+      "quarter": "2026Q2",
+      "answerable": true,
+      "kind": "fact",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly states the expected answer and all key facts, and these are supported by the gold transcript evidence."
+      },
+      "queries": [
+        "group revenue"
+      ],
+      "searches_refused": 0,
+      "final_answer": false,
+      "guardrail": {
+        "blocked_by": [],
+        "blocked_at": null,
+        "masked": [],
+        "grounding_score": 1.0,
+        "relevance_score": 1.0,
+        "grounding_flagged": false,
+        "error": null
+      },
+      "abstained": false,
+      "returned": [
+        "NBIS_2026Q2_t003_p1",
+        "NBIS_2026Q2_t003_p3",
+        "NBIS_2026Q2_t001",
+        "NBIS_2026Q2_t003_p2",
+        "NBIS_2026Q2_t002_p1"
+      ],
+      "cited": [
+        "NBIS_2026Q2_t003_p1"
+      ],
+      "citation_check_ok": true,
+      "citation_problems": [],
+      "gold_returned": true,
+      "gold_cited": true,
+      "citation_support": {
+        "support": "supported",
+        "note": "All factual claims in the answer are directly stated in the cited passage."
+      }
+    },
+    {
+      "id": "NBIS-02",
+      "ticker": "NBIS",
+      "quarter": "2026Q2",
+      "answerable": true,
+      "kind": "fact",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly states the annualized run-rate revenue at the end of June 2026 as $3 billion, up from $1.9 billion at the end of March, and these figures are supported by the gold transcript evidence."
+      },
+      "queries": [
+        "annualized run-rate revenue at the end of June 2026"
+      ],
+      "searches_refused": 0,
+      "final_answer": false,
+      "guardrail": {
+        "blocked_by": [],
+        "blocked_at": null,
+        "masked": [],
+        "grounding_score": 1.0,
+        "relevance_score": 1.0,
+        "grounding_flagged": false,
+        "error": null
+      },
+      "abstained": false,
+      "returned": [
+        "NBIS_2026Q2_t021",
+        "NBIS_2026Q2_t003_p3",
+        "NBIS_2026Q2_t022",
+        "NBIS_2026Q2_t003_p1",
+        "NBIS_2026Q2_t010"
+      ],
+      "cited": [
+        "NBIS_2026Q2_t003_p1"
+      ],
+      "citation_check_ok": true,
+      "citation_problems": [],
+      "gold_returned": true,
+      "gold_cited": true,
+      "citation_support": {
+        "support": "supported",
+        "note": "All factual claims in the answer are directly stated in the cited passage [NBIS_2026Q2_t003_p1]."
+      }
+    },
+    {
+      "id": "NBIS-03",
+      "ticker": "NBIS",
+      "quarter": "2026Q2",
+      "answerable": true,
+      "kind": "reason",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly states the expected answer and includes all key facts, supported by the gold transcript evidence."
+      },
+      "queries": [
+        "Why was Nebius's group adjusted EBITDA margin lower than its Nebius AI business margin in Q2 2026?"
+      ],
+      "searches_refused": 0,
+      "final_answer": false,
+      "guardrail": {
+        "blocked_by": [],
+        "blocked_at": null,
+        "masked": [],
+        "grounding_score": 0.9,
+        "relevance_score": 1.0,
+        "grounding_flagged": false,
+        "error": null
+      },
+      "abstained": false,
+      "returned": [
+        "NBIS_2026Q2_t003_p1",
+        "NBIS_2026Q2_t002_p1",
+        "NBIS_2026Q2_t003_p3",
+        "NBIS_2026Q2_t001",
+        "NBIS_2026Q2_t013"
+      ],
+      "cited": [
+        "NBIS_2026Q2_t003_p1"
+      ],
+      "citation_check_ok": true,
+      "citation_problems": [],
+      "gold_returned": true,
+      "gold_cited": true,
+      "citation_support": {
+        "support": "supported",
+        "note": "All factual claims in the answer are directly stated in the cited passage."
+      }
+    },
+    {
+      "id": "NBIS-04",
+      "ticker": "NBIS",
+      "quarter": "2026Q2",
+      "answerable": true,
+      "kind": "fact",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "All key facts ($2.8 billion, 12.7 million, $224) are present and supported by the gold transcript evidence."
+      },
+      "queries": [
+        "Nebius at-the-market equity program Q2 2026"
+      ],
+      "searches_refused": 0,
+      "final_answer": false,
+      "guardrail": {
+        "blocked_by": [],
+        "blocked_at": null,
+        "masked": [],
+        "grounding_score": 1.0,
+        "relevance_score": 1.0,
+        "grounding_flagged": false,
+        "error": null
+      },
+      "abstained": false,
+      "returned": [
+        "NBIS_2026Q2_t003_p2",
+        "NBIS_2026Q2_t013",
+        "NBIS_2026Q2_t014_p2",
+        "NBIS_2026Q2_t003_p3",
+        "NBIS_2026Q2_t002_p3"
+      ],
+      "cited": [
+        "NBIS_2026Q2_t003_p2"
+      ],
+      "citation_check_ok": true,
+      "citation_problems": [],
+      "gold_returned": true,
+      "gold_cited": true,
+      "citation_support": {
+        "support": "supported",
+        "note": "All factual claims in the answer are stated in the cited passage [NBIS_2026Q2_t003_p2]."
+      }
+    },
+    {
+      "id": "NBIS-05",
+      "ticker": "NBIS",
+      "quarter": "2025Q4",
+      "answerable": true,
+      "kind": "guidance",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "partial",
+        "grounding": "unsupported",
+        "note": "The output contains some but not all key facts and incorrectly states the full-year revenue guidance for 2025 instead of 2026."
+      },
+      "queries": [
+        "Nebius guide for 2026"
+      ],
+      "searches_refused": 0,
+      "final_answer": false,
+      "guardrail": {
+        "blocked_by": [],
+        "blocked_at": null,
+        "masked": [],
+        "grounding_score": 0.99,
+        "relevance_score": 1.0,
+        "grounding_flagged": false,
+        "error": null
+      },
+      "abstained": false,
+      "returned": [
+        "NBIS_2025Q4_t013",
+        "NBIS_2025Q4_t020",
+        "NBIS_2025Q4_t014",
+        "NBIS_2025Q4_t004_p2",
+        "NBIS_2025Q4_t010_p2"
+      ],
+      "cited": [
+        "NBIS_2025Q4_t004_p2",
+        "NBIS_2025Q4_t010_p2"
+      ],
+      "citation_check_ok": true,
+      "citation_problems": [],
+      "gold_returned": true,
+      "gold_cited": true,
+      "citation_support": {
+        "support": "supported",
+        "note": "All factual claims in the answer are directly stated in the cited passages."
+      }
+    },
+    {
+      "id": "NA-01",
+      "ticker": "RIVN",
+      "quarter": "2026Q2",
+      "answerable": false,
+      "kind": "not_discussed",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly states that no dividend announcement was mentioned and provides no citations, aligning with the expected answer and gold evidence."
+      },
+      "queries": [
+        "dividend"
+      ],
+      "searches_refused": 0,
+      "final_answer": false,
+      "guardrail": {
+        "blocked_by": [],
+        "blocked_at": null,
+        "masked": [],
+        "grounding_score": null,
+        "relevance_score": null,
+        "grounding_flagged": false,
+        "error": null
+      },
+      "abstained": true,
+      "returned": [
+        "RIVN_2026Q2_t047",
+        "RIVN_2026Q2_t028",
+        "RIVN_2026Q2_t030",
+        "RIVN_2026Q2_t054",
+        "RIVN_2026Q2_t015"
+      ],
+      "cited": [],
+      "citation_check_ok": true,
+      "citation_problems": [],
+      "gold_returned": null,
+      "gold_cited": null,
+      "citation_support": null
+    },
+    {
+      "id": "NA-02",
+      "ticker": "NBIS",
+      "quarter": "2026Q1",
+      "answerable": false,
+      "kind": "not_discussed",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly states that the share buyback was not discussed and provides no citations, aligning with the expected answer and gold evidence."
+      },
+      "queries": [
+        "share buyback"
+      ],
+      "searches_refused": 1,
+      "final_answer": false,
+      "guardrail": {
+        "blocked_by": [],
+        "blocked_at": null,
+        "masked": [],
+        "grounding_score": null,
+        "relevance_score": null,
+        "grounding_flagged": false,
+        "error": null
+      },
+      "abstained": true,
+      "returned": [
+        "NBIS_2026Q1_t015",
+        "NBIS_2026Q1_t022",
+        "NBIS_2026Q1_t017",
+        "NBIS_2026Q1_t016",
+        "NBIS_2026Q1_t008"
+      ],
+      "cited": [],
+      "citation_check_ok": true,
+      "citation_problems": [],
+      "gold_returned": null,
+      "gold_cited": null,
+      "citation_support": null
+    },
+    {
+      "id": "NA-03",
+      "ticker": "CRDO",
+      "quarter": "2026Q3",
+      "answerable": false,
+      "kind": "not_discussed",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": false,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly states that the information was not discussed on the call and provides no unsupported claims."
+      },
+      "queries": [
+        "stock repurchase in fiscal Q3 2026",
+        "stock repurchase"
+      ],
+      "searches_refused": 1,
+      "final_answer": false,
+      "guardrail": {
+        "blocked_by": [],
+        "blocked_at": null,
+        "masked": [],
+        "grounding_score": null,
+        "relevance_score": null,
+        "grounding_flagged": false,
+        "error": null
+      },
+      "abstained": true,
+      "returned": [
+        "CRDO_2026Q3_t013",
+        "CRDO_2026Q3_t024",
+        "CRDO_2026Q3_t036",
+        "CRDO_2026Q3_t026",
+        "CRDO_2026Q3_t014",
+        "CRDO_2026Q3_t050",
+        "CRDO_2026Q3_t037",
+        "CRDO_2026Q3_t049",
+        "CRDO_2026Q3_t051"
+      ],
+      "cited": [],
+      "citation_check_ok": true,
+      "citation_problems": [],
+      "gold_returned": null,
+      "gold_cited": null,
+      "citation_support": null
+    },
+    {
+      "id": "NA-04",
+      "ticker": "AMD",
+      "quarter": "2026Q1",
+      "answerable": false,
+      "kind": "not_discussed",
+      "status": "ok",
+      "retrieval": true,
+      "verdict": {
+        "has_claim": true,
+        "task": "correct",
+        "grounding": "supported",
+        "note": "The output correctly states that no dividend was mentioned and provides no citations as expected."
+      },
+      "queries": [
+        "dividend declared",
+        "dividend"
+      ],
+      "searches_refused": 1,
+      "final_answer": false,
+      "guardrail": {
+        "blocked_by": [],
+        "blocked_at": null,
+        "masked": [],
+        "grounding_score": null,
+        "relevance_score": null,
+        "grounding_flagged": false,
+        "error": null
+      },
+      "abstained": true,
+      "returned": [
+        "AMD_2026Q1_t048",
+        "AMD_2026Q1_t001",
+        "AMD_2026Q1_t000",
+        "AMD_2026Q1_t042",
+        "AMD_2026Q1_t050",
+        "AMD_2026Q1_t016",
+        "AMD_2026Q1_t003_p3",
+        "AMD_2026Q1_t003_p2"
+      ],
+      "cited": [],
+      "citation_check_ok": true,
+      "citation_problems": [],
+      "gold_returned": null,
+      "gold_cited": null,
+      "citation_support": null
+    }
+  ],
+  "outputs_file": "gateway-run2-2026-11-19.outputs.json (git-ignored, local only)"
+}

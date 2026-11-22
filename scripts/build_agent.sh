@@ -22,7 +22,14 @@ uv pip install \
   --only-binary :all: \
   --requirement "$ROOT/agent/requirements.txt"
 
-# Only the modules the runtime imports; run_local.py is for local use.
-cp "$ROOT"/agent/{main,budget,schema,tools}.py "$OUT"/
+# Only the modules the runtime imports; run_local.py, ask.py and the eval code are for local use.
+# serve.py (v2) is the deployed entrypoint; main.py and its modules (v1) are kept so it can be redeployed.
+cp "$ROOT"/agent/{serve,answer,approvals,ask,audit,budget,caps,citations,gateway,guard,prompts,retrieval,session,main,schema,tools}.py "$OUT"/
+# session.py resolves follow-ups against the corpus call list and company names.
+cp "$ROOT"/corpus/calls.json "$OUT"/calls.json
+cp "$ROOT"/corpus/terms.json "$OUT"/terms.json   # capitalised words that are not tickers (scripts/corpus_terms.py)
+# prompts.py reads these files only when PROMPT_SOURCE=file; deployed, it loads the pinned
+# Bedrock versions. Shipped so the sha256 in run.prompts can be compared with the repo.
+cp -r "$ROOT"/agent/prompts "$OUT"/prompts
 
 du -sh "$OUT"

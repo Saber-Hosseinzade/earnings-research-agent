@@ -27,5 +27,19 @@ aws logs put-resource-policy --policy-name TransactionSearchAccess --policy-docu
   }]
 }" > /dev/null
 
-aws xray update-trace-segment-destination --destination CloudWatchLogs > /dev/null
+# Switching to the destination that is already set is an error, so only switch when needed.
+if [ "$(aws xray get-trace-segment-destination --query Destination --output text)" != "CloudWatchLogs" ]; then
+  aws xray update-trace-segment-destination --destination CloudWatchLogs > /dev/null
+fi
+
+# Spans hold full prompts and answers. These two groups belong to the account, not to a stack, so their
+# retention is set here. Applied after the destination switch, which creates them if they don't exist yet.
+SPAN_RETENTION_DAYS="${SPAN_RETENTION_DAYS:-7}"
+for group in aws/spans /aws/application-signals/data; do
+  if aws logs describe-log-groups --log-group-name-prefix "$group" --query "logGroups[?logGroupName=='$group']" --output text | grep -q .; then
+    aws logs put-retention-policy --log-group-name "$group" --retention-in-days "$SPAN_RETENTION_DAYS"
+  else
+    echo "note: $group does not exist yet; run this script again after the first traced invocation" >&2
+  fi
+done
 aws xray get-trace-segment-destination

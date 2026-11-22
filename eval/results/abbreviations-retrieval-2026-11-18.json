@@ -1,0 +1,1019 @@
+{
+ "pairs": 125,
+ "summary": {
+  "bare": {
+   "hit@1": 52,
+   "hit@5": 64
+  },
+  "expanded": {
+   "hit@1": 68,
+   "hit@5": 92
+  },
+  "phrase": {
+   "hit@1": 68,
+   "hit@5": 92
+  }
+ },
+ "rows": [
+  {
+   "term": "capex",
+   "call": "AMD_2025Q3",
+   "on_topic": 2,
+   "bare": null,
+   "expanded": 3,
+   "phrase": 2
+  },
+  {
+   "term": "capex",
+   "call": "AMD_2026Q1",
+   "on_topic": 1,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": 3
+  },
+  {
+   "term": "capex",
+   "call": "CRDO_2026Q1",
+   "on_topic": 2,
+   "bare": null,
+   "expanded": null,
+   "phrase": 3
+  },
+  {
+   "term": "capex",
+   "call": "CRDO_2026Q2",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": null,
+   "phrase": null
+  },
+  {
+   "term": "capex",
+   "call": "CRDO_2026Q3",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": null,
+   "phrase": null
+  },
+  {
+   "term": "capex",
+   "call": "CRDO_2026Q4",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": null,
+   "phrase": null
+  },
+  {
+   "term": "capex",
+   "call": "META_2025Q4",
+   "on_topic": 2,
+   "bare": 2,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "capex",
+   "call": "META_2026Q1",
+   "on_topic": 6,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "capex",
+   "call": "META_2026Q2",
+   "on_topic": 4,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "capex",
+   "call": "META_2026Q3",
+   "on_topic": 3,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "capex",
+   "call": "NBIS_2025Q3",
+   "on_topic": 4,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "capex",
+   "call": "NBIS_2025Q4",
+   "on_topic": 6,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "capex",
+   "call": "NBIS_2026Q1",
+   "on_topic": 4,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "capex",
+   "call": "NBIS_2026Q2",
+   "on_topic": 5,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "capex",
+   "call": "RIVN_2025Q4",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": null,
+   "phrase": 4
+  },
+  {
+   "term": "capex",
+   "call": "RIVN_2026Q1",
+   "on_topic": 3,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": 2
+  },
+  {
+   "term": "capex",
+   "call": "RIVN_2026Q2",
+   "on_topic": 1,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "capex",
+   "call": "RIVN_2026Q3",
+   "on_topic": 3,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "opex",
+   "call": "AMD_2025Q3",
+   "on_topic": 2,
+   "bare": null,
+   "expanded": null,
+   "phrase": 2
+  },
+  {
+   "term": "opex",
+   "call": "AMD_2025Q4",
+   "on_topic": 6,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "opex",
+   "call": "AMD_2026Q1",
+   "on_topic": 4,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "opex",
+   "call": "AMD_2026Q2",
+   "on_topic": 4,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "opex",
+   "call": "CRDO_2026Q1",
+   "on_topic": 4,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "opex",
+   "call": "CRDO_2026Q2",
+   "on_topic": 5,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "opex",
+   "call": "CRDO_2026Q3",
+   "on_topic": 3,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": 2
+  },
+  {
+   "term": "opex",
+   "call": "CRDO_2026Q4",
+   "on_topic": 3,
+   "bare": null,
+   "expanded": 2,
+   "phrase": 1
+  },
+  {
+   "term": "opex",
+   "call": "META_2025Q4",
+   "on_topic": 2,
+   "bare": 4,
+   "expanded": 1,
+   "phrase": 2
+  },
+  {
+   "term": "opex",
+   "call": "RIVN_2025Q4",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": null,
+   "phrase": 3
+  },
+  {
+   "term": "opex",
+   "call": "RIVN_2026Q1",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": null,
+   "phrase": 3
+  },
+  {
+   "term": "opex",
+   "call": "RIVN_2026Q2",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": null,
+   "phrase": null
+  },
+  {
+   "term": "opex",
+   "call": "RIVN_2026Q3",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": null,
+   "phrase": null
+  },
+  {
+   "term": "opex",
+   "call": "ROOT_2025Q4",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "opex",
+   "call": "ROOT_2026Q1",
+   "on_topic": 2,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "FCF",
+   "call": "AMD_2025Q3",
+   "on_topic": 2,
+   "bare": null,
+   "expanded": 2,
+   "phrase": 1
+  },
+  {
+   "term": "FCF",
+   "call": "AMD_2025Q4",
+   "on_topic": 2,
+   "bare": null,
+   "expanded": 2,
+   "phrase": 1
+  },
+  {
+   "term": "FCF",
+   "call": "AMD_2026Q1",
+   "on_topic": 2,
+   "bare": null,
+   "expanded": 2,
+   "phrase": 1
+  },
+  {
+   "term": "FCF",
+   "call": "AMD_2026Q2",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": 4,
+   "phrase": null
+  },
+  {
+   "term": "FCF",
+   "call": "CRDO_2026Q1",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "FCF",
+   "call": "CRDO_2026Q2",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "FCF",
+   "call": "CRDO_2026Q3",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "FCF",
+   "call": "CRDO_2026Q4",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": 2,
+   "phrase": 2
+  },
+  {
+   "term": "FCF",
+   "call": "META_2025Q4",
+   "on_topic": 2,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "FCF",
+   "call": "META_2026Q1",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": null,
+   "phrase": 2
+  },
+  {
+   "term": "FCF",
+   "call": "META_2026Q2",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": null,
+   "phrase": null
+  },
+  {
+   "term": "FCF",
+   "call": "META_2026Q3",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": null,
+   "phrase": 1
+  },
+  {
+   "term": "FCF",
+   "call": "RIVN_2026Q1",
+   "on_topic": 4,
+   "bare": 3,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "OCF",
+   "call": "CRDO_2026Q1",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "OCF",
+   "call": "CRDO_2026Q2",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": 5,
+   "phrase": 2
+  },
+  {
+   "term": "OCF",
+   "call": "CRDO_2026Q3",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": 2,
+   "phrase": 1
+  },
+  {
+   "term": "OCF",
+   "call": "CRDO_2026Q4",
+   "on_topic": 2,
+   "bare": null,
+   "expanded": 2,
+   "phrase": 1
+  },
+  {
+   "term": "OCF",
+   "call": "META_2025Q4",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": 4,
+   "phrase": 3
+  },
+  {
+   "term": "OCF",
+   "call": "META_2026Q2",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "OCF",
+   "call": "NBIS_2025Q4",
+   "on_topic": 1,
+   "bare": 3,
+   "expanded": 2,
+   "phrase": 3
+  },
+  {
+   "term": "OCF",
+   "call": "NBIS_2026Q1",
+   "on_topic": 2,
+   "bare": null,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "OCF",
+   "call": "NBIS_2026Q2",
+   "on_topic": 3,
+   "bare": 3,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "EPS",
+   "call": "AMD_2025Q3",
+   "on_topic": 1,
+   "bare": 5,
+   "expanded": 3,
+   "phrase": 1
+  },
+  {
+   "term": "EPS",
+   "call": "AMD_2025Q4",
+   "on_topic": 4,
+   "bare": 2,
+   "expanded": 2,
+   "phrase": 1
+  },
+  {
+   "term": "EPS",
+   "call": "AMD_2026Q1",
+   "on_topic": 2,
+   "bare": null,
+   "expanded": 4,
+   "phrase": 1
+  },
+  {
+   "term": "EPS",
+   "call": "AMD_2026Q2",
+   "on_topic": 3,
+   "bare": 2,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "EPS",
+   "call": "CRDO_2026Q4",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": null,
+   "phrase": 2
+  },
+  {
+   "term": "EPS",
+   "call": "META_2026Q1",
+   "on_topic": 1,
+   "bare": 1,
+   "expanded": null,
+   "phrase": 1
+  },
+  {
+   "term": "ARR",
+   "call": "NBIS_2025Q3",
+   "on_topic": 8,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "ARR",
+   "call": "NBIS_2025Q4",
+   "on_topic": 10,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "ARR",
+   "call": "NBIS_2026Q1",
+   "on_topic": 1,
+   "bare": 5,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "ARR",
+   "call": "NBIS_2026Q2",
+   "on_topic": 2,
+   "bare": 3,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "SBC",
+   "call": "RIVN_2025Q4",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": null,
+   "phrase": null
+  },
+  {
+   "term": "SBC",
+   "call": "RIVN_2026Q1",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": null,
+   "phrase": null
+  },
+  {
+   "term": "SBC",
+   "call": "RIVN_2026Q2",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": null,
+   "phrase": null
+  },
+  {
+   "term": "R&D",
+   "call": "AMD_2025Q3",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": null,
+   "phrase": null
+  },
+  {
+   "term": "R&D",
+   "call": "AMD_2025Q4",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": null,
+   "phrase": null
+  },
+  {
+   "term": "R&D",
+   "call": "AMD_2026Q1",
+   "on_topic": 4,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "R&D",
+   "call": "AMD_2026Q2",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": null,
+   "phrase": null
+  },
+  {
+   "term": "R&D",
+   "call": "CRDO_2026Q1",
+   "on_topic": 1,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "R&D",
+   "call": "CRDO_2026Q2",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": null,
+   "phrase": 4
+  },
+  {
+   "term": "R&D",
+   "call": "CRDO_2026Q3",
+   "on_topic": 2,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "R&D",
+   "call": "CRDO_2026Q4",
+   "on_topic": 2,
+   "bare": null,
+   "expanded": null,
+   "phrase": null
+  },
+  {
+   "term": "R&D",
+   "call": "META_2026Q1",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": null,
+   "phrase": null
+  },
+  {
+   "term": "R&D",
+   "call": "NBIS_2025Q3",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": null,
+   "phrase": null
+  },
+  {
+   "term": "R&D",
+   "call": "NBIS_2025Q4",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": null,
+   "phrase": null
+  },
+  {
+   "term": "R&D",
+   "call": "RIVN_2025Q4",
+   "on_topic": 2,
+   "bare": 1,
+   "expanded": 3,
+   "phrase": 1
+  },
+  {
+   "term": "R&D",
+   "call": "RIVN_2026Q1",
+   "on_topic": 3,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "R&D",
+   "call": "RIVN_2026Q2",
+   "on_topic": 4,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "R&D",
+   "call": "RIVN_2026Q3",
+   "on_topic": 4,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "R&D",
+   "call": "ROOT_2025Q3",
+   "on_topic": 2,
+   "bare": null,
+   "expanded": null,
+   "phrase": null
+  },
+  {
+   "term": "R&D",
+   "call": "ROOT_2025Q4",
+   "on_topic": 2,
+   "bare": 5,
+   "expanded": null,
+   "phrase": null
+  },
+  {
+   "term": "R&D",
+   "call": "ROOT_2026Q1",
+   "on_topic": 3,
+   "bare": null,
+   "expanded": 4,
+   "phrase": 1
+  },
+  {
+   "term": "R&D",
+   "call": "ROOT_2026Q2",
+   "on_topic": 5,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "SG&A",
+   "call": "AMD_2026Q1",
+   "on_topic": 2,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "SG&A",
+   "call": "RIVN_2025Q4",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": null,
+   "phrase": null
+  },
+  {
+   "term": "SG&A",
+   "call": "RIVN_2026Q2",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": 4,
+   "phrase": 4
+  },
+  {
+   "term": "D&A",
+   "call": "RIVN_2026Q2",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": null,
+   "phrase": null
+  },
+  {
+   "term": "TAM",
+   "call": "AMD_2025Q3",
+   "on_topic": 3,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "TAM",
+   "call": "AMD_2025Q4",
+   "on_topic": 2,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "TAM",
+   "call": "AMD_2026Q1",
+   "on_topic": 10,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "TAM",
+   "call": "AMD_2026Q2",
+   "on_topic": 5,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "TAM",
+   "call": "CRDO_2026Q1",
+   "on_topic": 8,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "TAM",
+   "call": "CRDO_2026Q2",
+   "on_topic": 6,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "TAM",
+   "call": "CRDO_2026Q3",
+   "on_topic": 3,
+   "bare": null,
+   "expanded": null,
+   "phrase": null
+  },
+  {
+   "term": "TAM",
+   "call": "NBIS_2025Q3",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": null,
+   "phrase": null
+  },
+  {
+   "term": "TAM",
+   "call": "NBIS_2025Q4",
+   "on_topic": 1,
+   "bare": 4,
+   "expanded": 2,
+   "phrase": null
+  },
+  {
+   "term": "TAM",
+   "call": "ROOT_2025Q4",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": 2,
+   "phrase": 1
+  },
+  {
+   "term": "ASP",
+   "call": "AMD_2025Q3",
+   "on_topic": 2,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "ASP",
+   "call": "AMD_2025Q4",
+   "on_topic": 1,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": null
+  },
+  {
+   "term": "ASP",
+   "call": "AMD_2026Q1",
+   "on_topic": 8,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": null
+  },
+  {
+   "term": "ASP",
+   "call": "AMD_2026Q2",
+   "on_topic": 3,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": null
+  },
+  {
+   "term": "ASP",
+   "call": "CRDO_2026Q1",
+   "on_topic": 2,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": null
+  },
+  {
+   "term": "ASP",
+   "call": "CRDO_2026Q2",
+   "on_topic": 5,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "ASP",
+   "call": "CRDO_2026Q3",
+   "on_topic": 3,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": null
+  },
+  {
+   "term": "ASP",
+   "call": "CRDO_2026Q4",
+   "on_topic": 4,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": null
+  },
+  {
+   "term": "ASP",
+   "call": "META_2026Q3",
+   "on_topic": 1,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": 5
+  },
+  {
+   "term": "ASP",
+   "call": "NBIS_2025Q4",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "ASP",
+   "call": "NBIS_2026Q1",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": 4,
+   "phrase": null
+  },
+  {
+   "term": "ASP",
+   "call": "RIVN_2026Q2",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": null,
+   "phrase": null
+  },
+  {
+   "term": "ASP",
+   "call": "RIVN_2026Q3",
+   "on_topic": 2,
+   "bare": null,
+   "expanded": 3,
+   "phrase": 1
+  },
+  {
+   "term": "LTV",
+   "call": "NBIS_2025Q4",
+   "on_topic": 1,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": 4
+  },
+  {
+   "term": "LTV",
+   "call": "NBIS_2026Q1",
+   "on_topic": 1,
+   "bare": 1,
+   "expanded": 2,
+   "phrase": 4
+  },
+  {
+   "term": "LTV",
+   "call": "ROOT_2025Q3",
+   "on_topic": 2,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": 4
+  },
+  {
+   "term": "LTV",
+   "call": "ROOT_2025Q4",
+   "on_topic": 1,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": 2
+  },
+  {
+   "term": "LTV",
+   "call": "ROOT_2026Q1",
+   "on_topic": 2,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "LTV",
+   "call": "ROOT_2026Q2",
+   "on_topic": 1,
+   "bare": 1,
+   "expanded": 1,
+   "phrase": null
+  },
+  {
+   "term": "GWP",
+   "call": "ROOT_2025Q4",
+   "on_topic": 2,
+   "bare": null,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "GWP",
+   "call": "ROOT_2026Q2",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": 2,
+   "phrase": 2
+  },
+  {
+   "term": "DAP",
+   "call": "META_2025Q4",
+   "on_topic": 3,
+   "bare": null,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "DAP",
+   "call": "META_2026Q1",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": 1,
+   "phrase": 1
+  },
+  {
+   "term": "DAP",
+   "call": "META_2026Q2",
+   "on_topic": 1,
+   "bare": null,
+   "expanded": 1,
+   "phrase": 1
+  }
+ ]
+}

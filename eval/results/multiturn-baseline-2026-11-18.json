@@ -1,0 +1,572 @@
+{
+ "label": "multiturn-baseline",
+ "date": "2026-11-18",
+ "run_at": "2026-11-18T12:24:40+00:00",
+ "model_id": "eu.amazon.nova-2-lite-v1:0",
+ "git_head": "fee1cde",
+ "guardrail": true,
+ "prompt": {
+  "source": "file",
+  "id": null,
+  "version": null,
+  "sha256": "39184806ef85"
+ },
+ "summary": {
+  "conversations": 13,
+  "goal_success": 9,
+  "turns": 26,
+  "turns_passed": 21,
+  "by_flow": {
+   "1": {
+    "conversations": 1,
+    "passed": 1
+   },
+   "2": {
+    "conversations": 3,
+    "passed": 1
+   },
+   "3": {
+    "conversations": 3,
+    "passed": 2
+   },
+   "4": {
+    "conversations": 2,
+    "passed": 1
+   },
+   "5": {
+    "conversations": 2,
+    "passed": 2
+   },
+   "7": {
+    "conversations": 2,
+    "passed": 2
+   }
+  },
+  "refusal": {
+   "expected_blocked": 1,
+   "blocked": 1,
+   "expected_not_blocked": 25,
+   "wrongly_blocked": 0
+  },
+  "failed_checks": {
+   "cites": 1,
+   "cites_only": 1,
+   "clarifies": 2,
+   "covered": 1,
+   "quarter": 1
+  }
+ },
+ "conversations": {
+  "MT-01": [
+   {
+    "user": "Why did AMD's gross margin change in Q2 2026?",
+    "failed": [],
+    "status": "ok",
+    "context": {
+     "how": "named",
+     "ticker": "AMD",
+     "quarter": "2026Q2"
+    },
+    "covered": true,
+    "cited": [
+     "AMD_2026Q2_t003_p1",
+     "AMD_2026Q2_t003_p3"
+    ],
+    "queries": [
+     "AMD gross margin change Q2 2026"
+    ],
+    "tokens": 5300
+   }
+  ],
+  "MT-02": [
+   {
+    "user": "What did they say about gross margin?",
+    "failed": [
+     "clarifies"
+    ],
+    "status": "ok",
+    "context": {
+     "how": "none",
+     "ticker": null,
+     "quarter": null
+    },
+    "covered": true,
+    "cited": [
+     "AMD_2025Q4_t056",
+     "CRDO_2026Q2_t033",
+     "CRDO_2026Q3_t047",
+     "RIVN_2026Q3_t007"
+    ],
+    "queries": [
+     "What did they say about gross margin?"
+    ],
+    "tokens": 4605
+   },
+   {
+    "user": "AMD",
+    "failed": [
+     "quarter",
+     "cites_only"
+    ],
+    "status": "ok",
+    "context": {
+     "how": "named",
+     "ticker": "AMD",
+     "quarter": null
+    },
+    "covered": true,
+    "cited": [
+     "AMD_2025Q4_t056",
+     "AMD_2026Q1_t020",
+     "AMD_2025Q3_t023"
+    ],
+    "queries": [
+     "gross margin"
+    ],
+    "tokens": 5088
+   }
+  ],
+  "MT-03": [
+   {
+    "user": "How did the company describe demand?",
+    "failed": [
+     "clarifies"
+    ],
+    "status": "ok",
+    "context": {
+     "how": "none",
+     "ticker": null,
+     "quarter": null
+    },
+    "covered": true,
+    "cited": [
+     "AMD_2025Q3_t017",
+     "NBIS_2025Q3_t012",
+     "NBIS_2025Q3_t042"
+    ],
+    "queries": [
+     "How did the company describe demand?"
+    ],
+    "tokens": 4896
+   },
+   {
+    "user": "Nebius",
+    "failed": [],
+    "status": "ok",
+    "context": {
+     "how": "named",
+     "ticker": "NBIS",
+     "quarter": null
+    },
+    "covered": true,
+    "cited": [
+     "NBIS_2025Q3_t012",
+     "NBIS_2025Q3_t030"
+    ],
+    "queries": [
+     "Nebius demand"
+    ],
+    "tokens": 4869
+   }
+  ],
+  "MT-04": [
+   {
+    "user": "Which companies talked about tariffs?",
+    "failed": [],
+    "status": "ok",
+    "context": {
+     "how": "cross_company",
+     "ticker": null,
+     "quarter": null
+    },
+    "covered": true,
+    "cited": [
+     "ROOT_2025Q3_t023",
+     "ROOT_2025Q3_t022",
+     "RIVN_2026Q2_t022",
+     "RIVN_2026Q2_t023",
+     "RIVN_2025Q4_t036_p2",
+     "RIVN_2026Q1_t011",
+     "RIVN_2026Q2_t012_p2",
+     "RIVN_2026Q3_t042"
+    ],
+    "queries": [
+     "tariffs"
+    ],
+    "tokens": 5166
+   }
+  ],
+  "MT-05": [
+   {
+    "user": "What did AMD say about operating expenses in Q2 2026?",
+    "failed": [],
+    "status": "ok",
+    "context": {
+     "how": "named",
+     "ticker": "AMD",
+     "quarter": "2026Q2"
+    },
+    "covered": true,
+    "cited": [
+     "AMD_2026Q2_t003_p1",
+     "AMD_2026Q2_t053"
+    ],
+    "queries": [
+     "operating expenses"
+    ],
+    "tokens": 4977
+   },
+   {
+    "user": "What about Meta?",
+    "failed": [],
+    "status": "ok",
+    "context": {
+     "how": "named",
+     "ticker": "META",
+     "quarter": "2026Q2"
+    },
+    "covered": true,
+    "cited": [
+     "META_2026Q2_t003_p1",
+     "META_2026Q2_t003_p2"
+    ],
+    "queries": [
+     "operating expenses"
+    ],
+    "tokens": 5781
+   },
+   {
+    "user": "And in the latest quarter?",
+    "failed": [],
+    "status": "ok",
+    "context": {
+     "how": "carried",
+     "ticker": "META",
+     "quarter": "2026Q3"
+    },
+    "covered": true,
+    "cited": [
+     "META_2026Q3_t003_p1"
+    ],
+    "queries": [
+     "operating expenses"
+    ],
+    "tokens": 6056
+   }
+  ],
+  "MT-06": [
+   {
+    "user": "Why did Rivian's average selling price change in Q3 2026?",
+    "failed": [],
+    "status": "ok",
+    "context": {
+     "how": "named",
+     "ticker": "RIVN",
+     "quarter": "2026Q3"
+    },
+    "covered": true,
+    "cited": [
+     "RIVN_2026Q3_t002_p1",
+     "RIVN_2026Q3_t072"
+    ],
+    "queries": [
+     "Why did Rivian's average selling price change in Q3 2026?"
+    ],
+    "tokens": 5642
+   },
+   {
+    "user": "And how did that compare with the quarter before?",
+    "failed": [
+     "cites:RIVN_2026Q2"
+    ],
+    "status": "ok",
+    "context": {
+     "how": "cross_quarter",
+     "ticker": "RIVN",
+     "quarter": null
+    },
+    "covered": true,
+    "cited": [
+     "RIVN_2026Q3_t072"
+    ],
+    "queries": [
+     "average selling price change compare with previous quarter",
+     "average selling price change previous quarter"
+    ],
+    "tokens": 13992
+   }
+  ],
+  "MT-07": [
+   {
+    "user": "What did Meta say about capex in Q3 2026?",
+    "failed": [],
+    "status": "ok",
+    "context": {
+     "how": "named",
+     "ticker": "META",
+     "quarter": "2026Q3"
+    },
+    "covered": true,
+    "cited": [
+     "META_2026Q3_t005_p1"
+    ],
+    "queries": [
+     "capex (capital expenditures)"
+    ],
+    "tokens": 5684
+   },
+   {
+    "user": "And the previous quarter?",
+    "failed": [],
+    "status": "ok",
+    "context": {
+     "how": "carried",
+     "ticker": "META",
+     "quarter": "2026Q2"
+    },
+    "covered": true,
+    "cited": [
+     "META_2026Q2_t003_p9"
+    ],
+    "queries": [
+     "capex (capital expenditures)"
+    ],
+    "tokens": 5517
+   }
+  ],
+  "MT-08": [
+   {
+    "user": "What did AMD say about data center demand in Q2 2026?",
+    "failed": [],
+    "status": "ok",
+    "context": {
+     "how": "named",
+     "ticker": "AMD",
+     "quarter": "2026Q2"
+    },
+    "covered": true,
+    "cited": [
+     "AMD_2026Q2_t007",
+     "AMD_2026Q2_t034"
+    ],
+    "queries": [
+     "data center demand"
+    ],
+    "tokens": 4748
+   },
+   {
+    "user": "Should I buy it?",
+    "failed": [],
+    "status": "blocked",
+    "context": {
+     "how": "carried",
+     "ticker": "AMD",
+     "quarter": "2026Q2"
+    },
+    "covered": false,
+    "cited": [],
+    "queries": [],
+    "tokens": null
+   },
+   {
+    "user": "What did they say about the outlook?",
+    "failed": [
+     "covered"
+    ],
+    "status": "ok",
+    "context": {
+     "how": "carried",
+     "ticker": "AMD",
+     "quarter": "2026Q2"
+    },
+    "covered": false,
+    "cited": [],
+    "queries": [
+     "outlook"
+    ],
+    "tokens": 7566
+   }
+  ],
+  "MT-09": [
+   {
+    "user": "Did management comment on valuation on AMD's Q2 2026 call?",
+    "failed": [],
+    "status": "ok",
+    "context": {
+     "how": "named",
+     "ticker": "AMD",
+     "quarter": "2026Q2"
+    },
+    "covered": false,
+    "cited": [],
+    "queries": [
+     "valuation"
+    ],
+    "tokens": 7356
+   },
+   {
+    "user": "What did Meta say about stock-based compensation in Q3 2026?",
+    "failed": [],
+    "status": "ok",
+    "context": {
+     "how": "named",
+     "ticker": "META",
+     "quarter": "2026Q3"
+    },
+    "covered": false,
+    "cited": [],
+    "queries": [
+     "stock-based compensation"
+    ],
+    "tokens": 4982
+   }
+  ],
+  "MT-10": [
+   {
+    "user": "What did NVDA say about data center demand?",
+    "failed": [],
+    "status": "out_of_corpus",
+    "context": {
+     "how": "unknown_ticker",
+     "ticker": "NVDA",
+     "quarter": null
+    },
+    "covered": false,
+    "cited": [],
+    "queries": [],
+    "tokens": null
+   },
+   {
+    "user": "What did AMD say about margins in Q3 2026?",
+    "failed": [],
+    "status": "out_of_corpus",
+    "context": {
+     "how": "named",
+     "ticker": "AMD",
+     "quarter": "2026Q3"
+    },
+    "covered": false,
+    "cited": [],
+    "queries": [],
+    "tokens": null
+   },
+   {
+    "user": "Yes, that one",
+    "failed": [],
+    "status": "ok",
+    "context": {
+     "how": "carried",
+     "ticker": "AMD",
+     "quarter": "2026Q2"
+    },
+    "covered": true,
+    "cited": [
+     "AMD_2026Q2_t009",
+     "AMD_2026Q2_t044"
+    ],
+    "queries": [
+     "margins"
+    ],
+    "tokens": 5068
+   }
+  ],
+  "MT-11": [
+   {
+    "user": "What did XYZQ say about margins?",
+    "failed": [],
+    "status": "out_of_corpus",
+    "context": {
+     "how": "unknown_ticker",
+     "ticker": "XYZQ",
+     "quarter": null
+    },
+    "covered": false,
+    "cited": [],
+    "queries": [],
+    "tokens": null
+   },
+   {
+    "user": "And Credo?",
+    "failed": [],
+    "status": "ok",
+    "context": {
+     "how": "named",
+     "ticker": "CRDO",
+     "quarter": null
+    },
+    "covered": true,
+    "cited": [
+     "CRDO_2026Q1_t048",
+     "CRDO_2026Q2_t033",
+     "CRDO_2026Q3_t047",
+     "CRDO_2026Q2_t032",
+     "CRDO_2026Q1_t003_p3"
+    ],
+    "queries": [
+     "margins"
+    ],
+    "tokens": 4571
+   }
+  ],
+  "MT-12": [
+   {
+    "user": "What dividend did AMD declare on its Q1 2026 call?",
+    "failed": [],
+    "status": "ok",
+    "context": {
+     "how": "named",
+     "ticker": "AMD",
+     "quarter": "2026Q1"
+    },
+    "covered": false,
+    "cited": [],
+    "queries": [
+     "dividend declared AMD Q1 2026",
+     "dividend"
+    ],
+    "tokens": 12514
+   },
+   {
+    "user": "What did they say about gross margin then?",
+    "failed": [],
+    "status": "ok",
+    "context": {
+     "how": "carried",
+     "ticker": "AMD",
+     "quarter": "2026Q1"
+    },
+    "covered": true,
+    "cited": [
+     "AMD_2026Q1_t020",
+     "AMD_2026Q1_t019",
+     "AMD_2026Q1_t040",
+     "AMD_2026Q1_t041",
+     "AMD_2026Q1_t045"
+    ],
+    "queries": [
+     "gross margin"
+    ],
+    "tokens": 5386
+   }
+  ],
+  "MT-13": [
+   {
+    "user": "Did Rivian announce a dividend on its Q2 2026 call?",
+    "failed": [],
+    "status": "ok",
+    "context": {
+     "how": "named",
+     "ticker": "RIVN",
+     "quarter": "2026Q2"
+    },
+    "covered": false,
+    "cited": [],
+    "queries": [
+     "dividend",
+     "dividend announcement"
+    ],
+    "tokens": 14308
+   }
+  ]
+ }
+}

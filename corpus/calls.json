@@ -1,0 +1,201 @@
+{
+  "_comment": "The fixed v2 corpus. label = the quarter id used in file names and the golden set; fiscal_year and fiscal_quarter = the period the call reports. Edit this file to choose your own calls.",
+  "frozen": "2026-11-05",
+  "notes": {
+    "AMD": "2026Q3 not available on 5 Nov; next-older quarter used",
+    "ROOT": "2026Q3 not available on 5 Nov; next-older quarter used",
+    "CRDO": "Fiscal year ends early May; labels are fiscal. Q1 FY2027 not available on 5 Nov, so Q1 FY2026 is used"
+  },
+  "companies": {
+    "_comment": "Names a user may type for each ticker; agent/session.py matches them as whole words in any case, plus the ticker; a name that is also an ordinary word (root, meta, credo) counts in lowercase only as the whole message.",
+    "AMD": ["Advanced Micro Devices"],
+    "RIVN": ["Rivian"],
+    "ROOT": ["Root", "Root Insurance", "Root Inc"],
+    "META": ["Meta", "Meta Platforms", "Facebook"],
+    "CRDO": ["Credo"],
+    "NBIS": ["Nebius"]
+  },
+  "calls": [
+    {
+      "ticker": "AMD",
+      "label": "2025Q3",
+      "fiscal_year": 2025,
+      "fiscal_quarter": 3
+    },
+    {
+      "ticker": "AMD",
+      "label": "2025Q4",
+      "fiscal_year": 2025,
+      "fiscal_quarter": 4
+    },
+    {
+      "ticker": "AMD",
+      "label": "2026Q1",
+      "fiscal_year": 2026,
+      "fiscal_quarter": 1
+    },
+    {
+      "ticker": "AMD",
+      "label": "2026Q2",
+      "fiscal_year": 2026,
+      "fiscal_quarter": 2
+    },
+    {
+      "ticker": "RIVN",
+      "label": "2025Q4",
+      "fiscal_year": 2025,
+      "fiscal_quarter": 4
+    },
+    {
+      "ticker": "RIVN",
+      "label": "2026Q1",
+      "fiscal_year": 2026,
+      "fiscal_quarter": 1
+    },
+    {
+      "ticker": "RIVN",
+      "label": "2026Q2",
+      "fiscal_year": 2026,
+      "fiscal_quarter": 2
+    },
+    {
+      "ticker": "RIVN",
+      "label": "2026Q3",
+      "fiscal_year": 2026,
+      "fiscal_quarter": 3
+    },
+    {
+      "ticker": "ROOT",
+      "label": "2025Q3",
+      "fiscal_year": 2025,
+      "fiscal_quarter": 3
+    },
+    {
+      "ticker": "ROOT",
+      "label": "2025Q4",
+      "fiscal_year": 2025,
+      "fiscal_quarter": 4
+    },
+    {
+      "ticker": "ROOT",
+      "label": "2026Q1",
+      "fiscal_year": 2026,
+      "fiscal_quarter": 1
+    },
+    {
+      "ticker": "ROOT",
+      "label": "2026Q2",
+      "fiscal_year": 2026,
+      "fiscal_quarter": 2
+    },
+    {
+      "ticker": "META",
+      "label": "2025Q4",
+      "fiscal_year": 2025,
+      "fiscal_quarter": 4
+    },
+    {
+      "ticker": "META",
+      "label": "2026Q1",
+      "fiscal_year": 2026,
+      "fiscal_quarter": 1
+    },
+    {
+      "ticker": "META",
+      "label": "2026Q2",
+      "fiscal_year": 2026,
+      "fiscal_quarter": 2
+    },
+    {
+      "ticker": "META",
+      "label": "2026Q3",
+      "fiscal_year": 2026,
+      "fiscal_quarter": 3
+    },
+    {
+      "ticker": "CRDO",
+      "label": "2026Q1",
+      "fiscal_year": 2026,
+      "fiscal_quarter": 1
+    },
+    {
+      "ticker": "CRDO",
+      "label": "2026Q2",
+      "fiscal_year": 2026,
+      "fiscal_quarter": 2
+    },
+    {
+      "ticker": "CRDO",
+      "label": "2026Q3",
+      "fiscal_year": 2026,
+      "fiscal_quarter": 3
+    },
+    {
+      "ticker": "CRDO",
+      "label": "2026Q4",
+      "fiscal_year": 2026,
+      "fiscal_quarter": 4
+    },
+    {
+      "ticker": "NBIS",
+      "label": "2025Q3",
+      "fiscal_year": 2025,
+      "fiscal_quarter": 3
+    },
+    {
+      "ticker": "NBIS",
+      "label": "2025Q4",
+      "fiscal_year": 2025,
+      "fiscal_quarter": 4
+    },
+    {
+      "ticker": "NBIS",
+      "label": "2026Q1",
+      "fiscal_year": 2026,
+      "fiscal_quarter": 1
+    },
+    {
+      "ticker": "NBIS",
+      "label": "2026Q2",
+      "fiscal_year": 2026,
+      "fiscal_quarter": 2
+    }
+  ],
+  "outside_companies": {
+    "_comment": "Well-known companies outside the corpus, by the names a user may type (any case, whole words; agent/session.py). A name here resolves to its ticker, so the turn becomes a fetch proposal instead of carrying the previous company. Tickers in capitals are recognised without this list.",
+    "NVDA": ["Nvidia"],
+    "AAPL": ["Apple"],
+    "MSFT": ["Microsoft"],
+    "GOOGL": ["Alphabet", "Google"],
+    "AMZN": ["Amazon"],
+    "TSLA": ["Tesla"],
+    "INTC": ["Intel"],
+    "ORCL": ["Oracle"],
+    "IBM": ["IBM"],
+    "NFLX": ["Netflix"],
+    "AVGO": ["Broadcom"],
+    "QCOM": ["Qualcomm"],
+    "TSM": ["TSMC", "Taiwan Semiconductor"],
+    "ARM": ["Arm Holdings"],
+    "MU": ["Micron"],
+    "ADBE": ["Adobe"],
+    "CRM": ["Salesforce"],
+    "PLTR": ["Palantir"],
+    "UBER": ["Uber"],
+    "SNOW": ["Snowflake"],
+    "SHOP": ["Shopify"],
+    "LCID": ["Lucid", "Lucid Motors"],
+    "F": ["Ford"],
+    "GM": ["General Motors"],
+    "LMND": ["Lemonade"],
+    "PGR": ["Progressive"],
+    "CRWV": ["CoreWeave"],
+    "MRVL": ["Marvell"],
+    "ANET": ["Arista"],
+    "SMCI": ["Supermicro", "Super Micro"],
+    "HPE": ["Hewlett Packard Enterprise"],
+    "DELL": ["Dell"],
+    "SNAP": ["Snap", "Snapchat"],
+    "PINS": ["Pinterest"]
+  }
+}

@@ -1,0 +1,60 @@
+# Regression gate: the offline test suite on every push and pull request to v2 and main.
+#
+# Offline only (decided 19 Nov): no AWS credentials, no model calls. The tests use a scripted
+# fake model, fake retrievers and fetchers, and CDK template assertions. The golden-set and
+# multi-turn evaluations (eval/) call Bedrock and stay manual runs; their results are committed
+# in eval/results/.
+#
+# One check skips here: eval/check_golden.py on the real golden set needs the raw transcripts,
+# which are never committed.
+
+name: tests
+
+on:
+  push:
+    branches: [v2, main]
+  pull_request:
+    branches: [v2, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      # Third-party actions pinned to a commit, not a movable tag.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            requirements-dev.txt
+            agent/requirements.txt
+            infra/requirements.txt
+
+      # The CDK tests synthesise templates through jsii, which runs on Node.
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1  # v7.1.0
+        with:
+          node-version: "22"
+
+      # Same lists as the dev container (.devcontainer/post-create.sh); agent/requirements.txt is
+      # generated from uv.lock, so CI tests the versions the runtime ships.
+      - name: Install
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: Offline tests
+        env:
+          # No credentials exist here; a region keeps boto3 clients constructible.
+          AWS_DEFAULT_REGION: eu-central-1
+        run: python -m pytest -q -rs
