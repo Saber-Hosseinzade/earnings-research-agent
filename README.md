@@ -4,8 +4,6 @@ A chat assistant that answers questions about company earnings calls (what manag
 
 > **Not investment advice.** It reports what management said on earnings calls. It gives no buy/sell/hold views or price targets, and refuses when asked. LLM answers can be wrong; every answer links the passages it is based on so they can be checked.
 
-**Status:** a working, production-style demo, deployed on AWS for test and demo windows and torn down between them. Single user, no real traffic.
-
 ---
 
 ## What it does
