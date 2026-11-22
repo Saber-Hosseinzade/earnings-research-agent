@@ -116,6 +116,19 @@ The runtime's log group (AgentCore creates it) is deleted with the stack, and ke
 
 Transaction Search stays on. To undo it: `aws xray update-trace-segment-destination --destination XRay`.
 
+**6. Hosted chat UI (optional).** A Streamlit app (`ui/`) on ECS Express Mode behind a Cognito sign-in, for demo windows. It needs the runtime from step 3.
+
+```bash
+scripts/deploy_ui.sh                      # auth + image stacks, image built by CodeBuild, then the UI stack
+cd infra && npx cdk destroy EarningsResearchAgentUi --exclusively   # after the demo, before the runtime
+```
+
+- **Image:** built by CodeBuild in your account (ARM64), so no Docker is needed locally. The tag is the hash of `ui/`, and an existing tag is not rebuilt.
+- **Endpoint:** AWS-managed domain and TLS (`https://<id>.ecs.<region>.on.aws`). The id changes on every create, so the script then adds the new URL to Cognito's callback URLs and the container, and deploys again. A fresh deploy takes about 14 minutes; teardown takes about 7.
+- **Task:** one Fargate task, 0.5 vCPU / 1 GB ARM64, about $0.065 an hour with the load balancer. Its task role may only call `InvokeAgentRuntime` on the one runtime. The Cognito client secret and cookie secret come from Secrets Manager. Container logs keep 7 days.
+- **Roles:** Cognito groups `viewer` (chat) and `reviewer` (approves out-of-corpus fetches). The group is read from the verified ID token on the server. Spend caps (30 turns per session, 100 per day) are enforced in the runtime, not the UI.
+- **Limits:** Express Mode manages the load balancer, so its 5-minute deregistration delay can't be changed and every update waits on it. Signing out ends on a Cognito error page, because Streamlit and Cognito use different logout parameters. Use separate browser profiles for viewer and reviewer.
+
 ## Evaluation corpus
 
 The evaluation set uses a fixed corpus of 24 earnings-call transcripts from a third-party transcript API. Raw transcripts are not in the repo; `corpus/manifest_v2.json` records the sha256 of each one, so a fresh pull can be checked against it. The hashes match only text from the same provider.
